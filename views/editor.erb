@@ -1,14 +1,17 @@
 <html>
 
   <head>
-    <link rel="stylesheet" type="text/css" href="/css/trix.css">
+    <title>Neil's Idea</title>
+    <link rel="icon" href="/images/favicon.ico" />
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/trix.css">
+    <script>var inflections_map = <%= @inflections_map %></script>
     <script type="text/javascript" src="/js/trix.js"></script>
+    <script type="text/javascript" src="/js/editor.js" defer></script>
   </head>
 
   <body>
-    <script type="text/javascript">
-      var inflections = <%= inflections %>;
-    </script>
     <trix-editor></trix-editor>
   </body>
 </html>

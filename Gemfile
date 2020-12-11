@@ -1,7 +1,13 @@
-ruby "2.6.6"
-source "https://rubygems.org"
+ruby '2.6.6'
+source 'https://rubygems.org'
 
-gem "sinatra", "~>1.4.7"
-gem "sinatra-contrib"
-gem "erubis"
-gem "puma"
+group :development do
+  gem 'capybara'
+  gem 'minitest'
+  gem 'rack-test'
+end
+
+gem 'erubis'
+gem 'puma'
+gem 'sinatra', '~>2.1.0'
+gem 'sinatra-contrib'
