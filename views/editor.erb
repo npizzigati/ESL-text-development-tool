@@ -4,15 +4,19 @@
     <title>Neil's Idea</title>
     <link rel="icon" href="/images/favicon.ico" />
     <link rel="stylesheet" href="/css/reset.css">
-    <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/trix.css">
+    <link rel="stylesheet" href="/css/main.css">
     <script>var inflections_map = <%= @inflections_map %></script>
     <script type="text/javascript" src="/js/trix.js"></script>
     <script type="text/javascript" src="/js/editor.js" defer></script>
   </head>
 
   <body>
+    <div class="searchBorder">
+      <input id="searchBox" class="searchBox" name="searchText">
+      <button id="searchUp" class="searchArrow"> &#9650;</button>
+      <button id="searchDown" class="searchArrow">&#9660;</button>
+    </div>
     <trix-editor></trix-editor>
   </body>
 </html>
-
