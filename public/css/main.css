@@ -32,10 +32,26 @@ trix-editor {
     max-height: 10em;
 }
 
+.search-button-container {
+    width: 13px;
+    height: 13px;
+    position: absolute;
+    top: 3px;
+    right: .8em;
+}
+
+.search-button {
+    max-width: 100%;
+    height: auto;
+    /* border: none; */
+    /* background: none; */
+    /* box-shadow: none; */
+}
+
 .search-arrow-button-container {
   display: flex;
   flex-direction: row;
-  width: 40px;
+  width: 20px;
   height: 15px;
   justify-content: flex-end;
 }
@@ -79,14 +95,3 @@ trix-editor {
     border: none;
     font-size: x-small;
 }
-
-.search-button {
-    position: absolute;
-    top: 3px;
-    right: .4em;
-    border: none;
-    background: none;
-    box-shadow: none;
-}
-
-

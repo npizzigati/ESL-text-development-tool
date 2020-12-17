@@ -72,11 +72,11 @@ $(trixElement).on('mouseup', () => {
   if (searchContainer.is(":hidden")) {
     return;
   }
+  hideSearchContainer();
   // The caret position of the click is not immediately
   // registered by trix, so we have to wait a fraction of a second
   setTimeout(function() {
     let originalCaretPos = trixEditor.getSelectedRange();
-    hideSearchContainer();
     mainSearch.clearHighlighting();
     trixEditor.setSelectedRange(originalCaretPos);
   }, 200);
