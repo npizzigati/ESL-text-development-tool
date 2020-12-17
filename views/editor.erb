@@ -7,16 +7,22 @@
     <link rel="stylesheet" href="/css/trix.css">
     <link rel="stylesheet" href="/css/main.css">
     <script>var inflections_map = <%= @inflections_map %></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="/js/trix.js"></script>
     <script type="text/javascript" src="/js/editor.js" defer></script>
   </head>
 
   <body>
-    <div class="searchBorder">
-      <input id="searchBox" class="searchBox" name="searchText">
-      <button id="searchUp" class="searchArrow"> &#9650;</button>
-      <button id="searchDown" class="searchArrow">&#9660;</button>
+    <div class="editing-area">
+      <button class="search-button" id="main-search-button">&#x1F50E</button> 
+      <div class="search-container">
+        <input id="search-box" class="search-box" name="searchText">
+        <div class="search-arrow-button-container">
+          <button id="search-up" class="search-arrow">&#8593;</button>
+          <button id="search-down" class="search-arrow">&#8595;</button>
+        </div>
+      </div>
+      <trix-editor></trix-editor>
     </div>
-    <trix-editor></trix-editor>
   </body>
 </html>
