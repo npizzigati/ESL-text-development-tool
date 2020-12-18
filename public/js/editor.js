@@ -31,9 +31,14 @@ Trix.config.textAttributes.searchHighlight = {
 
 searchContainer.hide();
 
+function isEscape(key) {
+  return key === "Escape" || key === "Esc";
+}
+
 $(trixElement).on('keydown', event => {
   // Also need to account for other non letter keys, like Windows
   // key, which do not start a word.
+
   if (!wordInProgress && !isSeparator(event.key)) {
     console.log('word in progress');
     wordInProgress = true;
@@ -68,7 +73,7 @@ let mainSearch = {
   }
 };
 
-$(trixElement).on('mouseup', () => {
+const exitSearch = function() {
   if (searchContainer.is(":hidden")) {
     return;
   }
@@ -80,22 +85,23 @@ $(trixElement).on('mouseup', () => {
     mainSearch.clearHighlighting();
     trixEditor.setSelectedRange(originalCaretPos);
   }, 200);
-});
+}
 
-// trixElement.addEventListener('click', () => {
-//   if (searchContainer.is(":hidden")) {
-//     return;
-//   }
-//   hideSearchContainer();
-  
-//   mainSearch.clearHighlighting();
-// }, false);
+$(trixElement).on('mouseup', () => {
+  exitSearch();
+});
 
 mainSearchButton.on('click', () => {
   showSearchContainer();
 });
 
-searchBox.on('keyup', () => {
+searchBox.on('keyup', event => {
+  // Exit search if escape pressed
+  if (isEscape(event.key) && searchContainer.is(':visible')) {
+    exitSearch();
+    return;
+  }
+
   mainSearch.clearHighlighting();
   console.log('key entered in search box');
   console.log(`searchBox.value: ${searchBox.val()}`);
