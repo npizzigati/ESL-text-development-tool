@@ -6,11 +6,18 @@ const wordSeparators = [' ', '.', '!', '?', '-', ':', ';', 'Enter'];
 const mainSearchButton = $('#main-search-button');
 const searchBox = $('#search-box');
 const searchContainer = $('.search-container');
-let wordStart;
-let wordEnd;
-let word;
-let wordInProgress = false;
-let trixSearchUnderway = false;
+
+const fullTextHistory = {
+  latest: '',
+  previous: '',
+  removeEndingNewLine: function(str) {
+    return str.replace(/\n$/g, '');
+  },
+  update: function() {
+    this.previous = this.latest;
+    this.latest = this.removeEndingNewLine(trixEditor.getDocument().toString());
+  }
+}
 
 // Add new HTML tag for words in list
 class NeilsListMatch extends HTMLElement {}
@@ -29,36 +36,172 @@ Trix.config.textAttributes.searchHighlight = {
   inheritable: true
 };
 
+function last(arr) {
+  return arr[arr.length - 1]
+}
+
+function isEmpty(arr) {
+  return arr.length == 0;
+}
+
 searchContainer.hide();
 
 function isEscape(key) {
   return key === "Escape" || key === "Esc";
 }
 
-$(trixElement).on('keydown', event => {
-  // Also need to account for other non letter keys, like Windows
-  // key, which do not start a word.
+function isWordCharacter(character) {
+  return character.search(/[a-zA-Z']/) != -1;
+}
 
-  if (!wordInProgress && !isSeparator(event.key)) {
-    console.log('word in progress');
-    wordInProgress = true;
-    wordStart = trixEditor.getSelectedRange()[0];
-  } else if (isSeparator(event.key)) {
-    console.log('word not in progress');
-    wordInProgress = false;
-    wordEnd = trixEditor.getSelectedRange()[0];
-    console.log(`wordStart: ${wordStart}, wordEnd: ${wordEnd}`);
-    word = retrieveWord(wordStart, wordEnd); 
-    console.log(`word:..${word}..`);
-    if (isInList(word)) {
-      markListWord(wordStart, wordEnd);
+function retrieveWord(fullText, caretPosition) {
+  let wordStart, wordEnd;
+  [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
+  console.log(`wordStart and wordEnd from inside retrieveWord: ${wordStart}, ${wordEnd}`);
+  return fullText.slice(wordStart, wordEnd + 1);
+}
+
+function retrieveWordCoordinates(fullText, caretPosition) {
+  const wordStart = determineWordStart(fullText, caretPosition);
+  const wordEnd = determineWordEnd(fullText, caretPosition);
+  return [wordStart, wordEnd];
+}
+
+function determineWordStart(fullText, caretPosition) {
+  if (fullText[caretPosition] === ' ') {
+    return null;
+  }
+  let index = caretPosition;
+  while (isWordCharacter(fullText[index]) && index > 0) {
+    index -= 1;
+  }
+  const wordStart = (index == 0) ? index : index + 1;
+  return wordStart;
+}
+
+function determineWordEnd(fullText, caretPosition) {
+  if (fullText[caretPosition] === ' ') {
+    return null;
+  }
+  let index = caretPosition;
+  let fullTextLength = fullText.length;
+  while (index < fullTextLength &&
+         isWordCharacter(fullText[index])) {
+    index += 1;
+  }
+  const wordEnd = index - 1;
+  return wordEnd;
+}
+
+const operations = {
+  processOperation: function() {
+    [this.text, this.operation, this.indices] = this.getDelta();
+    console.log(this.text, this.operation, this.indices);
+    // if (this.text.length === 1) {
+    if (this.operation === 'insertion') {
+      this.processOneCharacterInsertion();
+    } else {
+      this.processOneCharacterDeletion();
+    }
+    // }
+  },
+  processOneCharacterInsertion: function() {
+    if (isWordCharacter(this.text) || this.indices.endIndex < 2) {
+      return;
+    }
+    // Set caret position to end of previous word
+    const caretPosition = this.indices.endIndex - 2;
+    const fullText = fullTextHistory.latest;
+    let wordStart, wordEnd;
+    [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
+    const word = retrieveWord(fullText, caretPosition); 
+    console.log(`word: "${word}"`);
+    if (listMarker.isInList(word)) {
+      listMarker.markListWord(wordStart, wordEnd + 1);
+    }
+  },
+  processOneCharacterDeletion: function() {
+    if (!isWordCharacter(this.text) || this.indices.startIndex === 0) {
+      return;
+    }
+
+    const fullText = fullTextHistory.latest;
+    const caretPosition = this.indices.startIndex - 1
+
+    // Do nothing if caretPosition falls on non-word character 
+    if (!isWordCharacter(fullText[caretPosition])) {
+      return;
+    }
+
+    let wordStart, wordEnd;
+    [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
+    const word = retrieveWord(fullText, caretPosition); 
+    console.log(`word: "${word}"`);
+    if (!listMarker.isInList(word)) {
+      listMarker.unmarkListWord(wordStart, wordEnd + 1);
+    }
+  },
+  getDelta: function() {
+    const latest = fullTextHistory.latest;
+    const previous = fullTextHistory.previous;
+    if (latest === previous) {
+      return;
+    }
+    const latestLength = latest.length;
+    const previousLength = previous.length;
+    const deltaLength = Math.abs(latestLength - previousLength); 
+    let startIndex, endIndex, text, indices;
+
+    if (latestLength > previousLength) {
+      endIndex = trixEditor.getSelectedRange()[0] 
+      startIndex = endIndex - deltaLength;
+      text = fullTextHistory.latest.slice(startIndex, endIndex);
+      indices = {
+        startIndex: startIndex,
+        endIndex: endIndex
+      }
+      return [text, 'insertion', indices];
+    } else {
+      startIndex = trixEditor.getSelectedRange()[0] 
+      endIndex = startIndex + deltaLength;
+      text = fullTextHistory.previous.slice(startIndex, endIndex);
+      indices = {
+        startIndex: startIndex,
+        endIndex: endIndex
+      }
+      return [text, 'deletion', indices];
     }
   }
+  
+};
+
+function isSelection(caretPositionArray) {
+  caretPositionArray[0] !== caretPositionArray[1];
+}
+
+$(trixElement).on('trix-change', event => {
+  fullTextHistory.update();
+
+  // It apparenty takes a moment for the fullTextHistory to update
+  setTimeout( () => {
+    // Do nothing if update triggered by formatting change
+    if (fullTextHistory.latest == fullTextHistory.previous) {
+      return;
+    }
+    operations.processOperation();
+  }, 20);
+
 });
 
-
-let mainSearch = {
+const mainSearch = {
   highlightedRanges: [],
+  previousHighlightStart: null,
+  setPreviousHighlightStart: function() {
+    if (isEmpty(this.highlightedRanges)) {
+      return;
+    }
+    this.previousHighlightStart = last(this.highlightedRanges)[0];
+  },
   searcher: null,
   clearHighlighting: function() {
     if (this.highlightedRanges.length === 0) {
@@ -84,7 +227,7 @@ const exitSearch = function() {
     let originalCaretPos = trixEditor.getSelectedRange();
     mainSearch.clearHighlighting();
     trixEditor.setSelectedRange(originalCaretPos);
-  }, 200);
+  }, 100);
 }
 
 $(trixElement).on('mouseup', () => {
@@ -102,6 +245,7 @@ searchBox.on('keyup', event => {
     return;
   }
 
+  mainSearch.setPreviousHighlightStart();
   mainSearch.clearHighlighting();
   console.log('key entered in search box');
   console.log(`searchBox.value: ${searchBox.val()}`);
@@ -132,19 +276,22 @@ function Searcher(searchString) {
 
   this.nextMatchUp = function() {
     this.matchNumber = (this.matchNumber + (this.matches.length - 1)) % this.matches.length;
+    mainSearch.setPreviousHighlightStart();
     mainSearch.clearHighlighting(this.fullText);
     searchBox.focus();
     this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
-    scrollToMatch(this.matches[this.matchNumber]);
+    // if (last(mainSearch.highlightedRanges)[1]).includes
+    this.scrollToMatch(this.matches[this.matchNumber]);
     searchBox.focus();
   }
 
   this.nextMatchDown = function() {
     this.matchNumber = (this.matchNumber + 1) % this.matches.length;
     console.log(this.matchNumber);
+    mainSearch.setPreviousHighlightStart();
     mainSearch.clearHighlighting(this.fullText);
     this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
-    scrollToMatch(this.matches[this.matchNumber]);
+    this.scrollToMatch(this.matches[this.matchNumber]);
     searchBox.focus();
   }
 
@@ -162,14 +309,14 @@ function Searcher(searchString) {
     if ($('.search-arrow').hasClass('activated-search-arrow')) {
       $('.search-arrow').removeClass('activated-search-arrow');
     }
-    this.matches = findMatches(this.fullText, this.searchString); 
+    this.matches = this.findMatches(this.fullText, this.searchString); 
 
     if (this.matches.length == 0) {
       return;
     }
 
     this.highlightMatch(this.matches[0], this.searchString.length);
-    scrollToMatch(this.matches[0]);
+    this.scrollToMatch(this.matches[0]);
     searchBox.focus();
 
     if (this.matches.length > 1) {
@@ -180,51 +327,56 @@ function Searcher(searchString) {
       $('#search-up').on('click', this.nextMatchUp.bind(this));
     }
   }
+
+  this.findMatches = function(text, searchString, startIndex = 0) {
+    let fragment = text.slice(startIndex);
+    let fragmentMatchIndex = fragment.indexOf(searchString);
+    if (fragmentMatchIndex == -1 || searchString == '') {
+      return [];
+    }
+    let fullTextMatchIndex = fragmentMatchIndex + startIndex;
+    startIndex = fullTextMatchIndex + 1
+    return [fullTextMatchIndex].concat(this.findMatches(text,
+                                          searchString,
+                                          startIndex));
+  }
+
+  this.scrollToMatch = function(startIndex) {
+    // No need to scroll if building on previous match
+    if (startIndex === mainSearch.previousHighlightStart) {
+      return;
+    }
+    let highlightedElement = document.querySelector('mark');
+    highlightedElement.scrollIntoView({behavior: 'auto',
+                                      block: 'center'});
+  }
 } 
 
-function isSeparator(key) {
-  return wordSeparators.includes(key);
-}
+const listMarker = {
+  isInList: function(word) {
+    return Object.keys(inflections_map).includes(word);
+  },
 
-function isInList(word) {
-  return Object.keys(inflections_map).includes(word);
-}
+  // selection ends just before the start of last index
+  markListWord: function(startIndex, endIndex) {
+    this.startIndex = startIndex;
+    this.endIndex = endIndex;
+    // setTimeout( () => {
+      console.log('marking list word');
+      trixEditor.setSelectedRange([startIndex, endIndex]);
+      trixEditor.activateAttribute('neilsListMatch');
+      trixEditor.setSelectedRange([endIndex + 1, endIndex + 1]);
+      // to prevent list-word formatting from continuing as we type next word
+      trixEditor.deactivateAttribute('neilsListMatch');
+    // }, 10);
+  },
 
-function findMatches(text, searchString,
-                     startIndex = 0) {
-  let fragment = text.slice(startIndex);
-  let fragmentMatchIndex = fragment.indexOf(searchString);
-  if (fragmentMatchIndex == -1 || searchString == '') {
-    return [];
+  unmarkListWord: function(startIndex, endIndex) {
+    console.log('unmarking list word');
+    trixEditor.setSelectedRange([startIndex,
+                                endIndex]);
+    trixEditor.deactivateAttribute('neilsListMatch');
+    trixEditor.setSelectedRange([endIndex, endIndex]);
   }
-  let fullTextMatchIndex = fragmentMatchIndex + startIndex;
-  startIndex = fullTextMatchIndex + 1
-  return [fullTextMatchIndex].concat(findMatches(text,
-                                         searchString,
-                                         startIndex));
-}
-
-function scrollToMatch(startIndex) {
-  let highlightedElement = document.querySelector('mark');
-  highlightedElement.scrollIntoView({behavior: 'auto',
-                                     block: 'center'});
-}
-
-function retrieveWord(wordStart, wordEnd) {
-  let fullText = trixEditor.getDocument().toString();
-  return fullText.slice(wordStart, wordEnd);
-}
-
-// selection ends just before the start of last index
-function markListWord(startIndex, endIndex) {
-  console.log('marking list word');
-  trixEditor.setSelectedRange([startIndex,
-                               endIndex]);
-  trixEditor.activateAttribute('neilsListMatch');
-
-  // to prevent list-word formatting from continuing as we type next word
-  trixEditor.setSelectedRange([endIndex,
-                               endIndex]);
-  trixEditor.deactivateAttribute('neilsListMatch');
 }
 
