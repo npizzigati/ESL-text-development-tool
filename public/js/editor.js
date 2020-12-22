@@ -54,9 +54,9 @@ function isWordCharacter(character) {
   return character.search(/[a-zA-Z']/) != -1;
 }
 
-function retrieveWord(fullText, caretPosition) {
+function retrieveWord(fullText, wordEndPoints) {
   let wordStart, wordEnd;
-  [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
+  [wordStart, wordEnd] = wordEndPoints;
   console.log(`wordStart and wordEnd from inside retrieveWord: ${wordStart}, ${wordEnd}`);
   return fullText.slice(wordStart, wordEnd + 1);
 }
@@ -97,14 +97,41 @@ const operations = {
   processOperation: function() {
     [this.text, this.operation, this.indices] = this.getDelta();
     console.log(this.text, this.operation, this.indices);
-    // if (this.text.length === 1) {
-    if (this.operation === 'insertion') {
+    const length = this.text.length;
+    if (this.operation === 'insertion' && length === 1) {
       this.processOneCharacterInsertion();
+    } else if (this.operation === 'insertion' && length > 1) {
+      this.processMultipleCharacterInsertion();
     } else {
       this.processOneCharacterDeletion();
     }
     // }
   },
+
+  processMultipleCharacterInsertion: function() {
+    const fullText = fullTextHistory.latest;
+    let wordStart, wordEnd, word;
+
+    let index = this.indices.startIndex
+    while (index < this.indices.endIndex) {
+      if (isWordCharacter(fullText[index])) {
+        [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
+        word = retrieveWord(fullText, [wordStart, wordEnd]); 
+
+        console.log(`word: "${word}"`);
+        if (listMarker.isInList(word)) {
+          listMarker.markListWord(wordStart, wordEnd + 1);
+        }
+
+        index = wordEnd
+      }
+      index += 1
+    }
+  },
+
+  // Need to also handle the case where a space or other
+  // character is inserted at the start of middle of a word,
+  // creating a new word or words or disassembling words.
   processOneCharacterInsertion: function() {
     if (isWordCharacter(this.text) || this.indices.endIndex < 2) {
       return;
@@ -114,7 +141,7 @@ const operations = {
     const fullText = fullTextHistory.latest;
     let wordStart, wordEnd;
     [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
-    const word = retrieveWord(fullText, caretPosition); 
+    const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     console.log(`word: "${word}"`);
     if (listMarker.isInList(word)) {
       listMarker.markListWord(wordStart, wordEnd + 1);
@@ -135,7 +162,7 @@ const operations = {
 
     let wordStart, wordEnd;
     [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
-    const word = retrieveWord(fullText, caretPosition); 
+    const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     console.log(`word: "${word}"`);
     if (!listMarker.isInList(word)) {
       listMarker.unmarkListWord(wordStart, wordEnd + 1);
