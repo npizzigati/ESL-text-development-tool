@@ -98,6 +98,7 @@ function determineWordEnd(fullText, caretPosition) {
 
 const operations = {
   processOperation: function() {
+    window.clearTimeout(this.operationTimeoutID);
     [this.text, this.operation, this.indices] = this.getDelta();
     console.log(this.text, this.operation, this.indices);
     const length = this.text.length;
@@ -148,14 +149,16 @@ const operations = {
     const characterAfterInsertion = fullText[this.indices.endIndex];
     let wordStart, wordEnd;
     
-    if ((isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) ||
-        (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion))) {
+    // if ((isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) ||
+    //     (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion))) {
+    //   return;
+    // }
+
+    if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion)) {
       return;
     }
 
-    // Set caret position to end of previous word if caret was at
-    // end of word
-    if (this.indices.startIndex !== 0) {
+    if (this.indices.startIndex !== 0 && !isWordCharacter(this.text)) {
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex - 1);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       console.log(`word: "${word}"`);
@@ -166,10 +169,26 @@ const operations = {
       }
     }
 
+    if (isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) {
+      this.operationTimeoutID = window.setTimeout( () => {
+        let wordStart, wordEnd;
+        const fullText = fullTextHistory.latest;
+        [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex);
+        const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+        console.log(`word: "${word}"`);
+        const caretPositionBeforeMarking = trixEditor.getSelectedRange();
+        if (listMarker.isInList(word)) {
+          listMarker.markListWord(wordStart, wordEnd + 1);
+        } else {
+          listMarker.unmarkListWord(wordStart, wordEnd + 1);
+        }
+        trixEditor.setSelectedRange(caretPositionBeforeMarking);
+      }, 500);
+    // } else if (!isWordCharacter(this.text) || !isWordCharacter(characterBeforeInsertion)) {
+    } else {
     // For when a space is inserted in middle of word, of when
     // letter interted at beginning of word, check word after
     // insertion too
-    if (!isWordCharacter(this.text) || !isWordCharacter(characterBeforeInsertion)) {
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.endIndex);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       console.log(`word: "${word}"`);
@@ -178,11 +197,12 @@ const operations = {
       } else {
         listMarker.unmarkListWord(wordStart, wordEnd + 1);
       }
+
+      if (trixEditor.getSelectedRange()[0] !== this.indices.endIndex) {
+        trixEditor.setSelectedRange(this.indices.endIndex);
+      }
     }
 
-    if (trixEditor.getSelectedRange() !== [this.indices.endIndex, this.indices.endIndex]) {
-      trixEditor.setSelectedRange(this.indices.endIndex);
-    }
   },
 
   processDeletion: function() {
