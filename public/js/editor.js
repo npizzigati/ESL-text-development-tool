@@ -51,6 +51,9 @@ function isEscape(key) {
 }
 
 function isWordCharacter(character) {
+  if (!character) {
+    return false
+  }
   return character.search(/[a-zA-Z']/) != -1;
 }
 
@@ -103,11 +106,13 @@ const operations = {
     } else if (this.operation === 'insertion' && length > 1) {
       this.processMultipleCharacterInsertion();
     } else {
-      this.processOneCharacterDeletion();
+      this.processDeletion();
     }
     // }
   },
 
+  // Cursor shouldn't go to end on multichar insertion when
+  // marking changes on last word
   processMultipleCharacterInsertion: function() {
     const fullText = fullTextHistory.latest;
     let wordStart, wordEnd, word;
@@ -118,56 +123,98 @@ const operations = {
         [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
         word = retrieveWord(fullText, [wordStart, wordEnd]); 
 
-        console.log(`word: "${word}"`);
         if (listMarker.isInList(word)) {
           listMarker.markListWord(wordStart, wordEnd + 1);
+        } else {
+          // I should really check if word is marked before unmarking it
+          // if it seems like this is running slow.
+          listMarker.unmarkListWord(wordStart, wordEnd + 1);
         }
-
         index = wordEnd
       }
       index += 1
     }
+
+    trixEditor.setSelectedRange(this.indices.endIndex);
   },
 
   // Need to also handle the case where a space or other
   // character is inserted at the start of middle of a word,
   // creating a new word or words or disassembling words.
+
   processOneCharacterInsertion: function() {
-    if (isWordCharacter(this.text) || this.indices.endIndex < 2) {
+    const fullText = fullTextHistory.latest;
+    const characterBeforeInsertion = (this.startIndex === 0) ? null : fullText[this.indices.startIndex - 1];
+    const characterAfterInsertion = fullText[this.indices.endIndex];
+    let wordStart, wordEnd;
+    
+    if ((isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) ||
+        (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion))) {
       return;
     }
-    // Set caret position to end of previous word
-    const caretPosition = this.indices.endIndex - 2;
-    const fullText = fullTextHistory.latest;
-    let wordStart, wordEnd;
-    [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
-    const word = retrieveWord(fullText, [wordStart, wordEnd]); 
-    console.log(`word: "${word}"`);
-    if (listMarker.isInList(word)) {
-      listMarker.markListWord(wordStart, wordEnd + 1);
+
+    // Set caret position to end of previous word if caret was at
+    // end of word
+    if (this.indices.startIndex !== 0) {
+      [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex - 1);
+      const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      console.log(`word: "${word}"`);
+      if (listMarker.isInList(word)) {
+        listMarker.markListWord(wordStart, wordEnd + 1);
+      } else {
+        listMarker.unmarkListWord(wordStart, wordEnd + 1);
+      }
+    }
+
+    // For when a space is inserted in middle of word, of when
+    // letter interted at beginning of word, check word after
+    // insertion too
+    if (!isWordCharacter(this.text) || !isWordCharacter(characterBeforeInsertion)) {
+      [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.endIndex);
+      const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      console.log(`word: "${word}"`);
+      if (listMarker.isInList(word)) {
+        listMarker.markListWord(wordStart, wordEnd + 1);
+      } else {
+        listMarker.unmarkListWord(wordStart, wordEnd + 1);
+      }
+    }
+
+    if (trixEditor.getSelectedRange() !== [this.indices.endIndex, this.indices.endIndex]) {
+      trixEditor.setSelectedRange(this.indices.endIndex);
     }
   },
-  processOneCharacterDeletion: function() {
-    if (!isWordCharacter(this.text) || this.indices.startIndex === 0) {
+
+  processDeletion: function() {
+    const fullText = fullTextHistory.latest;
+    const characterBeforeDeletion = fullText[this.indices.startIndex - 1];
+    let caretPosition;
+
+    if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeDeletion)) {
       return;
     }
 
-    const fullText = fullTextHistory.latest;
-    const caretPosition = this.indices.startIndex - 1
-
-    // Do nothing if caretPosition falls on non-word character 
-    if (!isWordCharacter(fullText[caretPosition])) {
-      return;
+    if (this.indices.startIndex !== 0 && isWordCharacter(fullText[this.indices.startIndex - 1])) {
+      caretPosition = this.indices.startIndex - 1;
+    } else {
+      caretPosition = this.indices.startIndex;
     }
 
     let wordStart, wordEnd;
     [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
     const word = retrieveWord(fullText, [wordStart, wordEnd]); 
-    console.log(`word: "${word}"`);
-    if (!listMarker.isInList(word)) {
+    console.log(`word: ${word}`);
+
+    // Shouldn't check if word is a non-word character
+    if (listMarker.isInList(word)) {
+      console.log('word in list');
+      listMarker.markListWord(wordStart, wordEnd + 1);
+    } else {
       listMarker.unmarkListWord(wordStart, wordEnd + 1);
     }
+      trixEditor.setSelectedRange(this.indices.startIndex);
   },
+
   getDelta: function() {
     const latest = fullTextHistory.latest;
     const previous = fullTextHistory.previous;
@@ -388,14 +435,10 @@ const listMarker = {
   markListWord: function(startIndex, endIndex) {
     this.startIndex = startIndex;
     this.endIndex = endIndex;
-    // setTimeout( () => {
-      console.log('marking list word');
-      trixEditor.setSelectedRange([startIndex, endIndex]);
-      trixEditor.activateAttribute('neilsListMatch');
-      trixEditor.setSelectedRange([endIndex + 1, endIndex + 1]);
-      // to prevent list-word formatting from continuing as we type next word
-      trixEditor.deactivateAttribute('neilsListMatch');
-    // }, 10);
+    console.log('marking list word');
+    trixEditor.setSelectedRange([startIndex, endIndex]);
+    trixEditor.activateAttribute('neilsListMatch');
+    trixEditor.setSelectedRange(endIndex + 1);
   },
 
   unmarkListWord: function(startIndex, endIndex) {
@@ -403,7 +446,6 @@ const listMarker = {
     trixEditor.setSelectedRange([startIndex,
                                 endIndex]);
     trixEditor.deactivateAttribute('neilsListMatch');
-    trixEditor.setSelectedRange([endIndex, endIndex]);
+    trixEditor.setSelectedRange(endIndex + 1);
   }
 }
-

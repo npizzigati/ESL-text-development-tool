@@ -25,6 +25,7 @@ trix-editor {
     min-height: 5em;
     max-height: 10em;
     padding: 1em 0.6em;
+    caret-color: black;
 }
 
 .editing-area {
