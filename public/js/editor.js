@@ -117,21 +117,18 @@ const operations = {
     console.log(this.text, this.operation, this.indices);
     const length = this.text.length;
     if (this.operation === 'insertion' && length === 1) {
-      this.processPossiblePunctuation();
+      this.processPossiblePunctuationCharacter(this.text, this.indices.startIndex);
       this.processOneCharacterInsertion();
     } else if (this.operation === 'insertion' && length > 1) {
       this.processMultipleCharacterInsertion();
     } else {
       this.processDeletion();
     }
-    // }
   },
 
-  processPossiblePunctuation() {
-    if (isPunctuation(this.text)) {
-      const startIndex = this.indices.startIndex;
-      const endIndex = this.indices.endIndex;
-      this.formatPunctuation(startIndex, endIndex);
+  processPossiblePunctuationCharacter(character, index) {
+    if (isPunctuation(character)) {
+      this.formatPunctuation(index, index + 1);
     }
   },
 
@@ -161,6 +158,8 @@ const operations = {
           listMarker.unmarkListWord(wordStart, wordEnd + 1);
         }
         index = wordEnd
+      } else {
+        this.processPossiblePunctuationCharacter(fullText[index], index);
       }
       index += 1
     }
