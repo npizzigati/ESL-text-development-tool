@@ -112,8 +112,6 @@ const operations = {
     // }
   },
 
-  // Cursor shouldn't go to end on multichar insertion when
-  // marking changes on last word
   processMultipleCharacterInsertion: function() {
     const fullText = fullTextHistory.latest;
     let wordStart, wordEnd, word;
@@ -127,21 +125,14 @@ const operations = {
         if (listMarker.isInList(word)) {
           listMarker.markListWord(wordStart, wordEnd + 1);
         } else {
-          // I should really check if word is marked before unmarking it
-          // if it seems like this is running slow.
           listMarker.unmarkListWord(wordStart, wordEnd + 1);
         }
         index = wordEnd
       }
       index += 1
     }
-
     trixEditor.setSelectedRange(this.indices.endIndex);
   },
-
-  // Need to also handle the case where a space or other
-  // character is inserted at the start of middle of a word,
-  // creating a new word or words or disassembling words.
 
   processOneCharacterInsertion: function() {
     const fullText = fullTextHistory.latest;
@@ -149,11 +140,6 @@ const operations = {
     const characterAfterInsertion = fullText[this.indices.endIndex];
     let wordStart, wordEnd;
     
-    // if ((isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) ||
-    //     (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion))) {
-    //   return;
-    // }
-
     if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion)) {
       return;
     }
@@ -184,7 +170,6 @@ const operations = {
         }
         trixEditor.setSelectedRange(caretPositionBeforeMarking);
       }, 500);
-    // } else if (!isWordCharacter(this.text) || !isWordCharacter(characterBeforeInsertion)) {
     } else {
     // For when a space is inserted in middle of word, of when
     // letter interted at beginning of word, check word after
@@ -192,15 +177,14 @@ const operations = {
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.endIndex);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       console.log(`word: "${word}"`);
+      const caretPositionBeforeMarking = trixEditor.getSelectedRange();
       if (listMarker.isInList(word)) {
         listMarker.markListWord(wordStart, wordEnd + 1);
       } else {
         listMarker.unmarkListWord(wordStart, wordEnd + 1);
       }
 
-      if (trixEditor.getSelectedRange()[0] !== this.indices.endIndex) {
-        trixEditor.setSelectedRange(this.indices.endIndex);
-      }
+      trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }
 
   },
@@ -225,7 +209,6 @@ const operations = {
     const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     console.log(`word: ${word}`);
 
-    // Shouldn't check if word is a non-word character
     if (listMarker.isInList(word)) {
       console.log('word in list');
       listMarker.markListWord(wordStart, wordEnd + 1);
