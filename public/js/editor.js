@@ -479,6 +479,8 @@ const listMarker = {
     console.log('marking list word');
     trixEditor.setSelectedRange([startIndex, endIndex]);
     trixEditor.activateAttribute('neilsListMatch');
+
+    // TODO: Is it necessary to set the caret position here?
     trixEditor.setSelectedRange(endIndex + 1);
   },
 
