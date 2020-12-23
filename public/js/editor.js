@@ -430,7 +430,11 @@ function Searcher(searchString) {
 } 
 
 const listMarker = {
+  neverOnList: ['i'],
   isInList: function(word) {
+    if (this.neverOnList.includes(word)) {
+      return false;
+    }
     return Object.keys(inflections_map).includes(word);
   },
 
