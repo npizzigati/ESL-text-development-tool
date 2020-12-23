@@ -435,6 +435,7 @@ const listMarker = {
     if (this.neverOnList.includes(word)) {
       return false;
     }
+    word = word.toLowerCase();
     return Object.keys(inflections_map).includes(word);
   },
 
