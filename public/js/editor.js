@@ -171,9 +171,9 @@ const operations = {
         trixEditor.setSelectedRange(caretPositionBeforeMarking);
       }, 500);
     } else {
-    // For when a space is inserted in middle of word, of when
-    // letter interted at beginning of word, check word after
-    // insertion too
+      // For when a space is inserted in middle of word, of when
+      // letter interted at beginning of word, check word after
+      // insertion too
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.endIndex);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       console.log(`word: "${word}"`);
