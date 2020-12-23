@@ -20,6 +20,10 @@ neils-list-match {
     color: black;
 }
 
+neils-punctuation {
+    color: black;
+}
+
 trix-editor {
     color: lightgrey;
     min-height: 5em;

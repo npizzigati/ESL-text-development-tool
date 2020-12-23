@@ -23,11 +23,21 @@ const fullTextHistory = {
 class NeilsListMatch extends HTMLElement {}
 customElements.define('neils-list-match', NeilsListMatch);
 
+// Add new HTML tag for punctuation
+class NeilsPunctuation extends HTMLElement {}
+customElements.define('neils-punctuation', NeilsPunctuation);
+
 
 // Add Trix format for marking list words
 Trix.config.textAttributes.neilsListMatch = {
   tagName: 'neils-list-match',
   inheritable: true
+};
+
+// Add Trix format for formatting punctuation
+Trix.config.textAttributes.neilsPunctuation = {
+  tagName: 'neils-punctuation',
+  inheritable: false
 };
 
 // Add Trix format for highlighting search matches
@@ -42,6 +52,10 @@ function last(arr) {
 
 function isEmpty(arr) {
   return arr.length == 0;
+}
+
+function isPunctuation(text) {
+  return text.search(/[.,;:~!@#$%&*()_+=|/?<>"'{}[\-\^\]\\]/) >= 0;
 }
 
 searchContainer.hide();
@@ -103,6 +117,7 @@ const operations = {
     console.log(this.text, this.operation, this.indices);
     const length = this.text.length;
     if (this.operation === 'insertion' && length === 1) {
+      this.processPossiblePunctuation();
       this.processOneCharacterInsertion();
     } else if (this.operation === 'insertion' && length > 1) {
       this.processMultipleCharacterInsertion();
@@ -110,6 +125,24 @@ const operations = {
       this.processDeletion();
     }
     // }
+  },
+
+  processPossiblePunctuation() {
+    if (isPunctuation(this.text)) {
+      const startIndex = this.indices.startIndex;
+      const endIndex = this.indices.endIndex;
+      this.formatPunctuation(startIndex, endIndex);
+    }
+  },
+
+  formatPunctuation(startIndex, endIndex) {
+    console.log('formatting punctuation');
+    const initialCaretPosition = trixEditor.getSelectedRange();
+
+    trixEditor.setSelectedRange([startIndex, endIndex]);
+    trixEditor.activateAttribute('neilsPunctuation');
+
+    trixEditor.setSelectedRange(initialCaretPosition);
   },
 
   processMultipleCharacterInsertion: function() {
