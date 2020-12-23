@@ -172,7 +172,7 @@ const operations = {
     const characterBeforeInsertion = (this.startIndex === 0) ? null : fullText[this.indices.startIndex - 1];
     const characterAfterInsertion = fullText[this.indices.endIndex];
     let wordStart, wordEnd;
-    
+
     if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion)) {
       return;
     }
