@@ -26,33 +26,22 @@ neils-punctuation {
 
 trix-editor {
     color: lightgrey;
-    min-height: 5em;
-    max-height: 10em;
-    padding: 1em 0.6em;
     caret-color: black;
+    flex: 1 0 700px;
 }
 
-.editing-area {
-    position: relative;
-    min-height: 5em;
-    max-height: 10em;
+.official-list {
+    flex: 0 0 200px;
+    border: 1px solid #bbb;
+    margin-left: 4px;
+    overflow: auto scroll;
 }
 
-.search-button-container {
-    width: 13px;
-    height: 13px;
-    position: absolute;
-    top: 3px;
-    right: .8em;
+.layout-row1 {
+    display: flex;
+    height: 500px;
 }
 
-.search-button {
-    max-width: 100%;
-    height: auto;
-    /* border: none; */
-    /* background: none; */
-    /* box-shadow: none; */
-}
 
 .search-arrow-button-container {
   display: flex;
@@ -88,12 +77,22 @@ trix-editor {
     background: darkgray;
 }
 
+.search-icon-container {
+    margin: 5px 0 4px 0;
+    width: 13px;
+    height: 13px;
+}
 
-.search-container {
+.search-icon {
+    max-width: 100%;
+    height: auto;
+    /* border: none; */
+    /* background: none; */
+    /* box-shadow: none; */
+}
+
+.search-box-container {
     display: flex;
-    position: absolute;
-    top: 3px;
-    right: .8em;
     border: 1px solid #bbb;
     border-radius: 0px;
     width: -moz-max-content;
@@ -102,7 +101,7 @@ trix-editor {
     height: -moz-max-content;
     height: -webkit-max-content;
     height: max-content;
-    margin: 0;
+    margin: 1px 0 2px 0;
     padding: 0;
 }
 
@@ -112,3 +111,7 @@ trix-editor {
     outline: none;
 }
 
+.official-list-count {
+    text-align: right;
+    padding-right: 5px;
+}

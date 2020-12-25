@@ -3,9 +3,10 @@
 const trixElement = document.querySelector("trix-editor")
 const trixEditor = trixElement.editor;
 const wordSeparators = [' ', '.', '!', '?', '-', ':', ';', 'Enter'];
-const mainSearchButton = $('#main-search-button');
+const searchIconContainer = $('.search-icon-container');
 const searchBox = $('#search-box');
-const searchContainer = $('.search-container');
+const searchBoxContainer = $('.search-box-container');
+const officialList = $('.official-list');
 
 const fullTextHistory = {
   latest: '',
@@ -58,7 +59,7 @@ function isPunctuation(text) {
   return text.search(/[.,;:~!@#$%&*()_+=|/?<>"'{}[\-\^\]\\]/) >= 0;
 }
 
-searchContainer.hide();
+searchBoxContainer.hide();
 
 function isEscape(key) {
   return key === "Escape" || key === "Esc";
@@ -326,7 +327,7 @@ const mainSearch = {
 };
 
 const exitSearch = function() {
-  if (searchContainer.is(":hidden")) {
+  if (searchBoxContainer.is(":hidden")) {
     return;
   }
   hideSearchContainer();
@@ -343,13 +344,13 @@ $(trixElement).on('mouseup', () => {
   exitSearch();
 });
 
-mainSearchButton.on('click', () => {
+searchIconContainer.on('click', () => {
   showSearchContainer();
 });
 
 searchBox.on('keyup', event => {
   // Exit search if escape pressed
-  if (isEscape(event.key) && searchContainer.is(':visible')) {
+  if (isEscape(event.key) && searchBoxContainer.is(':visible')) {
     exitSearch();
     return;
   }
@@ -366,13 +367,13 @@ searchBox.on('keyup', event => {
 });
 
 function hideSearchContainer() {
-  searchContainer.fadeOut(50);
-  mainSearchButton.fadeIn(100);
+  searchBoxContainer.css('display', 'none');
+  searchIconContainer.css('display', 'block');
 }
 
 function showSearchContainer() {
-  mainSearchButton.hide();
-  searchContainer.fadeIn(100);
+  searchIconContainer.css('display', 'none');
+  searchBoxContainer.css('display', 'flex');
   searchBox.val('');
   searchBox.focus();
 }
