@@ -13,18 +13,19 @@
   </head>
 
   <body>
-    <div class="editing-area">
-      <div class="search-button-container">
-        <input class="search-button" id="main-search-button" type="image" src="/images/search-icon.png"></input> 
+    <div class="search-icon-container">
+      <input class="search-icon" type="image" src="/images/search-icon.png"></input> 
+    </div>
+    <div class="search-box-container">
+      <input id="search-box" class="search-box" name="searchText">
+      <div class="search-arrow-button-container">
+        <button id="search-up" class="search-arrow">&#8593;</button>
+        <button id="search-down" class="search-arrow">&#8595;</button>
       </div>
-      <div class="search-container">
-        <input id="search-box" class="search-box" name="searchText">
-        <div class="search-arrow-button-container">
-          <button id="search-up" class="search-arrow">&#8593;</button>
-          <button id="search-down" class="search-arrow">&#8595;</button>
-        </div>
-      </div>
+    </div>
+    <div class="layout-row1">
       <trix-editor></trix-editor>
+      <div class="official-list"></div>
     </div>
   </body>
 </html>
