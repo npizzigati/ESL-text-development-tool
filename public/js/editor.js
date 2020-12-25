@@ -469,7 +469,7 @@ const listMarker = {
       return false;
     }
     word = word.toLowerCase();
-    return Object.keys(inflections_map).includes(word);
+    return Object.keys(inflectionsMap).includes(word);
   },
 
   // selection ends just before the start of last index
