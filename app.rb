@@ -28,7 +28,10 @@ post '/upload' do
   filename = params[:file][:filename]
   target_path = File.join uploads_path, filename
   retrieve_upload(params, target_path)
-  @inflections_map = extract_inflections(target_path).to_json
+  headwords_array = retrieve_headwords(target_path)
+  headwords_set = remove_duplicates(headwords_array)
+  @headwords_json = headwords_array.to_json
+  @inflections_map_json = extract_inflections(headwords_set).to_json
   erb :editor
 end
 
@@ -51,8 +54,7 @@ def retrieve_upload(params, target_path)
   File.open(target_path, 'wb') { |f| f.write tempfile.read }
 end
 
-def extract_inflections(target_path)
-  headwords = retrieve_headwords(target_path)
+def extract_inflections(headwords)
   inflections_map = {}
 
   File.open('data/inflections.txt') do |f|
@@ -67,13 +69,17 @@ end
 
 def retrieve_headwords(target_path)
   raw_headword_text = retrieve_raw_headword_text(target_path)
-  retrieve_unique_words(raw_headword_text)
+  create_headwords_array(raw_headword_text)
 end
 
 def retrieve_raw_headword_text(target_path)
   File.read(target_path).downcase
 end
 
-def retrieve_unique_words(raw_headword_text)
-  Set.new(raw_headword_text.split("\r\n"))
+def remove_duplicates(headwords_array)
+  Set.new(headwords_array)
+end
+
+def create_headwords_array(raw_headword_text)
+  raw_headword_text.split("\r\n")
 end
