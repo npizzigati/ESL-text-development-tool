@@ -491,3 +491,27 @@ const listMarker = {
     trixEditor.setSelectedRange(endIndex + 1);
   }
 }
+
+const headwordPopulater = {
+  alwaysUppercaseWords: ['i'],
+  populateOfficialList: function() {
+    let count = 1
+    officialList.append(`<table>`);
+    headwords.forEach( headword => {
+      officialList.append('<tr>');
+      officialList.append(`<td class="official-list-count">${count.toString()}</td>`);
+      if (this.alwaysUppercaseWords.includes(headword)) {
+        officialList.append(`<td>${headword.toUpperCase()}</td>`);
+      } else {
+        officialList.append(`<td>${headword}</td>`);
+      }
+      officialList.append('</tr>');
+      count += 1;
+    });
+    officialList.append(`</table>`);
+  }
+}
+
+// Populate official word list with headwords
+headwordPopulater.populateOfficialList();
+
