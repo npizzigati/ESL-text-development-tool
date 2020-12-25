@@ -6,7 +6,10 @@
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/trix.css">
     <link rel="stylesheet" href="/css/main.css">
-    <script>var inflections_map = <%= @inflections_map %></script>
+    <script>
+      const inflectionsMap = <%= @inflections_map_json %>;
+      const headwords = <%= @headwords_json %>;
+    </script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="/js/trix.js"></script>
     <script type="text/javascript" src="/js/editor.js" defer></script>
