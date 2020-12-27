@@ -8,6 +8,8 @@ const searchBox = $('#search-box');
 const searchBoxContainer = $('.search-box-container');
 const officialList = $('.official-list');
 
+// Todo: Don't process spaces or empty string as word in insertion functions
+
 const fullTextHistory = {
   latest: '',
   previous: '',
@@ -75,7 +77,6 @@ function isWordCharacter(character) {
 function retrieveWord(fullText, wordEndPoints) {
   let wordStart, wordEnd;
   [wordStart, wordEnd] = wordEndPoints;
-  console.log(`wordStart and wordEnd from inside retrieveWord: ${wordStart}, ${wordEnd}`);
   return fullText.slice(wordStart, wordEnd + 1);
 }
 
@@ -86,7 +87,9 @@ function retrieveWordCoordinates(fullText, caretPosition) {
 }
 
 function determineWordStart(fullText, caretPosition) {
-  if (fullText[caretPosition] === ' ') {
+  console.log(`inside determineWordStart, letter at caret position: "${fullText[caretPosition]}"`);
+  const startLetter = fullText[caretPosition];
+  if ([' ', '\n'].includes(startLetter) || (typeof startLetter === 'undefined')) {
     return null;
   }
   let index = caretPosition;
@@ -98,7 +101,8 @@ function determineWordStart(fullText, caretPosition) {
 }
 
 function determineWordEnd(fullText, caretPosition) {
-  if (fullText[caretPosition] === ' ') {
+  const startLetter = fullText[caretPosition];
+  if ([' ', '\n'].includes(startLetter) || (typeof startLetter === 'undefined')) {
     return null;
   }
   let index = caretPosition;
@@ -112,10 +116,10 @@ function determineWordEnd(fullText, caretPosition) {
 }
 
 const operations = {
+  // TODO: Refresh counts on carraige return;
   processOperation: function() {
     window.clearTimeout(this.operationTimeoutID);
     [this.text, this.operation, this.indices] = this.getDelta();
-    console.log(this.text, this.operation, this.indices);
     const length = this.text.length;
     if (this.operation === 'insertion' && length === 1) {
       this.processPossiblePunctuationCharacter(this.text, this.indices.startIndex);
@@ -124,6 +128,10 @@ const operations = {
       this.processMultipleCharacterInsertion();
     } else {
       this.processDeletion();
+    }
+
+    if (length > 1) {
+      officialListManager.refreshAllCounts();
     }
   },
 
@@ -134,7 +142,6 @@ const operations = {
   },
 
   formatPunctuation(startIndex, endIndex) {
-    console.log('formatting punctuation');
     const initialCaretPosition = trixEditor.getSelectedRange();
 
     trixEditor.setSelectedRange([startIndex, endIndex]);
@@ -143,20 +150,31 @@ const operations = {
     trixEditor.setSelectedRange(initialCaretPosition);
   },
 
+  // Reset caret formatting and position
+  resetCaret: function(caretPositionBeforeMarking) {
+    trixEditor.setSelectedRange(caretPositionBeforeMarking);
+    if (trixEditor.attributeIsActive('neilsListMatch')) {
+      trixEditor.deactivateAttribute('neilsListMatch');
+    }
+  },
+
   processMultipleCharacterInsertion: function() {
     const fullText = fullTextHistory.latest;
     let wordStart, wordEnd, word;
-
     let index = this.indices.startIndex
+
+
     while (index < this.indices.endIndex) {
       if (isWordCharacter(fullText[index])) {
         [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
         word = retrieveWord(fullText, [wordStart, wordEnd]); 
 
         if (listMarker.isInList(word)) {
-          listMarker.markListWord(wordStart, wordEnd + 1);
+          // listMarker.markListWord(word, wordStart, wordEnd + 1);
+          listMarker.markListWord(word, wordStart, wordEnd);
         } else {
-          listMarker.unmarkListWord(wordStart, wordEnd + 1);
+          // listMarker.unmarkListWord(word, wordStart, wordEnd + 1);
+          listMarker.unmarkListWord(word, wordStart, wordEnd);
         }
         index = wordEnd
       } else {
@@ -164,9 +182,11 @@ const operations = {
       }
       index += 1
     }
-    trixEditor.setSelectedRange(this.indices.endIndex);
+    this.resetCaret(this.indices.endIndex);
   },
 
+  // TODO: Deal with case of headword being counted twice when
+  // stopping slightly before finishing inflected form
   processOneCharacterInsertion: function() {
     const fullText = fullTextHistory.latest;
     const characterBeforeInsertion = (this.startIndex === 0) ? null : fullText[this.indices.startIndex - 1];
@@ -177,15 +197,21 @@ const operations = {
       return;
     }
 
+    let caretPositionBeforeMarking = trixEditor.getSelectedRange();
+
     if (this.indices.startIndex !== 0 && !isWordCharacter(this.text)) {
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex - 1);
-      const word = retrieveWord(fullText, [wordStart, wordEnd]); 
-      console.log(`word: "${word}"`);
-      if (listMarker.isInList(word)) {
-        listMarker.markListWord(wordStart, wordEnd + 1);
-      } else {
-        listMarker.unmarkListWord(wordStart, wordEnd + 1);
+      if (wordStart == null || wordEnd == null) {
+        return;
       }
+      const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      // const caretPositionBeforeMarking = trixEditor.getSelectedRange();
+      if (listMarker.isInList(word)) {
+        listMarker.markListWord(word, wordStart, wordEnd);
+      } else {
+        listMarker.unmarkListWord(word, wordStart, wordEnd);
+      }
+      this.resetCaret(caretPositionBeforeMarking);
     }
 
     if (isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) {
@@ -194,61 +220,79 @@ const operations = {
         const fullText = fullTextHistory.latest;
         [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex);
         const word = retrieveWord(fullText, [wordStart, wordEnd]); 
-        console.log(`word: "${word}"`);
-        const caretPositionBeforeMarking = trixEditor.getSelectedRange();
+        // Need to redefine caret position here because of timeout
+        // (another operation may happen before timeout ends,
+        // changing caret position)
+        caretPositionBeforeMarking = trixEditor.getSelectedRange();
         if (listMarker.isInList(word)) {
-          listMarker.markListWord(wordStart, wordEnd + 1);
+          listMarker.markListWord(word, wordStart, wordEnd);
         } else {
-          listMarker.unmarkListWord(wordStart, wordEnd + 1);
+          listMarker.unmarkListWord(word, wordStart, wordEnd);
         }
-        trixEditor.setSelectedRange(caretPositionBeforeMarking);
+        this.resetCaret(caretPositionBeforeMarking);
       }, 500);
-    } else {
+    } else if (isWordCharacter(characterAfterInsertion)) {
       // For when a space is inserted in middle of word, of when
       // letter interted at beginning of word, check word after
       // insertion too
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.endIndex);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
-      console.log(`word: "${word}"`);
-      const caretPositionBeforeMarking = trixEditor.getSelectedRange();
       if (listMarker.isInList(word)) {
-        listMarker.markListWord(wordStart, wordEnd + 1);
+        listMarker.markListWord(word, wordStart, wordEnd);
       } else {
-        listMarker.unmarkListWord(wordStart, wordEnd + 1);
+        listMarker.unmarkListWord(word, wordStart, wordEnd);
       }
-
-      trixEditor.setSelectedRange(caretPositionBeforeMarking);
+      this.resetCaret(caretPositionBeforeMarking);
     }
-
   },
 
+  // TODO: unmark joined words from official list when space removed from in between
+  // FIXME: when deleting letters from first word, it doesn't automatically unmark
   processDeletion: function() {
     const fullText = fullTextHistory.latest;
+    console.log(`fullText: "${fullText}"`);
     const characterBeforeDeletion = fullText[this.indices.startIndex - 1];
     let caretPosition;
+
+    console.log(`Deleted text: "${this.text}"`);
+    console.log(`char before deletion: "${characterBeforeDeletion}"`);
 
     if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeDeletion)) {
       return;
     }
 
-    if (this.indices.startIndex !== 0 && isWordCharacter(fullText[this.indices.startIndex - 1])) {
+    // Handle deletion of single character word
+    if (isWordCharacter(this.text) && !isWordCharacter(characterBeforeDeletion)) {
+      listMarker.unmarkListWord(this.text, this.indices.startIndex, this.indices.startIndex, this.text);
+      console.log(`Deleting: ${this.text} at position: ${this.indices.startIndex}`);
+      return;
+    }
+
+    if (this.indices.startIndex !== 0 && isWordCharacter(characterBeforeDeletion)) {
+    // if (this.indices.startIndex !== 0) {
       caretPosition = this.indices.startIndex - 1;
     } else {
       caretPosition = this.indices.startIndex;
     }
 
-    let wordStart, wordEnd;
-    [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
-    const word = retrieveWord(fullText, [wordStart, wordEnd]); 
-    console.log(`word: ${word}`);
+    console.log(`caret position: ${caretPosition}`);
 
-    if (listMarker.isInList(word)) {
-      console.log('word in list');
-      listMarker.markListWord(wordStart, wordEnd + 1);
+    let wordStart, wordEnd, word;
+    [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
+    console.log(`word start, word end: ${wordStart}, ${wordEnd}`);
+
+    if (wordStart) {
+      word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      if (listMarker.isInList(word)) {
+        listMarker.markListWord(word, wordStart, wordEnd);
+      } else {
+        listMarker.unmarkListWord(word, wordStart, wordEnd, this.text);
+      }
+      this.resetCaret(this.indices.startIndex);
     } else {
-      listMarker.unmarkListWord(wordStart, wordEnd + 1);
+      word = null;
     }
-      trixEditor.setSelectedRange(this.indices.startIndex);
+    console.log(`word retrieved: ${word}`);
   },
 
   getDelta: function() {
@@ -317,7 +361,6 @@ const mainSearch = {
     if (this.highlightedRanges.length === 0) {
       return;
     }
-    console.log(`highlightedRanges: ${this.highlightedRanges}`);
     this.highlightedRanges.forEach(range => {
       trixEditor.setSelectedRange(range);
       trixEditor.deactivateAttribute('searchHighlight');
@@ -357,8 +400,6 @@ searchBox.on('keyup', event => {
 
   mainSearch.setPreviousHighlightStart();
   mainSearch.clearHighlighting();
-  console.log('key entered in search box');
-  console.log(`searchBox.value: ${searchBox.val()}`);
   // Remove any event listeners from arrow buttons
   $('.search-arrow').off();
 
@@ -397,7 +438,6 @@ function Searcher(searchString) {
 
   this.nextMatchDown = function() {
     this.matchNumber = (this.matchNumber + 1) % this.matches.length;
-    console.log(this.matchNumber);
     mainSearch.setPreviousHighlightStart();
     mainSearch.clearHighlighting(this.fullText);
     this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
@@ -473,46 +513,133 @@ const listMarker = {
   },
 
   // selection ends just before the start of last index
-  markListWord: function(startIndex, endIndex) {
-    this.startIndex = startIndex;
-    this.endIndex = endIndex;
-    console.log('marking list word');
-    trixEditor.setSelectedRange([startIndex, endIndex]);
+  markListWord: function(word, startIndex, endIndex) {
+    if (this.isMarked(startIndex, endIndex + 1)) {
+      return;
+    }
+    const headword = inflectionsMap[word.toLowerCase()];
+    console.log(`headword: "${headword}"`);
+    officialListManager.markWordIfAppropriate(headword);
+    trixEditor.setSelectedRange([startIndex, endIndex + 1]);
     trixEditor.activateAttribute('neilsListMatch');
 
-    // TODO: Is it necessary to set the caret position here?
-    trixEditor.setSelectedRange(endIndex + 1);
+    // trixEditor.setSelectedRange(endIndex + 1);
   },
 
-  unmarkListWord: function(startIndex, endIndex) {
-    console.log('unmarking list word');
-    trixEditor.setSelectedRange([startIndex,
-                                endIndex]);
+  isMarked: function(startIndex, endIndex) {
+    trixEditor.setSelectedRange([startIndex, endIndex]);
+    return trixEditor.attributeIsActive('neilsListMatch');
+  },
+
+  unmarkListWord: function(word, startIndex, endIndex, deletedPart = null) {
+    console.log(`word, deletedPart: ${word}, ${deletedPart}`);
+
+    // Handle single character deletion
+    if (word === deletedPart) {
+      console.log('word === deletedPart');
+      const headword = inflectionsMap['word'];
+      console.log(`headword: "${headword}"`);
+      officialListManager.unmarkWordIfAppropriate(headword);
+      trixEditor.deactivateAttribute('neilsListMatch');
+      return;
+    }
+
+    // Do nothing if word is already unmarked
+    if (!this.isMarked(startIndex, endIndex + 1)) {
+      return;
+    }
+
+    
+    const wordToUnmarkOnOfficialList = (deletedPart) ? word + deletedPart : word;
+    officialListManager.unmarkWordIfAppropriate(wordToUnmarkOnOfficialList);
+    trixEditor.setSelectedRange([startIndex, endIndex + 1]);
     trixEditor.deactivateAttribute('neilsListMatch');
-    trixEditor.setSelectedRange(endIndex + 1);
+    // trixEditor.setSelectedRange(endIndex + 2);
   }
 }
 
-const headwordPopulater = {
+const officialListManager = {
   alwaysUppercaseWords: ['i'],
+  timesMarked: new Map(),
+  refreshAllCounts: function() {
+    let fullText = fullTextHistory.latest.toLowerCase();
+    // Remove ending punctuation
+    fullText = fullText.replace(/[^a-zA-Z]+$/, '');
+    const fullTextArray = fullText.trim().split(/[^a-zA-Z]+/);
+
+    $('.official-list-count').text('');
+    $('.official-list.match').removeClass('official-list-match');
+    this.timesMarked.clear();
+
+    fullTextArray.forEach(word => {
+      if (this.alwaysUppercaseWords.includes(word)) {
+        word = word.toUpperCase();
+      } 
+      let times = this.timesMarked.get(word);
+      if (times) {
+        times += 1;
+        this.timesMarked.set(word, times);
+      } else {
+        times = 1;
+        this.timesMarked.set(word, times);
+        $(`#official-${word}`).addClass('official-list-match');
+      }
+      $(`#official-${word}-count`).text(times.toString());
+    });
+  },
+  markWordIfAppropriate: function(word) {
+    if (!this.alwaysUppercaseWords.includes(word.toLowerCase())) {
+      word = word.toLowerCase();
+    }
+    let times = this.timesMarked.get(word);
+    if (times) {
+      times = this.timesMarked.get(word) + 1;
+      this.timesMarked.set(word, times);
+    } else {
+      times = 1;
+      this.timesMarked.set(word, times);
+      $(`#official-${word}`).addClass('official-list-match');
+    }
+
+    $(`#official-${word}-count`).text(times.toString());
+  },
+  unmarkWordIfAppropriate: function(word) {
+    if (!this.alwaysUppercaseWords.includes(word.toLowerCase())) {
+      word = word.toLowerCase();
+    }
+    let times = this.timesMarked.get(word)
+    if (!times) {
+      return;
+    }
+    if (times === 1) {
+      times = 0;
+      this.timesMarked.delete(word);
+      $(`#official-${word}`).removeClass('official-list-match');
+      this.timesMarked.set(word, times);
+    } else {
+      times -= 1
+      this.timesMarked.set(word, times);
+    }
+    $(`#official-${word}-count`).text(times.toString());
+  },
   populateOfficialList: function() {
-    let count = 1
+    let rowCount = 1;
     officialList.append(`<table>`);
     headwords.forEach( headword => {
       officialList.append('<tr>');
-      officialList.append(`<td class="official-list-count">${count.toString()}</td>`);
+      officialList.append(`<td class="official-list-rank">${rowCount.toString()}</td>`);
       if (this.alwaysUppercaseWords.includes(headword)) {
-        officialList.append(`<td>${headword.toUpperCase()}</td>`);
+        officialList.append(`<td id="official-${headword}">${headword.toUpperCase()}</td>`);
       } else {
-        officialList.append(`<td>${headword}</td>`);
+        officialList.append(`<td id="official-${headword}">${headword}</td>`);
       }
+      officialList.append(`<td class="official-list-count" id="official-${headword}-count"></td>`);
       officialList.append('</tr>');
-      count += 1;
+      rowCount += 1;
     });
     officialList.append(`</table>`);
   }
 }
 
 // Populate official word list with headwords
-headwordPopulater.populateOfficialList();
-
+officialListManager.populateOfficialList();

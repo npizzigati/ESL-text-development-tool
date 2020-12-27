@@ -20,6 +20,10 @@ neils-list-match {
     color: black;
 }
 
+.official-list-match {
+    color: black;
+}
+
 neils-punctuation {
     color: black;
 }
@@ -31,6 +35,7 @@ trix-editor {
 }
 
 .official-list {
+    color: lightgrey;
     flex: 0 0 200px;
     border: 1px solid #bbb;
     margin-left: 4px;
@@ -111,7 +116,11 @@ trix-editor {
     outline: none;
 }
 
-.official-list-count {
+.official-list-rank {
     text-align: right;
     padding-right: 5px;
+}
+
+.official-list-count {
+    padding-left: 2px;
 }
