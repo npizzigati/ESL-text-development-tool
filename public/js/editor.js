@@ -58,7 +58,7 @@ function isEmpty(arr) {
 }
 
 function isPunctuation(text) {
-  return text.search(/[.,;:~!@#$%&*()_+=|/?<>"'{}[\-\^\]\\]/) >= 0;
+  return text.search(/[.,;:~!@#$%&*()_+=|/?<>"{}[\-\^\]\\]/) >= 0;
 }
 
 searchBoxContainer.hide();
@@ -87,7 +87,6 @@ function retrieveWordCoordinates(fullText, caretPosition) {
 }
 
 function determineWordStart(fullText, caretPosition) {
-  console.log(`inside determineWordStart, letter at caret position: "${fullText[caretPosition]}"`);
   const startLetter = fullText[caretPosition];
   if ([' ', '\n'].includes(startLetter) || (typeof startLetter === 'undefined')) {
     return null;
@@ -151,9 +150,9 @@ const operations = {
   },
 
   // Reset caret formatting and position
-  resetCaret: function(caretPositionBeforeMarking) {
+  resetCaret: function(caretPositionBeforeMarking, deactivate = true) {
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
-    if (trixEditor.attributeIsActive('neilsListMatch')) {
+    if (deactivate == true && trixEditor.attributeIsActive('neilsListMatch')) {
       trixEditor.deactivateAttribute('neilsListMatch');
     }
   },
@@ -185,16 +184,29 @@ const operations = {
     this.resetCaret(this.indices.endIndex);
   },
 
-  // TODO: Deal with case of headword being counted twice when
-  // stopping slightly before finishing inflected form
+  // TODO: Handle letter added at start of word
+  // TODO: Handle case where word is not removed when adding on a
+  // part that makes it unlisted
   processOneCharacterInsertion: function() {
     const fullText = fullTextHistory.latest;
     const characterBeforeInsertion = (this.startIndex === 0) ? null : fullText[this.indices.startIndex - 1];
     const characterAfterInsertion = fullText[this.indices.endIndex];
-    let wordStart, wordEnd;
+    let word, wordStart, wordEnd;
 
     if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeInsertion)) {
       return;
+    }
+
+    // Unmark pre-split word from official list if word is split
+    // Need to do this here because other changes below are
+    // registered as changes by trix and fullTextHistory.previous
+    // is changed
+    if (isWordCharacter(this.text) && isWordCharacter(characterAfterInsertion)) {
+      console.log('letter inserted in middle');
+      [wordStart, wordEnd] = retrieveWordCoordinates(fullTextHistory.previous, this.indices.startIndex)
+      const preSplitWord = retrieveWord(fullTextHistory.previous, [wordStart, wordEnd]);
+      const headword = inflectionsMap[preSplitWord.toLowerCase()];
+      officialListManager.unmarkWordIfAppropriate(preSplitWord);
     }
 
     let caretPositionBeforeMarking = trixEditor.getSelectedRange();
@@ -204,7 +216,7 @@ const operations = {
       if (wordStart == null || wordEnd == null) {
         return;
       }
-      const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      word = retrieveWord(fullText, [wordStart, wordEnd]); 
       // const caretPositionBeforeMarking = trixEditor.getSelectedRange();
       if (listMarker.isInList(word)) {
         listMarker.markListWord(word, wordStart, wordEnd);
@@ -214,22 +226,38 @@ const operations = {
       this.resetCaret(caretPositionBeforeMarking);
     }
 
+
     if (isWordCharacter(this.text) && !isWordCharacter(characterAfterInsertion)) {
+
+      // Unmark previous word if necessary
+      if (this.indices.startIndex !==0 && isWordCharacter(characterBeforeInsertion)) {
+        [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex - 1);
+        word = retrieveWord(fullText, [wordStart, wordEnd]); 
+        const [previousWordStart, previousWordEnd] = [wordStart, wordEnd - 1];
+        const previousWord = word.slice(0, -1);
+        listMarker.unmarkListWord(previousWord, previousWordStart, previousWordEnd);
+        this.resetCaret(caretPositionBeforeMarking, false);
+      }
+
       this.operationTimeoutID = window.setTimeout( () => {
-        let wordStart, wordEnd;
         const fullText = fullTextHistory.latest;
-        [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex);
-        const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+
         // Need to redefine caret position here because of timeout
         // (another operation may happen before timeout ends,
         // changing caret position)
         caretPositionBeforeMarking = trixEditor.getSelectedRange();
+
+        let wordStart, wordEnd;
+        [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.startIndex);
+        const word = retrieveWord(fullText, [wordStart, wordEnd]); 
         if (listMarker.isInList(word)) {
           listMarker.markListWord(word, wordStart, wordEnd);
         } else {
           listMarker.unmarkListWord(word, wordStart, wordEnd);
         }
+        // this.resetCaret(caretPositionBeforeMarking, false);
         this.resetCaret(caretPositionBeforeMarking);
+
       }, 500);
     } else if (isWordCharacter(characterAfterInsertion)) {
       // For when a space is inserted in middle of word, of when
@@ -237,25 +265,30 @@ const operations = {
       // insertion too
       [wordStart, wordEnd] = retrieveWordCoordinates(fullText, this.indices.endIndex);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      console.log(`New word after middle insertion: ${word}`);
       if (listMarker.isInList(word)) {
+        console.log(`word in list`)
         listMarker.markListWord(word, wordStart, wordEnd);
       } else {
+        console.log(`word is not in list`)
         listMarker.unmarkListWord(word, wordStart, wordEnd);
       }
       this.resetCaret(caretPositionBeforeMarking);
+
     }
   },
 
   // TODO: unmark joined words from official list when space removed from in between
+
   // FIXME: when deleting letters from first word, it doesn't automatically unmark
+  
+  // FIXME: deleting letters from beginning of word should cause
+  // word to be checked and marked or unmarked
   processDeletion: function() {
     const fullText = fullTextHistory.latest;
-    console.log(`fullText: "${fullText}"`);
     const characterBeforeDeletion = fullText[this.indices.startIndex - 1];
     let caretPosition;
 
-    console.log(`Deleted text: "${this.text}"`);
-    console.log(`char before deletion: "${characterBeforeDeletion}"`);
 
     if (!isWordCharacter(this.text) && !isWordCharacter(characterBeforeDeletion)) {
       return;
@@ -264,7 +297,6 @@ const operations = {
     // Handle deletion of single character word
     if (isWordCharacter(this.text) && !isWordCharacter(characterBeforeDeletion)) {
       listMarker.unmarkListWord(this.text, this.indices.startIndex, this.indices.startIndex, this.text);
-      console.log(`Deleting: ${this.text} at position: ${this.indices.startIndex}`);
       return;
     }
 
@@ -275,11 +307,9 @@ const operations = {
       caretPosition = this.indices.startIndex;
     }
 
-    console.log(`caret position: ${caretPosition}`);
 
     let wordStart, wordEnd, word;
     [wordStart, wordEnd] = retrieveWordCoordinates(fullText, caretPosition);
-    console.log(`word start, word end: ${wordStart}, ${wordEnd}`);
 
     if (wordStart) {
       word = retrieveWord(fullText, [wordStart, wordEnd]); 
@@ -292,7 +322,6 @@ const operations = {
     } else {
       word = null;
     }
-    console.log(`word retrieved: ${word}`);
   },
 
   getDelta: function() {
@@ -518,12 +547,9 @@ const listMarker = {
       return;
     }
     const headword = inflectionsMap[word.toLowerCase()];
-    console.log(`headword: "${headword}"`);
     officialListManager.markWordIfAppropriate(headword);
     trixEditor.setSelectedRange([startIndex, endIndex + 1]);
     trixEditor.activateAttribute('neilsListMatch');
-
-    // trixEditor.setSelectedRange(endIndex + 1);
   },
 
   isMarked: function(startIndex, endIndex) {
@@ -532,13 +558,9 @@ const listMarker = {
   },
 
   unmarkListWord: function(word, startIndex, endIndex, deletedPart = null) {
-    console.log(`word, deletedPart: ${word}, ${deletedPart}`);
-
     // Handle single character deletion
     if (word === deletedPart) {
-      console.log('word === deletedPart');
-      const headword = inflectionsMap['word'];
-      console.log(`headword: "${headword}"`);
+      const headword = inflectionsMap[word];
       officialListManager.unmarkWordIfAppropriate(headword);
       trixEditor.deactivateAttribute('neilsListMatch');
       return;
@@ -546,9 +568,9 @@ const listMarker = {
 
     // Do nothing if word is already unmarked
     if (!this.isMarked(startIndex, endIndex + 1)) {
+      console.log(`word is already unmarked, indices (start, end): ${startIndex}, ${endIndex + 1}`);
       return;
     }
-
     
     const wordToUnmarkOnOfficialList = (deletedPart) ? word + deletedPart : word;
     officialListManager.unmarkWordIfAppropriate(wordToUnmarkOnOfficialList);
@@ -558,6 +580,7 @@ const listMarker = {
   }
 }
 
+// FIXME: error produced when deleting entire text here
 const officialListManager = {
   alwaysUppercaseWords: ['i'],
   timesMarked: new Map(),
@@ -587,6 +610,7 @@ const officialListManager = {
       $(`#official-${word}-count`).text(times.toString());
     });
   },
+
   markWordIfAppropriate: function(word) {
     if (!this.alwaysUppercaseWords.includes(word.toLowerCase())) {
       word = word.toLowerCase();
@@ -603,7 +627,9 @@ const officialListManager = {
 
     $(`#official-${word}-count`).text(times.toString());
   },
+
   unmarkWordIfAppropriate: function(word) {
+    console.log(`possibly going to unmark "${word}"`);
     if (!this.alwaysUppercaseWords.includes(word.toLowerCase())) {
       word = word.toLowerCase();
     }
