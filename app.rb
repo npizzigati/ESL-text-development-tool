@@ -72,8 +72,10 @@ def retrieve_headwords(target_path)
   create_headwords_array(raw_headword_text)
 end
 
+# TODO: Need to find an intelligent way to deal with uppercase words, like days of the week, etc.
 def retrieve_raw_headword_text(target_path)
-  File.read(target_path).downcase
+  text = File.read(target_path).downcase
+  text.gsub("\r\ni\r\n", "\r\nI\r\n")
 end
 
 def remove_duplicates(headwords_array)

@@ -34,19 +34,10 @@ trix-editor {
     flex: 1 0 700px;
 }
 
-.official-list {
-    color: lightgrey;
-    flex: 0 0 200px;
-    border: 1px solid #bbb;
-    margin-left: 4px;
-    overflow: auto scroll;
-}
-
 .layout-row1 {
     display: flex;
     height: 500px;
 }
-
 
 .search-arrow-button-container {
   display: flex;
@@ -116,9 +107,21 @@ trix-editor {
     outline: none;
 }
 
+.official-list {
+    color: lightgrey;
+    flex: 0 0 200px;
+    border: 1px solid #bbb;
+    margin-left: 4px;
+    overflow: auto scroll;
+}
+
 .official-list-rank {
     text-align: right;
     padding-right: 5px;
+}
+
+.official-list-headwords {
+    text-align: left;
 }
 
 .official-list-count {
