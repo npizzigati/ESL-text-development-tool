@@ -57,8 +57,8 @@ function isEmpty(arr) {
   return arr.length == 0;
 }
 
-function isPunctuation(text) {
-  return text.search(/[.,;:~!@#$%&*()_+=|/?<>"{}[\-\^\]\\]/) >= 0;
+function isPunctuation(character) {
+  return character.search(/[.,;:~!@#$%&*()_+=|/?<>"{}[\-\^\]\\]/) >= 0;
 }
 
 searchBoxContainer.hide();
@@ -225,6 +225,7 @@ const operationManager = {
     case modes.INSERTION:
       const insertion = new this.Operation(text, indices, modes.INSERTION);
       if (length === 1) {
+        console.log(`insertion.text: "${insertion.text}"`);
         this.processPossiblePunctuationCharacter(insertion.text, insertion.startIndex);
         this.processOneCharacterInsertion(insertion);
       } else {
@@ -242,10 +243,14 @@ const operationManager = {
     }
   },
 
+  // FIXME: Character is undefined sometimes (why?), at seemingly
+  // random times, producing errors -- do I need to increase 
+  // Update: may have fixed this by removing timeout in Trix
+  // Editor listener
   processPossiblePunctuationCharacter(character, index) {
+    console.log(`character: "${character}"`);
     if (isPunctuation(character)) {
       this.formatPunctuation(index, index + 1);
-      console.log(`punctuation at index ${index}`);
     }
   },
 
@@ -528,13 +533,13 @@ $(trixElement).on('trix-change', event => {
   fullTextHistory.update();
 
   // It apparenty takes a moment for the fullTextHistory to update
-  setTimeout( () => {
+  // setTimeout( () => {
     // Do nothing if update triggered by formatting change
     if (fullTextHistory.latest == fullTextHistory.previous) {
       return;
     }
     operationManager.processOperation();
-  }, 20);
+  // }, 0);
 });
 
 // Listener for clicks on matches in editor
