@@ -225,7 +225,7 @@ const operationManager = {
     case modes.INSERTION:
       const insertion = new this.Operation(text, indices, modes.INSERTION);
       if (length === 1) {
-        this.processPossiblePunctuationCharacter(insertion);
+        this.processPossiblePunctuationCharacter(insertion.text, insertion.startIndex);
         this.processOneCharacterInsertion(insertion);
       } else {
         this.processMultipleCharacterInsertion(insertion);
@@ -242,11 +242,10 @@ const operationManager = {
     }
   },
 
-  processPossiblePunctuationCharacter(insertion) {
-    const index = insertion.startIndex;
-    if (isPunctuation(insertion.text)) {
-      console.log('Character is punctuation')
+  processPossiblePunctuationCharacter(character, index) {
+    if (isPunctuation(character)) {
       this.formatPunctuation(index, index + 1);
+      console.log(`punctuation at index ${index}`);
     }
   },
 
@@ -260,26 +259,31 @@ const operationManager = {
   },
 
   // Reset caret formatting and position
-  resetCaret: function(caretPositionBeforeMarking, deactivate = true) {
-    trixEditor.setSelectedRange(caretPositionBeforeMarking);
-    if (deactivate === true && trixEditor.attributeIsActive('neilsListMatch')) {
+  resetCaret: function(caretPositionBeforeMarking = null, deactivate = true) {
+    if (caretPositionBeforeMarking) {
+      trixEditor.setSelectedRange(caretPositionBeforeMarking);
+    }
+    if (!deactivate) {
+      return;
+    }
+    if (trixEditor.attributeIsActive('neilsListMatch')) {
       trixEditor.deactivateAttribute('neilsListMatch');
-      console.log('deactivating attribute');
-    } else {
-      console.log('attribute is already deactivated')
+      console.log('deactivating neils-list-match');
+    } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
+      trixEditor.deactivateAttribute('neilsPunctuation');
+      console.log('deactivating neils-punctuation');
     }
   },
 
   processMultipleCharacterInsertion: function(insertion) {
     const fullText = insertion.postOperationFullText;
-    let wordStart, wordEnd, word, headword;
+    let wordStart, wordEnd, word, headword, character;
     let index = insertion.startIndex
-
     while (index < insertion.endIndex) {
-      if (isWordCharacter(fullText[index])) {
+      character = fullText[index];
+      if (isWordCharacter(character)) {
         [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
         word = retrieveWord(fullText, [wordStart, wordEnd]); 
-
         headword = officialListManager.getHeadword(word);
         if (headword) {
           textMarker.markWord(word, wordStart, wordEnd);
@@ -288,7 +292,7 @@ const operationManager = {
         }
         index = wordEnd
       } else {
-        this.processPossiblePunctuationCharacter(insertion);
+        this.processPossiblePunctuationCharacter(character, index);
       }
       index += 1
     }
@@ -374,7 +378,6 @@ const operationManager = {
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
-    console.log('should be deactivating attribute if it is active')
     this.resetCaret(caretPositionBeforeMarking);
   },
 
@@ -425,9 +428,12 @@ const operationManager = {
     this.processWordAtIndex(deletion, deletion.startIndex);
   },
 
+  // FIXME: Sometimes neils-list-match isn't turned off at end of word 
   processOneCharacterInsertion: function(insertion) {
     let word, headword
     let caretPositionBeforeMarking = trixEditor.getSelectedRange();
+
+    console.log(`insertion.point: ${insertion.point}`);
 
     switch (insertion.point) {
     case points.OUTSIDE_WORD:
@@ -458,7 +464,8 @@ const operationManager = {
 
   // TODO: unmark joined words from official list when space removed from in between
 
-  // FIXME: when deleting letters from first word, it doesn't automatically unmark
+  // FIXME: when deleting letters from first word, it doesn't
+  // automatically unmark
   
   processDeletion: function(deletion) {
     switch (deletion.point) {
@@ -528,7 +535,15 @@ $(trixElement).on('trix-change', event => {
     }
     operationManager.processOperation();
   }, 20);
+});
 
+// Listener for clicks on matches in editor
+$('body').on('click', 'neils-list-match', event => {
+  const word = $(event.target).text();
+  console.log(`${word} clicked`);
+  const headword = officialListManager.getHeadword(word);
+  const markedWord = document.querySelector(`#official-${headword}`);
+  markedWord.scrollIntoView({behavior: 'auto', block: 'center'});
 });
 
 const mainSearch = {
@@ -561,7 +576,7 @@ const exitSearch = function() {
   // The caret position of the click is not immediately
   // registered by trix, so we have to wait a fraction of a second
   setTimeout(function() {
-    let originalCaretPos = trixEditor.getSelectedRange();
+    const originalCaretPos = trixEditor.getSelectedRange();
     mainSearch.clearHighlighting();
     trixEditor.setSelectedRange(originalCaretPos);
   }, 100);
@@ -584,6 +599,7 @@ searchBox.on('keyup', event => {
 
   mainSearch.setPreviousHighlightStart();
   mainSearch.clearHighlighting();
+  // FIXME: Is this the right syntax for removing event listener?
   // Remove any event listeners from arrow buttons
   $('.search-arrow').off();
 
@@ -687,18 +703,9 @@ function Searcher(searchString) {
 } 
 
 const textMarker = {
-  updateMatchesListener: function() {
-    $('neils-list-match').off();
-    $('neils-list-match').on('click', event => {
-      const word = $(event.target).text();
-      console.log(`${word} clicked`);
-    });
-  },
-
   markWord: function(word, startIndex, endIndex) {
     trixEditor.setSelectedRange([startIndex, endIndex + 1]);
     trixEditor.activateAttribute('neilsListMatch');
-    this.updateMatchesListener();
   },
 
   unmarkWord: function(word, startIndex, endIndex, deletedPart = null) {
@@ -715,10 +722,10 @@ const textMarker = {
 
 const officialListManager = {
   getHeadword: function(word) {
-    console.log(`word: ${word}`);
     return (word === 'I') ? inflectionsMap[word] : inflectionsMap[word.toLowerCase()];
   },
   timesMarked: new Map(),
+  // FIXME: This isn't counting inflections for some reason
   refreshAllCounts: function() {
     let fullText = fullTextHistory.latest
     // Remove ending punctuation
