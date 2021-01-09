@@ -10,18 +10,6 @@ const officialList = $('.official-list');
 
 // Todo: Don't process spaces or empty string as word in insertion functions
 
-const fullTextHistory = {
-  latest: '',
-  previous: '',
-  removeEndingNewLine: function(str) {
-    return str.replace(/\n$/g, '');
-  },
-  update: function() {
-    this.previous = this.latest;
-    this.latest = this.removeEndingNewLine(trixEditor.getDocument().toString());
-  }
-}
-
 // Add new HTML tag for words in list
 class NeilsListMatch extends HTMLElement {}
 customElements.define('neils-list-match', NeilsListMatch);
@@ -49,6 +37,22 @@ Trix.config.textAttributes.searchHighlight = {
   inheritable: true
 };
 
+const fullTextHistory = {
+  latest: '',
+  previous: '',
+  removeEndingNewLine: function(str) {
+    return str.replace(/\n$/g, '');
+  },
+  update: function() {
+    this.previous = this.latest;
+    this.latest = this.removeEndingNewLine(trixEditor.getDocument().toString());
+  }
+}
+
+function isContentChanged() {
+  return fullTextHistory.latest !== fullTextHistory.previous;
+}
+
 function last(arr) {
   return arr[arr.length - 1]
 }
@@ -72,6 +76,21 @@ function isWordCharacter(character) {
     return false
   }
   return character.search(/[a-zA-Z']/) != -1;
+}
+
+function isRangeFlat() {
+// Determine if selection is single caret position instead of
+// range
+  const [start, end] = trixEditor.getSelectedRange();
+  return start === end; 
+}
+
+function removeCaretFormatting() {
+  if (trixEditor.attributeIsActive('neilsListMatch')) {
+    trixEditor.deactivateAttribute('neilsListMatch');
+  } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
+    trixEditor.deactivateAttribute('neilsPunctuation');
+  }
 }
 
 function retrieveWord(fullText, wordEndPoints) {
@@ -141,7 +160,7 @@ const operationManager = {
     this.endIndex = indices.endIndex;
     this.preOperationFullText = fullTextHistory.previous;
     this.postOperationFullText = fullTextHistory.latest;
-    this.characterAfter = (mode == modes.INSERTION) ? this.postOperationFullText[this.endIndex] : this.preOperationFullText[this.endIndex];
+    this.characterAfter = (mode === modes.INSERTION) ? this.postOperationFullText[this.endIndex] : this.preOperationFullText[this.endIndex];
     this.characterBefore = (this.startIndex === 0) ? null : this.preOperationFullText[this.startIndex - 1];
 
     this.letterOrNonLetter = function(character) {
@@ -225,11 +244,14 @@ const operationManager = {
     case modes.INSERTION:
       const insertion = new this.Operation(text, indices, modes.INSERTION);
       if (length === 1) {
-        console.log(`insertion.text: "${insertion.text}"`);
         this.processPossiblePunctuationCharacter(insertion.text, insertion.startIndex);
         this.processOneCharacterInsertion(insertion);
       } else {
-        this.processMultipleCharacterInsertion(insertion);
+        // Seem to need this delay here to be able to process
+        // multiple character insertion
+        setTimeout( () => {
+          this.processMultipleCharacterInsertion(insertion);
+        }, 20);
       }
       break;
     case modes.DELETION:
@@ -248,7 +270,6 @@ const operationManager = {
   // Update: may have fixed this by removing timeout in Trix
   // Editor listener
   processPossiblePunctuationCharacter(character, index) {
-    console.log(`character: "${character}"`);
     if (isPunctuation(character)) {
       this.formatPunctuation(index, index + 1);
     }
@@ -261,23 +282,6 @@ const operationManager = {
     trixEditor.activateAttribute('neilsPunctuation');
 
     trixEditor.setSelectedRange(initialCaretPosition);
-  },
-
-  // Reset caret formatting and position
-  resetCaret: function(caretPositionBeforeMarking = null, deactivate = true) {
-    if (caretPositionBeforeMarking) {
-      trixEditor.setSelectedRange(caretPositionBeforeMarking);
-    }
-    if (!deactivate) {
-      return;
-    }
-    if (trixEditor.attributeIsActive('neilsListMatch')) {
-      trixEditor.deactivateAttribute('neilsListMatch');
-      console.log('deactivating neils-list-match');
-    } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
-      trixEditor.deactivateAttribute('neilsPunctuation');
-      console.log('deactivating neils-punctuation');
-    }
   },
 
   processMultipleCharacterInsertion: function(insertion) {
@@ -301,7 +305,7 @@ const operationManager = {
       }
       index += 1
     }
-    this.resetCaret(insertion.endIndex);
+    trixEditor.setSelectedRange(insertion.endIndex);
   },
 
   subtractPreSplitWord: function(insertion) {
@@ -319,7 +323,7 @@ const operationManager = {
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
-    this.resetCaret(caretPositionBeforeMarking);
+    trixEditor.setSelectedRange(caretPositionBeforeMarking);
   },
 
   processLetterInsertionAtStartOrMiddleOfWord: function(insertion) {
@@ -353,7 +357,7 @@ const operationManager = {
         officialListManager.subtract(previousWordHeadword);
       }
       textMarker.unmarkWord(previousWord, previousWordStart, previousWordEnd);
-      this.resetCaret(caretPositionBeforeMarking, false);
+      trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }
 
     this.operationTimeoutID = window.setTimeout( () => {
@@ -368,7 +372,7 @@ const operationManager = {
       } else {
         textMarker.unmarkWord(word, wordStart, wordEnd);
       }
-      this.resetCaret(caretPositionBeforeMarking);
+      trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }, 500);
   },
 
@@ -383,7 +387,7 @@ const operationManager = {
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
-    this.resetCaret(caretPositionBeforeMarking);
+    trixEditor.setSelectedRange(caretPositionBeforeMarking);
   },
 
   subtractWordAtIndex: function(fullText, index) {
@@ -437,8 +441,6 @@ const operationManager = {
   processOneCharacterInsertion: function(insertion) {
     let word, headword
     let caretPositionBeforeMarking = trixEditor.getSelectedRange();
-
-    console.log(`insertion.point: ${insertion.point}`);
 
     switch (insertion.point) {
     case points.OUTSIDE_WORD:
@@ -529,23 +531,35 @@ function isSelection(caretPositionArray) {
   caretPositionArray[0] !== caretPositionArray[1];
 }
 
-$(trixElement).on('trix-change', event => {
-  fullTextHistory.update();
 
-  // It apparenty takes a moment for the fullTextHistory to update
-  // setTimeout( () => {
-    // Do nothing if update triggered by formatting change
-    if (fullTextHistory.latest == fullTextHistory.previous) {
-      return;
-    }
+$(trixElement).on('trix-selection-change', event => {
+  fullTextHistory.update();
+  if (isContentChanged()) {
     operationManager.processOperation();
-  // }, 0);
+    return;
+  }
+  if (isRangeFlat()) {
+    removeCaretFormatting();
+    console.log('caret moved');
+  }
 });
+
+// $(trixElement).on('trix-change', event => {
+//   fullTextHistory.update();
+//   // It apparenty takes a moment for the fullTextHistory to update
+//   // TODO: Implement logic on selection change (without text
+//   // change) to make sure attributes aren't changed or at least
+//   // they change back to normal
+//   if (fullTextHistory.latest === fullTextHistory.previous) {
+//     // Do nothing if update triggered by formatting change
+//     return;
+//   }
+//   operationManager.processOperation();
+// });
 
 // Listener for clicks on matches in editor
 $('body').on('click', 'neils-list-match', event => {
   const word = $(event.target).text();
-  console.log(`${word} clicked`);
   const headword = officialListManager.getHeadword(word);
   const markedWord = document.querySelector(`#official-${headword}`);
   markedWord.scrollIntoView({behavior: 'auto', block: 'center'});
