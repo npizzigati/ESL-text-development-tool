@@ -16,11 +16,11 @@ mark {
     color: inherit;
 }
 
-neils-list-match {
-    color: black;
+neils-section {
+    font-style: italic;
 }
 
-.official-list-match {
+neils-list-match {
     color: black;
 }
 
@@ -107,12 +107,25 @@ trix-editor {
     outline: none;
 }
 
-.official-list {
-    color: lightgrey;
-    flex: 0 0 200px;
+.my-list {
+    flex: 0 0 350px;
     border: 1px solid #bbb;
     margin-left: 4px;
     overflow: auto scroll;
+    font-size: small;
+}
+
+.official-list {
+    flex: 0 0 150px;
+    border: 1px solid #bbb;
+    margin-left: 4px;
+    overflow: auto scroll;
+    font-size: small;
+}
+
+.official-list-table {
+    color: lightgrey;
+    margin-left: 5px;
 }
 
 .official-list-rank {
@@ -126,4 +139,16 @@ trix-editor {
 
 .official-list-count {
     padding-left: 2px;
+}
+
+.official-list-match {
+    color: black;
+}
+
+.official-list-current-match {
+    border: 1px solid black;
+}
+
+.official-list-end-spacer {
+    padding-right: 5px;
 }

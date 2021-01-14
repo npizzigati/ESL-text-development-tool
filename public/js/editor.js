@@ -1,14 +1,14 @@
 'use strict';
 
+// TODO: Add "am" to inflections list ("be"); also check
+// contractions
+
 const trixElement = document.querySelector("trix-editor")
 const trixEditor = trixElement.editor;
 const wordSeparators = [' ', '.', '!', '?', '-', ':', ';', 'Enter'];
 const searchIconContainer = $('.search-icon-container');
 const searchBox = $('#search-box');
 const searchBoxContainer = $('.search-box-container');
-const officialList = $('.official-list');
-
-// Todo: Don't process spaces or empty string as word in insertion functions
 
 // Add new HTML tag for words in list
 class NeilsListMatch extends HTMLElement {}
@@ -17,7 +17,6 @@ customElements.define('neils-list-match', NeilsListMatch);
 // Add new HTML tag for punctuation
 class NeilsPunctuation extends HTMLElement {}
 customElements.define('neils-punctuation', NeilsPunctuation);
-
 
 // Add Trix format for marking list words
 Trix.config.textAttributes.neilsListMatch = {
@@ -78,7 +77,7 @@ function isWordCharacter(character) {
   return character.search(/[a-zA-Z']/) != -1;
 }
 
-function isRangeFlat() {
+function isRangeCollapsed() {
 // Determine if selection is single caret position instead of
 // range
   const [start, end] = trixEditor.getSelectedRange();
@@ -87,8 +86,13 @@ function isRangeFlat() {
 
 function removeCaretFormatting() {
   if (trixEditor.attributeIsActive('neilsListMatch')) {
+    console.log('removing neilsListMatch formatting');
+    console.log(`range: ${trixEditor.getSelectedRange()}`);
+    console.log(`neilsListMatch active: ${trixEditor.attributeIsActive('neilsListMatch')}`);
     trixEditor.deactivateAttribute('neilsListMatch');
   } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
+    console.log('removing neilsPunctuation formatting');
+    console.log(`range: ${trixEditor.getSelectedRange()}`);
     trixEditor.deactivateAttribute('neilsPunctuation');
   }
 }
@@ -232,7 +236,6 @@ const operationManager = {
     this.point = this.determinePoint();
   },
 
-  // TODO: Refresh counts on carriage return maybe
   processOperation: function() {
     window.clearTimeout(this.operationTimeoutID);
     const [text, operation, indices] = this.getDelta();
@@ -242,6 +245,17 @@ const operationManager = {
     // this.characterAfterOperation = fullText[this.indices.endIndex];
     switch (operation) {
     case modes.INSERTION:
+      // As a workaround for issue where formatting persists
+      // after deleting a space following a list word, if first
+      // character is nonword remove neilsListMatch formatting from it
+      if (!isWordCharacter(text[0])) {
+        console.log('first char of insertion was nonword');
+        const initialRange = trixEditor.getSelectedRange();
+        trixEditor.setSelectedRange([indices.startIndex, indices.endIndex + 1]);
+        trixEditor.deactivateAttribute('neilsListMatch');
+        trixEditor.setSelectedRange(initialRange);
+      }
+      
       const insertion = new this.Operation(text, indices, modes.INSERTION);
       if (length === 1) {
         this.processPossiblePunctuationCharacter(insertion.text, insertion.startIndex);
@@ -256,7 +270,15 @@ const operationManager = {
       break;
     case modes.DELETION:
       const deletion = new this.Operation(text, indices, modes.DELETION);
+      console.log('processing deletion');
       this.processDeletion(deletion);
+      // Without this timeout, formatting is removed and the added again
+      // FIXME: If space or other character is added quickly after deletion, the
+      // formatting is still there
+      // setTimeout( () => {
+      //   removeCaretFormatting();
+      // }, 20);
+      console.log('deletion processing concluded');
       break;
     }
 
@@ -265,10 +287,6 @@ const operationManager = {
     }
   },
 
-  // FIXME: Character is undefined sometimes (why?), at seemingly
-  // random times, producing errors -- do I need to increase 
-  // Update: may have fixed this by removing timeout in Trix
-  // Editor listener
   processPossiblePunctuationCharacter(character, index) {
     if (isPunctuation(character)) {
       this.formatPunctuation(index, index + 1);
@@ -282,6 +300,9 @@ const operationManager = {
     trixEditor.activateAttribute('neilsPunctuation');
 
     trixEditor.setSelectedRange(initialCaretPosition);
+    // Have to remove caret formatting here; for some reason it's
+    // not being done correctly in the on selection change listener.
+    // removeCaretFormatting();
   },
 
   processMultipleCharacterInsertion: function(insertion) {
@@ -413,6 +434,7 @@ const operationManager = {
   },
 
   processDeletionOutsideWord: function(deletion) {
+    console.log('Processing deletion outside word');
     if (deletion.characterBeforeType === characterTypes.LETTER &&
        deletion.characterAfterType === characterTypes.LETTER) {
       // Subtract pre-join words if space deleted between words
@@ -442,6 +464,7 @@ const operationManager = {
     let word, headword
     let caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
+    console.log('processing single character insertion');
     switch (insertion.point) {
     case points.OUTSIDE_WORD:
       if (insertion.characterType === characterTypes.LETTER) {
@@ -469,7 +492,6 @@ const operationManager = {
     }
   },
 
-  // TODO: unmark joined words from official list when space removed from in between
 
   // FIXME: when deleting letters from first word, it doesn't
   // automatically unmark
@@ -524,7 +546,6 @@ const operationManager = {
       return [text, modes.DELETION, indices];
     }
   }
-  
 };
 
 function isSelection(caretPositionArray) {
@@ -536,33 +557,27 @@ $(trixElement).on('trix-selection-change', event => {
   fullTextHistory.update();
   if (isContentChanged()) {
     operationManager.processOperation();
-    return;
+    // return;
   }
-  if (isRangeFlat()) {
-    removeCaretFormatting();
-    console.log('caret moved');
-  }
+  // Remove caret formatting after every range change (collapsed
+  // selection)
+  // setTimeout( () => {
+  // TODO: without timeout, this is working for arrow key caret
+  // changes but not spaces deleted
+    if (isRangeCollapsed()) {
+      removeCaretFormatting();
+      console.log(`neilsListMatch active: ${trixEditor.attributeIsActive('neilsListMatch')}`);
+    }
+  // }, 20);
 });
-
-// $(trixElement).on('trix-change', event => {
-//   fullTextHistory.update();
-//   // It apparenty takes a moment for the fullTextHistory to update
-//   // TODO: Implement logic on selection change (without text
-//   // change) to make sure attributes aren't changed or at least
-//   // they change back to normal
-//   if (fullTextHistory.latest === fullTextHistory.previous) {
-//     // Do nothing if update triggered by formatting change
-//     return;
-//   }
-//   operationManager.processOperation();
-// });
 
 // Listener for clicks on matches in editor
 $('body').on('click', 'neils-list-match', event => {
   const word = $(event.target).text();
   const headword = officialListManager.getHeadword(word);
-  const markedWord = document.querySelector(`#official-${headword}`);
-  markedWord.scrollIntoView({behavior: 'auto', block: 'center'});
+  const markedHeadword = document.querySelector(`#official-${headword}`);
+  markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+  officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
 });
 
 const mainSearch = {
@@ -739,10 +754,27 @@ const textMarker = {
   }
 }
 
+const myListManager = {
+  add: function(headword) {
+    $('.my-list').append(headword);
+    $('.my-list').append(', ');
+  }
+}
+
 const officialListManager = {
+  currentlyMatchedRow: null,
   getHeadword: function(word) {
     return (word === 'I') ? inflectionsMap[word] : inflectionsMap[word.toLowerCase()];
   },
+
+  emphasizeCurrentHeadwordMatch: function(markedHeadword) {
+    if (this.currentlyMatchedRow) {
+      this.currentlyMatchedRow.removeClass('official-list-current-match');
+    }
+    this.currentlyMatchedRow = $(markedHeadword).parent();
+    this.currentlyMatchedRow.addClass('official-list-current-match');
+  },
+
   timesMarked: new Map(),
   // FIXME: This isn't counting inflections for some reason
   refreshAllCounts: function() {
@@ -751,7 +783,7 @@ const officialListManager = {
     fullText = fullText.replace(/[^a-zA-Z]+$/, '');
     const fullTextArray = fullText.trim().split(/[^a-zA-Z]+/);
     $('.official-list-count').text('');
-    $('.official-list-headwords').removeClass('official-list-match');
+    $('.official-list-headwords').parent().removeClass('official-list-match');
     this.timesMarked.clear();
 
     fullTextArray.forEach(word => {
@@ -764,7 +796,7 @@ const officialListManager = {
       } else {
         times = 1;
         this.timesMarked.set(word, times);
-        $(`#official-${word}`).addClass('official-list-match');
+        $(`#official-${word}`).parent().addClass('official-list-match');
       }
       $(`#official-${word}-count`).text(times.toString());
     });
@@ -772,17 +804,19 @@ const officialListManager = {
 
   add: function(headword) {
     let times = this.timesMarked.get(headword);
-    const markedWord = document.querySelector(`#official-${headword}`);
+    const markedHeadword = document.querySelector(`#official-${headword}`);
     if (times) {
       times = this.timesMarked.get(headword) + 1;
       this.timesMarked.set(headword, times);
     } else {
       times = 1;
       this.timesMarked.set(headword, times);
-      $(markedWord).addClass('official-list-match');
+      $(markedHeadword).parent().addClass('official-list-match');
+      myListManager.add(headword);
     }
     $(`#official-${headword}-count`).text(times.toString());
-    markedWord.scrollIntoView({behavior: 'auto', block: 'center'});
+    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+    this.emphasizeCurrentHeadwordMatch(markedHeadword);
   },
 
   subtract: function(headword) {
@@ -790,11 +824,11 @@ const officialListManager = {
     if (!times) {
       return;
     }
-    const markedWord = document.querySelector(`#official-${headword}`);
+    const markedHeadword = document.querySelector(`#official-${headword}`);
     if (times === 1) {
       times = 0;
       this.timesMarked.delete(headword);
-      $(markedWord).removeClass('official-list-match');
+      $(markedHeadword).parent().removeClass('official-list-match');
       this.timesMarked.set(headword, times);
       $(`#official-${headword}-count`).text('');
     } else {
@@ -802,20 +836,24 @@ const officialListManager = {
       this.timesMarked.set(headword, times);
       $(`#official-${headword}-count`).text(times.toString());
     }
-    markedWord.scrollIntoView({behavior: 'auto', block: 'center'});
+    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
   },
   populateOfficialList: function() {
     let rowCount = 1;
-    officialList.append(`<table>`);
+    let current_row;
+    let table_parts = [];
+    table_parts.push('<table class="official-list-table">');
     headwords.forEach( headword => {
-      officialList.append('<tr>');
-      officialList.append(`<td class="official-list-rank">${rowCount.toString()}</td>`);
-      officialList.append(`<td id="official-${headword}" class="official-list-headwords">${headword}</td>`);
-      officialList.append(`<td class="official-list-count" id="official-${headword}-count"></td>`);
-      officialList.append('</tr>');
+      table_parts.push('<tr>')
+      table_parts.push(`<td class="official-list-rank">${rowCount.toString()}</td>`);
+      table_parts.push(`<td id="official-${headword}" class="official-list-headwords">${headword}</td>`);
+      table_parts.push(`<td id="official-${headword}-count" class="official-list-count"></td>`);
+      table_parts.push('<td class="official-list-end-spacer"></td>');
+      table_parts.push('</tr>')
       rowCount += 1;
     });
-    officialList.append(`</table>`);
+    table_parts.push('</table>')
+    $('.official-list').append(table_parts.join(''));
   }
 }
 
