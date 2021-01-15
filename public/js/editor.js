@@ -1,7 +1,9 @@
 'use strict';
 
 // TODO: Add "am" to inflections list ("be"); also check
-// contractions
+// contractions; also "I'm"; "ai" is listed as an inflection of "be" and that
+// makes no sense.
+
 
 const trixElement = document.querySelector("trix-editor")
 const trixEditor = trixElement.editor;
@@ -86,13 +88,8 @@ function isRangeCollapsed() {
 
 function removeCaretFormatting() {
   if (trixEditor.attributeIsActive('neilsListMatch')) {
-    console.log('removing neilsListMatch formatting');
-    console.log(`range: ${trixEditor.getSelectedRange()}`);
-    console.log(`neilsListMatch active: ${trixEditor.attributeIsActive('neilsListMatch')}`);
     trixEditor.deactivateAttribute('neilsListMatch');
   } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
-    console.log('removing neilsPunctuation formatting');
-    console.log(`range: ${trixEditor.getSelectedRange()}`);
     trixEditor.deactivateAttribute('neilsPunctuation');
   }
 }
@@ -238,18 +235,15 @@ const operationManager = {
 
   processOperation: function() {
     window.clearTimeout(this.operationTimeoutID);
+    console.log('headword format delay set to false')
     const [text, operation, indices] = this.getDelta();
     const length = text.length;
-    // const fullText = fullTextHistory.latest;
-    // this.characterBeforeOperation = (this.startIndex === 0) ? null : fullText[this.indices.startIndex - 1];
-    // this.characterAfterOperation = fullText[this.indices.endIndex];
     switch (operation) {
     case modes.INSERTION:
       // As a workaround for issue where formatting persists
       // after deleting a space following a list word, if first
       // character is nonword remove neilsListMatch formatting from it
       if (!isWordCharacter(text[0])) {
-        console.log('first char of insertion was nonword');
         const initialRange = trixEditor.getSelectedRange();
         trixEditor.setSelectedRange([indices.startIndex, indices.endIndex + 1]);
         trixEditor.deactivateAttribute('neilsListMatch');
@@ -270,15 +264,7 @@ const operationManager = {
       break;
     case modes.DELETION:
       const deletion = new this.Operation(text, indices, modes.DELETION);
-      console.log('processing deletion');
       this.processDeletion(deletion);
-      // Without this timeout, formatting is removed and the added again
-      // FIXME: If space or other character is added quickly after deletion, the
-      // formatting is still there
-      // setTimeout( () => {
-      //   removeCaretFormatting();
-      // }, 20);
-      console.log('deletion processing concluded');
       break;
     }
 
@@ -317,6 +303,7 @@ const operationManager = {
         headword = officialListManager.getHeadword(word);
         if (headword) {
           textMarker.markWord(word, wordStart, wordEnd);
+          officialListManager.formatHeadWordMatch(headword);
         } else {
           textMarker.unmarkWord(word, wordStart, wordEnd);
         }
@@ -339,8 +326,9 @@ const operationManager = {
     const headword = officialListManager.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
     if (headword) {
-      officialListManager.add(headword);
       textMarker.markWord(word, wordStart, wordEnd);
+      officialListManager.add(headword);
+      officialListManager.formatHeadWordMatch(headword);
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -390,6 +378,7 @@ const operationManager = {
       const headword = officialListManager.getHeadword(word);
       if (headword) {
         textMarker.markWord(word, wordStart, wordEnd);
+        officialListManager.formatHeadWordMatch(headword);
       } else {
         textMarker.unmarkWord(word, wordStart, wordEnd);
       }
@@ -405,6 +394,7 @@ const operationManager = {
     const headword = officialListManager.getHeadword(word);
     if (headword) {
       textMarker.markWord(word, wordStart, wordEnd);
+      officialListManager.formatHeadWordMatch(headword);
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -434,7 +424,6 @@ const operationManager = {
   },
 
   processDeletionOutsideWord: function(deletion) {
-    console.log('Processing deletion outside word');
     if (deletion.characterBeforeType === characterTypes.LETTER &&
        deletion.characterAfterType === characterTypes.LETTER) {
       // Subtract pre-join words if space deleted between words
@@ -459,15 +448,14 @@ const operationManager = {
     this.processWordAtIndex(deletion, deletion.startIndex);
   },
 
-  // FIXME: Sometimes neils-list-match isn't turned off at end of word 
   processOneCharacterInsertion: function(insertion) {
     let word, headword
     let caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
-    console.log('processing single character insertion');
     switch (insertion.point) {
     case points.OUTSIDE_WORD:
       if (insertion.characterType === characterTypes.LETTER) {
+        console.log('headword format delay set to true, outside word, letter insertion')
         this.processLetterInsertionAtEndOfOrOutsideWord(insertion);
       }
       break;
@@ -487,6 +475,7 @@ const operationManager = {
       if (insertion.characterType === characterTypes.NONLETTER) {
         this.processNonLetterInsertionAtEndOfWord(insertion);
       } else {
+        console.log('headword format delay set to true, end of word, letter insertion')
         this.processLetterInsertionAtEndOfOrOutsideWord(insertion);
       }
     }
@@ -566,7 +555,6 @@ $(trixElement).on('trix-selection-change', event => {
   // changes but not spaces deleted
     if (isRangeCollapsed()) {
       removeCaretFormatting();
-      console.log(`neilsListMatch active: ${trixEditor.attributeIsActive('neilsListMatch')}`);
     }
   // }, 20);
 });
@@ -755,28 +743,52 @@ const textMarker = {
 }
 
 const myListManager = {
+  maxWordsInSublist: 10,
+  isFull: function(sublist) {
+    const length = sublist.length;
+    return ((length !== 0) && (length % this.maxWordsInSublist === 0));
+  },
+  hasSingleEmptyString: function(sublist) {
+    return (sublist[0] === '' && sublist.length === 1);
+  },
   add: function(headword) {
-    $('.my-list').append(headword);
-    $('.my-list').append(', ');
+    let sublist = $('#my-list-words-10').text().split(', ');
+    if (this.hasSingleEmptyString(sublist)) {
+      sublist = [];
+    }
+    console.log(`sublist: ${sublist}`);
+    if (this.isFull(sublist)) {
+      this.startNextSublist();
+      console.log('sublist is full')
+    } else {
+      sublist.push(headword);
+      $('#my-list-words-10').text(sublist.join(', '));
+    }
+  },
+  startNextSublist: function() {
   }
 }
 
 const officialListManager = {
   currentlyMatchedRow: null,
+  timesMarked: new Map(),
   getHeadword: function(word) {
     return (word === 'I') ? inflectionsMap[word] : inflectionsMap[word.toLowerCase()];
   },
 
   emphasizeCurrentHeadwordMatch: function(markedHeadword) {
-    if (this.currentlyMatchedRow) {
-      this.currentlyMatchedRow.removeClass('official-list-current-match');
-    }
+    this.deemphasizeCurrentHeadwordMatch(markedHeadword);
     this.currentlyMatchedRow = $(markedHeadword).parent();
     this.currentlyMatchedRow.addClass('official-list-current-match');
+    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
   },
 
-  timesMarked: new Map(),
-  // FIXME: This isn't counting inflections for some reason
+  deemphasizeCurrentHeadwordMatch: function(markedHeadword) {
+    if (this.currentlyMatchedRow) {
+      this.currentlyMatchedRow.removeClass('official-list-current-match');
+      this.currentlyMatchedRow = null;
+    }
+  },
   refreshAllCounts: function() {
     let fullText = fullTextHistory.latest
     // Remove ending punctuation
@@ -802,21 +814,30 @@ const officialListManager = {
     });
   },
 
-  add: function(headword) {
-    let times = this.timesMarked.get(headword);
+  formatHeadWordMatch: function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
+    const row = $(markedHeadword).parent();
+    if (!row.hasClass('official-list-match')) {
+      row.addClass('official-list-match');
+    }
+    this.emphasizeCurrentHeadwordMatch(markedHeadword);
+  },
+
+  add: function(headword) {
+    console.log(`adding word: ${headword}`);
+    let times = this.timesMarked.get(headword);
     if (times) {
       times = this.timesMarked.get(headword) + 1;
       this.timesMarked.set(headword, times);
     } else {
       times = 1;
       this.timesMarked.set(headword, times);
-      $(markedHeadword).parent().addClass('official-list-match');
-      myListManager.add(headword);
     }
+    // Should use the timesMarked map to update myListManager
+    // and it maybe shouldn't happen in this timeout
+    myListManager.add(headword);
+    // Update count in row view
     $(`#official-${headword}-count`).text(times.toString());
-    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-    this.emphasizeCurrentHeadwordMatch(markedHeadword);
   },
 
   subtract: function(headword) {
@@ -836,7 +857,8 @@ const officialListManager = {
       this.timesMarked.set(headword, times);
       $(`#official-${headword}-count`).text(times.toString());
     }
-    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+    // markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+    this.deemphasizeCurrentHeadwordMatch(markedHeadword);
   },
   populateOfficialList: function() {
     let rowCount = 1;
