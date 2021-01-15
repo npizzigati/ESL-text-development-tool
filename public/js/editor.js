@@ -303,7 +303,7 @@ const operationManager = {
         headword = officialListManager.getHeadword(word);
         if (headword) {
           textMarker.markWord(word, wordStart, wordEnd);
-          officialListManager.formatHeadWordMatch(headword);
+          officialListManager.formatHeadword(headword);
         } else {
           textMarker.unmarkWord(word, wordStart, wordEnd);
         }
@@ -328,7 +328,7 @@ const operationManager = {
     if (headword) {
       textMarker.markWord(word, wordStart, wordEnd);
       officialListManager.add(headword);
-      officialListManager.formatHeadWordMatch(headword);
+      officialListManager.formatHeadword(headword);
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -378,7 +378,7 @@ const operationManager = {
       const headword = officialListManager.getHeadword(word);
       if (headword) {
         textMarker.markWord(word, wordStart, wordEnd);
-        officialListManager.formatHeadWordMatch(headword);
+        officialListManager.formatHeadword(headword);
       } else {
         textMarker.unmarkWord(word, wordStart, wordEnd);
       }
@@ -394,7 +394,7 @@ const operationManager = {
     const headword = officialListManager.getHeadword(word);
     if (headword) {
       textMarker.markWord(word, wordStart, wordEnd);
-      officialListManager.formatHeadWordMatch(headword);
+      officialListManager.formatHeadword(headword);
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -814,13 +814,27 @@ const officialListManager = {
     });
   },
 
-  formatHeadWordMatch: function(headword) {
+  formatHeadword: function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     const row = $(markedHeadword).parent();
+    const times = this.timesMarked.get(headword)
     if (!row.hasClass('official-list-match')) {
       row.addClass('official-list-match');
     }
     this.emphasizeCurrentHeadwordMatch(markedHeadword);
+    $(`#official-${headword}-count`).text(times.toString());
+  },
+
+  unformatHeadword: function(headword) {
+    const markedHeadword = document.querySelector(`#official-${headword}`);
+    const times = this.timesMarked.get(headword)
+    if (!times) {
+      $(markedHeadword).parent().removeClass('official-list-match');
+      $(`#official-${headword}-count`).text('');
+    } else {
+      $(`#official-${headword}-count`).text(times.toString());
+    }
+    this.deemphasizeCurrentHeadwordMatch(markedHeadword);
   },
 
   add: function(headword) {
@@ -836,8 +850,6 @@ const officialListManager = {
     // Should use the timesMarked map to update myListManager
     // and it maybe shouldn't happen in this timeout
     myListManager.add(headword);
-    // Update count in row view
-    $(`#official-${headword}-count`).text(times.toString());
   },
 
   subtract: function(headword) {
@@ -845,21 +857,17 @@ const officialListManager = {
     if (!times) {
       return;
     }
-    const markedHeadword = document.querySelector(`#official-${headword}`);
     if (times === 1) {
       times = 0;
       this.timesMarked.delete(headword);
-      $(markedHeadword).parent().removeClass('official-list-match');
       this.timesMarked.set(headword, times);
-      $(`#official-${headword}-count`).text('');
     } else {
       times -= 1
       this.timesMarked.set(headword, times);
-      $(`#official-${headword}-count`).text(times.toString());
     }
-    // markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-    this.deemphasizeCurrentHeadwordMatch(markedHeadword);
+    officialListManager.unformatHeadword(headword);
   },
+
   populateOfficialList: function() {
     let rowCount = 1;
     let current_row;
