@@ -235,7 +235,6 @@ const operationManager = {
 
   processOperation: function() {
     window.clearTimeout(this.operationTimeoutID);
-    console.log('headword format delay set to false')
     const [text, operation, indices] = this.getDelta();
     const length = text.length;
     switch (operation) {
@@ -304,6 +303,7 @@ const operationManager = {
         if (headword) {
           textMarker.markWord(word, wordStart, wordEnd);
           officialListManager.formatHeadword(headword);
+          myListManager.refreshView();
         } else {
           textMarker.unmarkWord(word, wordStart, wordEnd);
         }
@@ -329,6 +329,7 @@ const operationManager = {
       textMarker.markWord(word, wordStart, wordEnd);
       officialListManager.add(headword);
       officialListManager.formatHeadword(headword);
+      myListManager.refreshView();
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -379,6 +380,7 @@ const operationManager = {
       if (headword) {
         textMarker.markWord(word, wordStart, wordEnd);
         officialListManager.formatHeadword(headword);
+        myListManager.refreshView();
       } else {
         textMarker.unmarkWord(word, wordStart, wordEnd);
       }
@@ -395,6 +397,7 @@ const operationManager = {
     if (headword) {
       textMarker.markWord(word, wordStart, wordEnd);
       officialListManager.formatHeadword(headword);
+      myListManager.refreshView();
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -455,7 +458,6 @@ const operationManager = {
     switch (insertion.point) {
     case points.OUTSIDE_WORD:
       if (insertion.characterType === characterTypes.LETTER) {
-        console.log('headword format delay set to true, outside word, letter insertion')
         this.processLetterInsertionAtEndOfOrOutsideWord(insertion);
       }
       break;
@@ -475,7 +477,6 @@ const operationManager = {
       if (insertion.characterType === characterTypes.NONLETTER) {
         this.processNonLetterInsertionAtEndOfWord(insertion);
       } else {
-        console.log('headword format delay set to true, end of word, letter insertion')
         this.processLetterInsertionAtEndOfOrOutsideWord(insertion);
       }
     }
@@ -744,28 +745,38 @@ const textMarker = {
 
 const myListManager = {
   maxWordsInSublist: 10,
-  isFull: function(sublist) {
-    const length = sublist.length;
-    return ((length !== 0) && (length % this.maxWordsInSublist === 0));
+  sublists: { 10: [] },
+  currentList: 10,
+  refreshView: function() {
+    const table_parts = [];
+    $('#my-list-table').remove();
+    table_parts.push('<table id="my-list-table">');
+    Object.entries(this.sublists).forEach(([number, words]) => {
+      const sublist = words.join(', ');
+      table_parts.push('<tr>');
+      table_parts.push(`<td class="my-sublist-number" id="sublist-number-${number}">${number}</td>`);
+      table_parts.push(`<td class="my-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
+      table_parts.push('</tr>');
+    });
+    table_parts.push('</table>');
+    $('.my-list').append(table_parts.join(''));
   },
-  hasSingleEmptyString: function(sublist) {
-    return (sublist[0] === '' && sublist.length === 1);
+  isEmpty: function(sublist) {
+    return sublist.length === 0;
   },
   add: function(headword) {
-    let sublist = $('#my-list-words-10').text().split(', ');
-    if (this.hasSingleEmptyString(sublist)) {
-      sublist = [];
-    }
-    console.log(`sublist: ${sublist}`);
-    if (this.isFull(sublist)) {
-      this.startNextSublist();
-      console.log('sublist is full')
+    if (this.isEmpty(this.sublists[this.currentList])) {
+      this.sublists[this.currentList] = [headword];
     } else {
-      sublist.push(headword);
-      $('#my-list-words-10').text(sublist.join(', '));
+      this.sublists[this.currentList].push(headword);
     }
   },
-  startNextSublist: function() {
+
+  remove: function(headword) {
+    // console.log(`sublists[10]: ${this.sublists[this.currentList]}`);
+    const sublist = this.sublists[this.currentList]; 
+    const new_sublist = sublist.filter(e => { return e !== headword });
+    this.sublists[this.currentList] = new_sublist; 
   }
 }
 
@@ -847,8 +858,6 @@ const officialListManager = {
       times = 1;
       this.timesMarked.set(headword, times);
     }
-    // Should use the timesMarked map to update myListManager
-    // and it maybe shouldn't happen in this timeout
     myListManager.add(headword);
   },
 
@@ -866,6 +875,8 @@ const officialListManager = {
       this.timesMarked.set(headword, times);
     }
     officialListManager.unformatHeadword(headword);
+    myListManager.remove(headword);
+    myListManager.refreshView();
   },
 
   populateOfficialList: function() {
