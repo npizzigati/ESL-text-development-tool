@@ -1,4 +1,5 @@
-'use strict';
+import * as Search from './modules/search.js'
+import { myListManager } from './modules/my-list-manager.js'
 
 // TODO: Add "am" to inflections list ("be"); also check
 // contractions; also "I'm"; "ai" is listed as an inflection of "be" and that
@@ -8,9 +9,6 @@
 const trixElement = document.querySelector("trix-editor")
 const trixEditor = trixElement.editor;
 const wordSeparators = [' ', '.', '!', '?', '-', ':', ';', 'Enter'];
-const searchIconContainer = $('.search-icon-container');
-const searchBox = $('#search-box');
-const searchBoxContainer = $('.search-box-container');
 
 // Add new HTML tag for words in list
 class NeilsListMatch extends HTMLElement {}
@@ -54,23 +52,11 @@ function isContentChanged() {
   return fullTextHistory.latest !== fullTextHistory.previous;
 }
 
-function last(arr) {
-  return arr[arr.length - 1]
-}
-
-function isEmpty(arr) {
-  return arr.length == 0;
-}
-
 function isPunctuation(character) {
   return character.search(/[.,;:~!@#$%&*()_+=|/?<>"{}[\-\^\]\\]/) >= 0;
 }
 
-searchBoxContainer.hide();
-
-function isEscape(key) {
-  return key === "Escape" || key === "Esc";
-}
+$('.search-box-container').hide();
 
 function isWordCharacter(character) {
   if (!character) {
@@ -269,6 +255,8 @@ const operationManager = {
 
     if (length > 1) {
       officialListManager.refreshAllCounts();
+      myListManager.redetermine(fullTextHistory, officialListManager);
+      myListManager.refreshView();
     }
   },
 
@@ -303,7 +291,6 @@ const operationManager = {
         if (headword) {
           textMarker.markWord(word, wordStart, wordEnd);
           officialListManager.formatHeadword(headword);
-          myListManager.refreshView();
         } else {
           textMarker.unmarkWord(word, wordStart, wordEnd);
         }
@@ -547,17 +534,10 @@ $(trixElement).on('trix-selection-change', event => {
   fullTextHistory.update();
   if (isContentChanged()) {
     operationManager.processOperation();
-    // return;
   }
-  // Remove caret formatting after every range change (collapsed
-  // selection)
-  // setTimeout( () => {
-  // TODO: without timeout, this is working for arrow key caret
-  // changes but not spaces deleted
     if (isRangeCollapsed()) {
       removeCaretFormatting();
     }
-  // }, 20);
 });
 
 // Listener for clicks on matches in editor
@@ -568,162 +548,6 @@ $('body').on('click', 'neils-list-match', event => {
   markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
   officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
 });
-
-const mainSearch = {
-  highlightedRanges: [],
-  previousHighlightStart: null,
-  setPreviousHighlightStart: function() {
-    if (isEmpty(this.highlightedRanges)) {
-      return;
-    }
-    this.previousHighlightStart = last(this.highlightedRanges)[0];
-  },
-  searcher: null,
-  clearHighlighting: function() {
-    if (this.highlightedRanges.length === 0) {
-      return;
-    }
-    this.highlightedRanges.forEach(range => {
-      trixEditor.setSelectedRange(range);
-      trixEditor.deactivateAttribute('searchHighlight');
-    });
-    this.highlightedRanges = [];
-  }
-};
-
-const exitSearch = function() {
-  if (searchBoxContainer.is(":hidden")) {
-    return;
-  }
-  hideSearchContainer();
-  // The caret position of the click is not immediately
-  // registered by trix, so we have to wait a fraction of a second
-  setTimeout(function() {
-    const originalCaretPos = trixEditor.getSelectedRange();
-    mainSearch.clearHighlighting();
-    trixEditor.setSelectedRange(originalCaretPos);
-  }, 100);
-}
-
-$(trixElement).on('mouseup', () => {
-  exitSearch();
-});
-
-searchIconContainer.on('click', () => {
-  showSearchContainer();
-});
-
-searchBox.on('keyup', event => {
-  // Exit search if escape pressed
-  if (isEscape(event.key) && searchBoxContainer.is(':visible')) {
-    exitSearch();
-    return;
-  }
-
-  mainSearch.setPreviousHighlightStart();
-  mainSearch.clearHighlighting();
-  // FIXME: Is this the right syntax for removing event listener?
-  // Remove any event listeners from arrow buttons
-  $('.search-arrow').off();
-
-  mainSearch.searcher = new Searcher(searchBox.val());
-  mainSearch.searcher.execute();
-});
-
-function hideSearchContainer() {
-  searchBoxContainer.css('display', 'none');
-  searchIconContainer.css('display', 'block');
-}
-
-function showSearchContainer() {
-  searchIconContainer.css('display', 'none');
-  searchBoxContainer.css('display', 'flex');
-  searchBox.val('');
-  searchBox.focus();
-}
-
-function Searcher(searchString) {
-  this.fullText = trixEditor.getDocument().toString();
-  this.searchString = searchString;
-  this.matches = [];
-  this.matchNumber = 0;
-
-  this.nextMatchUp = function() {
-    this.matchNumber = (this.matchNumber + (this.matches.length - 1)) % this.matches.length;
-    mainSearch.setPreviousHighlightStart();
-    mainSearch.clearHighlighting(this.fullText);
-    searchBox.focus();
-    this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
-    // if (last(mainSearch.highlightedRanges)[1]).includes
-    this.scrollToMatch(this.matches[this.matchNumber]);
-    searchBox.focus();
-  }
-
-  this.nextMatchDown = function() {
-    this.matchNumber = (this.matchNumber + 1) % this.matches.length;
-    mainSearch.setPreviousHighlightStart();
-    mainSearch.clearHighlighting(this.fullText);
-    this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
-    this.scrollToMatch(this.matches[this.matchNumber]);
-    searchBox.focus();
-  }
-
-  this.highlightMatch = function(startIndex, length) {
-    let endIndex = startIndex + length;
-    trixEditor.setSelectedRange([startIndex, endIndex]);
-    trixEditor.activateAttribute('searchHighlight');
-    trixEditor.setSelectedRange([startIndex, startIndex]);
-    mainSearch.highlightedRanges.push([startIndex, endIndex]);
-  }
-  
-  this.execute = function() {
-    mainSearch.clearHighlighting;
-    searchBox.focus();
-    if ($('.search-arrow').hasClass('activated-search-arrow')) {
-      $('.search-arrow').removeClass('activated-search-arrow');
-    }
-    this.matches = this.findMatches(this.fullText, this.searchString); 
-
-    if (this.matches.length == 0) {
-      return;
-    }
-
-    this.highlightMatch(this.matches[0], this.searchString.length);
-    this.scrollToMatch(this.matches[0]);
-    searchBox.focus();
-
-    if (this.matches.length > 1) {
-      if (!$('.search-arrow').hasClass('activated-search-arrow')) {
-        $('.search-arrow').addClass('activated-search-arrow');
-      }
-      $('#search-down').on('click', this.nextMatchDown.bind(this));
-      $('#search-up').on('click', this.nextMatchUp.bind(this));
-    }
-  }
-
-  this.findMatches = function(text, searchString, startIndex = 0) {
-    let fragment = text.slice(startIndex);
-    let fragmentMatchIndex = fragment.indexOf(searchString);
-    if (fragmentMatchIndex == -1 || searchString == '') {
-      return [];
-    }
-    let fullTextMatchIndex = fragmentMatchIndex + startIndex;
-    startIndex = fullTextMatchIndex + 1
-    return [fullTextMatchIndex].concat(this.findMatches(text,
-                                          searchString,
-                                          startIndex));
-  }
-
-  this.scrollToMatch = function(startIndex) {
-    // No need to scroll if building on previous match
-    if (startIndex === mainSearch.previousHighlightStart) {
-      return;
-    }
-    const highlightedElement = document.querySelector('mark');
-    highlightedElement.scrollIntoView({behavior: 'auto',
-                                      block: 'center'});
-  }
-} 
 
 const textMarker = {
   markWord: function(word, startIndex, endIndex) {
@@ -740,43 +564,6 @@ const textMarker = {
     word = (deletedPart) ? word + deletedPart : word;
     trixEditor.setSelectedRange([startIndex, endIndex + 1]);
     trixEditor.deactivateAttribute('neilsListMatch');
-  }
-}
-
-const myListManager = {
-  maxWordsInSublist: 10,
-  sublists: { 10: [] },
-  currentList: 10,
-  refreshView: function() {
-    const table_parts = [];
-    $('#my-list-table').remove();
-    table_parts.push('<table id="my-list-table">');
-    Object.entries(this.sublists).forEach(([number, words]) => {
-      const sublist = words.join(', ');
-      table_parts.push('<tr>');
-      table_parts.push(`<td class="my-sublist-number" id="sublist-number-${number}">${number}</td>`);
-      table_parts.push(`<td class="my-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
-      table_parts.push('</tr>');
-    });
-    table_parts.push('</table>');
-    $('.my-list').append(table_parts.join(''));
-  },
-  isEmpty: function(sublist) {
-    return sublist.length === 0;
-  },
-  add: function(headword) {
-    if (this.isEmpty(this.sublists[this.currentList])) {
-      this.sublists[this.currentList] = [headword];
-    } else {
-      this.sublists[this.currentList].push(headword);
-    }
-  },
-
-  remove: function(headword) {
-    // console.log(`sublists[10]: ${this.sublists[this.currentList]}`);
-    const sublist = this.sublists[this.currentList]; 
-    const new_sublist = sublist.filter(e => { return e !== headword });
-    this.sublists[this.currentList] = new_sublist; 
   }
 }
 
@@ -800,11 +587,12 @@ const officialListManager = {
       this.currentlyMatchedRow = null;
     }
   },
+
   refreshAllCounts: function() {
     let fullText = fullTextHistory.latest
     // Remove ending punctuation
-    fullText = fullText.replace(/[^a-zA-Z]+$/, '');
-    const fullTextArray = fullText.trim().split(/[^a-zA-Z]+/);
+    fullText = fullText.replace(/[^a-zA-Z']+$/, '');
+    const fullTextArray = fullText.trim().split(/[^a-zA-Z']+/);
     $('.official-list-count').text('');
     $('.official-list-headwords').parent().removeClass('official-list-match');
     this.timesMarked.clear();
@@ -815,20 +603,20 @@ const officialListManager = {
       let times = this.timesMarked.get(headword);
       if (times) {
         times += 1;
-        this.timesMarked.set(word, times);
+        this.timesMarked.set(headword, times);
       } else {
         times = 1;
-        this.timesMarked.set(word, times);
-        $(`#official-${word}`).parent().addClass('official-list-match');
+        this.timesMarked.set(headword, times);
+        $(`#official-${headword}`).parent().addClass('official-list-match');
       }
-      $(`#official-${word}-count`).text(times.toString());
+      $(`#official-${headword}-count`).text(times.toString());
     });
   },
 
   formatHeadword: function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     const row = $(markedHeadword).parent();
-    const times = this.timesMarked.get(headword)
+    const times = this.timesMarked.get(headword) || 0;
     if (!row.hasClass('official-list-match')) {
       row.addClass('official-list-match');
     }
@@ -858,7 +646,8 @@ const officialListManager = {
       times = 1;
       this.timesMarked.set(headword, times);
     }
-    myListManager.add(headword);
+    // myListManager.add(headword);
+    myListManager.redetermine(fullTextHistory, this);
   },
 
   subtract: function(headword) {
@@ -875,7 +664,8 @@ const officialListManager = {
       this.timesMarked.set(headword, times);
     }
     officialListManager.unformatHeadword(headword);
-    myListManager.remove(headword);
+    // myListManager.remove(headword);
+    myListManager.redetermine(fullTextHistory, this);
     myListManager.refreshView();
   },
 
@@ -900,3 +690,5 @@ const officialListManager = {
 
 // Populate official word list with headwords
 officialListManager.populateOfficialList();
+
+Search.activateSearchListeners();

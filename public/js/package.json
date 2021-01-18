@@ -1,0 +1,17 @@
+{
+  "name": "js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "editor.js",
+  "type": "module",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Nicholas Pizzigati",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1"
+  },
+  "dependencies": {}
+}
