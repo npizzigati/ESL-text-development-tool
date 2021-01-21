@@ -1,12 +1,12 @@
 import * as Search from './modules/search.js'
-import { myListManager } from './modules/my-list-manager.js'
+import { MyList } from './modules/my_list.js'
 
 // TODO: Add "am" to inflections list ("be"); also check
 // contractions; also "I'm"; "ai" is listed as an inflection of "be" and that
 // makes no sense.
 
 
-const trixElement = document.querySelector("trix-editor")
+const trixElement = document.querySelector("trix-editor");
 const trixEditor = trixElement.editor;
 const wordSeparators = [' ', '.', '!', '?', '-', ':', ';', 'Enter'];
 
@@ -55,8 +55,6 @@ function isContentChanged() {
 function isPunctuation(character) {
   return character.search(/[.,;:~!@#$%&*()_+=|/?<>"{}[\-\^\]\\]/) >= 0;
 }
-
-$('.search-box-container').hide();
 
 function isWordCharacter(character) {
   if (!character) {
@@ -255,8 +253,8 @@ const operationManager = {
 
     if (length > 1) {
       officialListManager.refreshAllCounts();
-      myListManager.redetermine(fullTextHistory, officialListManager);
-      myListManager.refreshView();
+      myList.redetermine(fullTextHistory, officialListManager);
+      myList.refreshView();
     }
   },
 
@@ -316,7 +314,7 @@ const operationManager = {
       textMarker.markWord(word, wordStart, wordEnd);
       officialListManager.add(headword);
       officialListManager.formatHeadword(headword);
-      myListManager.refreshView();
+      myList.refreshView();
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -367,7 +365,7 @@ const operationManager = {
       if (headword) {
         textMarker.markWord(word, wordStart, wordEnd);
         officialListManager.formatHeadword(headword);
-        myListManager.refreshView();
+        myList.refreshView();
       } else {
         textMarker.unmarkWord(word, wordStart, wordEnd);
       }
@@ -384,7 +382,7 @@ const operationManager = {
     if (headword) {
       textMarker.markWord(word, wordStart, wordEnd);
       officialListManager.formatHeadword(headword);
-      myListManager.refreshView();
+      myList.refreshView();
     } else {
       textMarker.unmarkWord(word, wordStart, wordEnd);
     }
@@ -530,7 +528,7 @@ function isSelection(caretPositionArray) {
 }
 
 
-$(trixElement).on('trix-selection-change', event => {
+$(trixElement).on('trix-selection-change', () => {
   fullTextHistory.update();
   if (isContentChanged()) {
     operationManager.processOperation();
@@ -637,7 +635,6 @@ const officialListManager = {
   },
 
   add: function(headword) {
-    console.log(`adding word: ${headword}`);
     let times = this.timesMarked.get(headword);
     if (times) {
       times = this.timesMarked.get(headword) + 1;
@@ -646,8 +643,7 @@ const officialListManager = {
       times = 1;
       this.timesMarked.set(headword, times);
     }
-    // myListManager.add(headword);
-    myListManager.redetermine(fullTextHistory, this);
+    myList.redetermine(fullTextHistory, this);
   },
 
   subtract: function(headword) {
@@ -664,9 +660,9 @@ const officialListManager = {
       this.timesMarked.set(headword, times);
     }
     officialListManager.unformatHeadword(headword);
-    // myListManager.remove(headword);
-    myListManager.redetermine(fullTextHistory, this);
-    myListManager.refreshView();
+    // myList.remove(headword);
+    myList.redetermine(fullTextHistory, this);
+    myList.refreshView();
   },
 
   populateOfficialList: function() {
@@ -692,3 +688,9 @@ const officialListManager = {
 officialListManager.populateOfficialList();
 
 Search.activateSearchListeners();
+
+const myList = new MyList(officialListManager);
+myList.show()
+myList.activateListeners();
+
+$('.search-box-container').hide();

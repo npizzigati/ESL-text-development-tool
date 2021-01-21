@@ -19,13 +19,13 @@ function last(arr) {
 const mainSearch = {
   highlightedRanges: [],
   previousHighlightStart: null,
+  searcher: null,
   setPreviousHighlightStart: function() {
     if (isEmpty(this.highlightedRanges)) {
       return;
     }
     this.previousHighlightStart = last(this.highlightedRanges)[0];
   },
-  searcher: null,
   clearHighlighting: function() {
     if (this.highlightedRanges.length === 0) {
       return;
@@ -52,7 +52,7 @@ const exitSearch = function() {
   }, 100);
 }
 
-function activateSearchListeners(trixElement) {
+function activateSearchListeners() {
   $(trixElement).on('mouseup', () => {
     exitSearch();
   });
