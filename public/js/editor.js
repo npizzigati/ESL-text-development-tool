@@ -1,5 +1,6 @@
-import * as Search from './modules/search.js'
-import { MyList } from './modules/my_list.js'
+import * as Search from './modules/search.js';
+import * as Utils from './modules/utilities.js';
+import { MyList } from './modules/my_list.js';
 
 // TODO: Add "am" to inflections list ("be"); also check
 // contractions; also "I'm"; "ai" is listed as an inflection of "be" and that
@@ -278,27 +279,42 @@ const operationManager = {
 
   processMultipleCharacterInsertion: function(insertion) {
     const fullText = insertion.postOperationFullText;
-    let wordStart, wordEnd, word, headword, character;
-    let index = insertion.startIndex
-    while (index < insertion.endIndex) {
-      character = fullText[index];
+    let index = 0;
+    const text = insertion.text;
+    const length = text.length
+    let word, wordStart, wordEnd, headword, character;
+    let newText = '';
+
+    while (index < length) {
+      character = text[index];
       if (isWordCharacter(character)) {
-        [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
-        word = retrieveWord(fullText, [wordStart, wordEnd]); 
+        [wordStart, wordEnd] = retrieveWordCoordinates(text, index);
+        word = retrieveWord(text, [wordStart, wordEnd]); 
         headword = officialListManager.getHeadword(word);
         if (headword) {
-          textMarker.markWord(word, wordStart, wordEnd);
-          officialListManager.formatHeadword(headword);
+          newText += this.htmlMarkWord(word);
         } else {
-          textMarker.unmarkWord(word, wordStart, wordEnd);
+          newText += word;
         }
-        index = wordEnd
+        index = wordEnd + 1;
+      } else if (isPunctuation(character)) {
+        newText += this.htmlFormatPunctuation(character);
+        index += 1;
       } else {
-        this.processPossiblePunctuationCharacter(character, index);
+        newText += character;
+        index += 1;
       }
-      index += 1
     }
-    trixEditor.setSelectedRange(insertion.endIndex);
+    trixEditor.setSelectedRange([insertion.startIndex, insertion.endIndex])
+    trixEditor.insertHTML(newText);
+  },
+
+  htmlMarkWord: function(word) {
+    return '<neils-list-match>' + word + '</neils-list-match>';
+  },
+
+  htmlFormatPunctuation: function(character) {
+    return '<neils-punctuation>' + character + '</neils-punctuation>';
   },
 
   subtractPreSplitWord: function(insertion) {
