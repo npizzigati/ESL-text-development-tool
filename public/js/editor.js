@@ -12,16 +12,16 @@ const trixEditor = trixElement.editor;
 const wordSeparators = [' ', '.', '!', '?', '-', ':', ';', 'Enter'];
 
 // Add new HTML tag for words in list
-class NeilsListMatch extends HTMLElement {}
-customElements.define('neils-list-match', NeilsListMatch);
+class NeilsNonMatch extends HTMLElement {}
+customElements.define('neils-non-match', NeilsNonMatch);
 
 // Add new HTML tag for punctuation
 class NeilsPunctuation extends HTMLElement {}
 customElements.define('neils-punctuation', NeilsPunctuation);
 
 // Add Trix format for marking list words
-Trix.config.textAttributes.neilsListMatch = {
-  tagName: 'neils-list-match',
+Trix.config.textAttributes.neilsNonMatch = {
+  tagName: 'neils-non-match',
   inheritable: true
 };
 
@@ -72,8 +72,8 @@ function isRangeCollapsed() {
 }
 
 function removeCaretFormatting() {
-  if (trixEditor.attributeIsActive('neilsListMatch')) {
-    trixEditor.deactivateAttribute('neilsListMatch');
+  if (trixEditor.attributeIsActive('neilsNonMatch')) {
+    trixEditor.deactivateAttribute('neilsNonMatch');
   } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
     trixEditor.deactivateAttribute('neilsPunctuation');
   }
@@ -226,11 +226,11 @@ const operationManager = {
     case modes.INSERTION:
       // As a workaround for issue where formatting persists
       // after deleting a space following a list word, if first
-      // character is nonword remove neilsListMatch formatting from it
+      // character is nonword remove neilsNonMatch formatting from it
       if (!isWordCharacter(text[0])) {
         const initialRange = trixEditor.getSelectedRange();
         trixEditor.setSelectedRange([indices.startIndex, indices.endIndex + 1]);
-        trixEditor.deactivateAttribute('neilsListMatch');
+        trixEditor.deactivateAttribute('neilsNonMatch');
         trixEditor.setSelectedRange(initialRange);
       }
       
@@ -272,9 +272,6 @@ const operationManager = {
     trixEditor.activateAttribute('neilsPunctuation');
 
     trixEditor.setSelectedRange(initialCaretPosition);
-    // Have to remove caret formatting here; for some reason it's
-    // not being done correctly in the on selection change listener.
-    // removeCaretFormatting();
   },
 
   processMultipleCharacterInsertion: function(insertion) {
@@ -292,9 +289,9 @@ const operationManager = {
         word = retrieveWord(text, [wordStart, wordEnd]); 
         headword = officialListManager.getHeadword(word);
         if (headword) {
-          newText += this.htmlMarkWord(word);
-        } else {
           newText += word;
+        } else {
+          newText += this.htmlMarkWord(word);
         }
         index = wordEnd + 1;
       } else if (isPunctuation(character)) {
@@ -310,7 +307,7 @@ const operationManager = {
   },
 
   htmlMarkWord: function(word) {
-    return '<neils-list-match>' + word + '</neils-list-match>';
+    return '<neils-non-match>' + word + '</neils-non-match>';
   },
 
   htmlFormatPunctuation: function(character) {
@@ -327,12 +324,12 @@ const operationManager = {
     const headword = officialListManager.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
     if (headword) {
-      textMarker.markWord(word, wordStart, wordEnd);
+      textMarker.unmarkWord(word, wordStart, wordEnd);
       officialListManager.add(headword);
       officialListManager.formatHeadword(headword);
       myList.refreshView();
     } else {
-      textMarker.unmarkWord(word, wordStart, wordEnd);
+      textMarker.markWord(word, wordStart, wordEnd);
     }
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
   },
@@ -367,6 +364,8 @@ const operationManager = {
       if (previousWordHeadword) {
         officialListManager.subtract(previousWordHeadword);
       }
+      // TODO: Does this unmarkWord make sense here now, or
+      // should it be markWord?
       textMarker.unmarkWord(previousWord, previousWordStart, previousWordEnd);
       trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }
@@ -379,11 +378,11 @@ const operationManager = {
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       const headword = officialListManager.getHeadword(word);
       if (headword) {
-        textMarker.markWord(word, wordStart, wordEnd);
+        textMarker.unmarkWord(word, wordStart, wordEnd);
         officialListManager.formatHeadword(headword);
         myList.refreshView();
       } else {
-        textMarker.unmarkWord(word, wordStart, wordEnd);
+        textMarker.markWord(word, wordStart, wordEnd);
       }
       trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }, 500);
@@ -396,11 +395,11 @@ const operationManager = {
     const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     const headword = officialListManager.getHeadword(word);
     if (headword) {
-      textMarker.markWord(word, wordStart, wordEnd);
+      textMarker.unmarkWord(word, wordStart, wordEnd);
       officialListManager.formatHeadword(headword);
       myList.refreshView();
     } else {
-      textMarker.unmarkWord(word, wordStart, wordEnd);
+      textMarker.markWord(word, wordStart, wordEnd);
     }
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
   },
@@ -439,7 +438,8 @@ const operationManager = {
 
   processDeletionOfSingleCharacterWord: function(deletion) {
     this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
-    trixEditor.deactivateAttribute('neilsListMatch');
+    // TODO: Is this deactivateAttribute necessary?
+    // trixEditor.deactivateAttribute('neilsNonMatch');
   },
 
   processDeletionAtEndOfWord: function(deletion) {
@@ -555,29 +555,29 @@ $(trixElement).on('trix-selection-change', () => {
 });
 
 // Listener for clicks on matches in editor
-$('body').on('click', 'neils-list-match', event => {
-  const word = $(event.target).text();
-  const headword = officialListManager.getHeadword(word);
-  const markedHeadword = document.querySelector(`#official-${headword}`);
-  markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-  officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
-});
+// $('body').on('click', 'neils-list-match', event => {
+//   const word = $(event.target).text();
+//   const headword = officialListManager.getHeadword(word);
+//   const markedHeadword = document.querySelector(`#official-${headword}`);
+//   markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+//   officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
+// });
 
 const textMarker = {
   markWord: function(word, startIndex, endIndex) {
     trixEditor.setSelectedRange([startIndex, endIndex + 1]);
-    trixEditor.activateAttribute('neilsListMatch');
+    trixEditor.activateAttribute('neilsNonMatch');
   },
 
   unmarkWord: function(word, startIndex, endIndex, deletedPart = null) {
     if (word === deletedPart) {
-      trixEditor.deactivateAttribute('neilsListMatch');
+      trixEditor.deactivateAttribute('neilsNonMatch');
       return;
     }
 
     word = (deletedPart) ? word + deletedPart : word;
     trixEditor.setSelectedRange([startIndex, endIndex + 1]);
-    trixEditor.deactivateAttribute('neilsListMatch');
+    trixEditor.deactivateAttribute('neilsNonMatch');
   }
 }
 

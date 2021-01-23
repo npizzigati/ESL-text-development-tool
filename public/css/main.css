@@ -20,8 +20,8 @@ neils-section {
     font-style: italic;
 }
 
-neils-list-match {
-    color: black;
+neils-non-match {
+    color: gray;
 }
 
 neils-punctuation {
@@ -29,7 +29,7 @@ neils-punctuation {
 }
 
 trix-editor {
-    color: lightgrey;
+    color: black;
     caret-color: black;
     flex: 1 0 700px;
 }
