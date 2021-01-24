@@ -22,12 +22,7 @@ function MyList(officialListManager) {
     $('.my-list').append(table_parts.join(''));
   };
 
-  this.refreshView = function() {
-    $('#my-list-table').remove();
-    this.show();
-  };
-
-  this.redetermine = function() {
+  this.refresh = function() {
     // TODO: Iteration of array of all words also happens when
     // multiple-word insertion occurs. No need to do it twice
     const fullText = this.trixEditor.getDocument().toString();
@@ -38,6 +33,9 @@ function MyList(officialListManager) {
     const [sublistHeadwords, sublistInflectionsMapping] = this.buildSublistHeadwordsAndInflections(fullTextArray);
     [this.sublistHeadwords, this.sublistInflectionsMapping] = [sublistHeadwords, sublistInflectionsMapping]; 
     this.sublists = this.buildSublists(sublistHeadwords);
+
+    $('#my-list-table').remove();
+    this.show();
   };
 
   this.buildSublists = function(sublistHeadwords) {
@@ -128,8 +126,6 @@ function MyList(officialListManager) {
       $(this.trixElement).off('keyup', this.clearHighlighting);
     }
   };
-
-
 
   this.activateListeners = function() {
     $('.my-list').on('click', '.my-sublist-number', event => {

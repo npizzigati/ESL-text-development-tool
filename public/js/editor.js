@@ -16,8 +16,8 @@ class NeilsNonMatch extends HTMLElement {}
 customElements.define('neils-non-match', NeilsNonMatch);
 
 // Add new HTML tag for punctuation
-class NeilsPunctuation extends HTMLElement {}
-customElements.define('neils-punctuation', NeilsPunctuation);
+// class NeilsPunctuation extends HTMLElement {}
+// customElements.define('neils-punctuation', NeilsPunctuation);
 
 // Add Trix format for marking list words
 Trix.config.textAttributes.neilsNonMatch = {
@@ -26,10 +26,10 @@ Trix.config.textAttributes.neilsNonMatch = {
 };
 
 // Add Trix format for formatting punctuation
-Trix.config.textAttributes.neilsPunctuation = {
-  tagName: 'neils-punctuation',
-  inheritable: false
-};
+// Trix.config.textAttributes.neilsPunctuation = {
+//   tagName: 'neils-punctuation',
+//   inheritable: false
+// };
 
 // Add Trix format for highlighting search matches
 Trix.config.textAttributes.searchHighlight = {
@@ -74,8 +74,8 @@ function isRangeCollapsed() {
 function removeCaretFormatting() {
   if (trixEditor.attributeIsActive('neilsNonMatch')) {
     trixEditor.deactivateAttribute('neilsNonMatch');
-  } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
-    trixEditor.deactivateAttribute('neilsPunctuation');
+  // } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
+  //   trixEditor.deactivateAttribute('neilsPunctuation');
   }
 }
 
@@ -214,7 +214,6 @@ const operationManager = {
         break;
       }
     }
-
     this.point = this.determinePoint();
   },
 
@@ -222,6 +221,7 @@ const operationManager = {
     window.clearTimeout(this.operationTimeoutID);
     const [text, operation, indices] = this.getDelta();
     const length = text.length;
+
     switch (operation) {
     case modes.INSERTION:
       // As a workaround for issue where formatting persists
@@ -236,42 +236,28 @@ const operationManager = {
       
       const insertion = new this.Operation(text, indices, modes.INSERTION);
       if (length === 1) {
-        this.processPossiblePunctuationCharacter(insertion.text, insertion.startIndex);
         this.processOneCharacterInsertion(insertion);
       } else {
         // Seem to need this delay here to be able to process
         // multiple character insertion
         setTimeout( () => {
           this.processMultipleCharacterInsertion(insertion);
+          officialListManager.refresh();
+          myList.refresh();
         }, 20);
       }
       break;
     case modes.DELETION:
+      officialListManager.refresh();
+      myList.refresh();
       const deletion = new this.Operation(text, indices, modes.DELETION);
       this.processDeletion(deletion);
       break;
     }
 
-    if (length > 1) {
-      officialListManager.refreshAllCounts();
-      myList.redetermine(fullTextHistory, officialListManager);
-      myList.refreshView();
-    }
-  },
-
-  processPossiblePunctuationCharacter(character, index) {
-    if (isPunctuation(character)) {
-      this.formatPunctuation(index, index + 1);
-    }
-  },
-
-  formatPunctuation(startIndex, endIndex) {
-    const initialCaretPosition = trixEditor.getSelectedRange();
-
-    trixEditor.setSelectedRange([startIndex, endIndex]);
-    trixEditor.activateAttribute('neilsPunctuation');
-
-    trixEditor.setSelectedRange(initialCaretPosition);
+    // if (length > 1) {
+    //   myList.refresh();
+    // }
   },
 
   processMultipleCharacterInsertion: function(insertion) {
@@ -294,9 +280,9 @@ const operationManager = {
           newText += this.htmlMarkWord(word);
         }
         index = wordEnd + 1;
-      } else if (isPunctuation(character)) {
-        newText += this.htmlFormatPunctuation(character);
-        index += 1;
+      // } else if (isPunctuation(character)) {
+      //   newText += this.htmlFormatPunctuation(character);
+      //   index += 1;
       } else {
         newText += character;
         index += 1;
@@ -310,13 +296,13 @@ const operationManager = {
     return '<neils-non-match>' + word + '</neils-non-match>';
   },
 
-  htmlFormatPunctuation: function(character) {
-    return '<neils-punctuation>' + character + '</neils-punctuation>';
-  },
+  // htmlFormatPunctuation: function(character) {
+  //   return '<neils-punctuation>' + character + '</neils-punctuation>';
+  // },
 
-  subtractPreSplitWord: function(insertion) {
-    this.subtractWordAtIndex(insertion.preOperationFullText, insertion.startIndex);
-  },
+  // subtractPreSplitWord: function(insertion) {
+  //   this.subtractWordAtIndex(insertion.preOperationFullText, insertion.startIndex);
+  // },
 
   processWordAtIndex: function(operation, index) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
@@ -325,22 +311,25 @@ const operationManager = {
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
     if (headword) {
       textMarker.unmarkWord(word, wordStart, wordEnd);
-      officialListManager.add(headword);
-      officialListManager.formatHeadword(headword);
-      myList.refreshView();
     } else {
       textMarker.markWord(word, wordStart, wordEnd);
     }
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
+    officialListManager.refresh();
+    if (headword) {
+      officialListManager.focusHeadword(headword);
+    }
+    myList.refresh();
   },
 
   processLetterInsertionAtStartOrMiddleOfWord: function(insertion) {
-    this.subtractPreSplitWord(insertion);
+    // this.subtractPreSplitWord(insertion);
     this.processWordAtIndex(insertion, insertion.endIndex);
   },
 
   processNonLetterInsertionInsideWord: function(insertion) {
-    this.subtractPreSplitWord(insertion); 
+    console.log('processing non-letter insertion inside word');
+    // this.subtractPreSplitWord(insertion); 
     // process new word after insertion
     this.processWordAtIndex(insertion, insertion.endIndex);
     // process new word before insertion
@@ -354,22 +343,26 @@ const operationManager = {
     let [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex);
     const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     const headword = officialListManager.getHeadword(word);
-    if (headword) {
-      officialListManager.add(headword);
-    }
+    // if (headword) {
+    //   // officialListManager.add(headword);
+    // }
+    // Unmark previous word when adding letter to it
     if (word.length > 1) {
       const [previousWordStart, previousWordEnd] = [wordStart, wordEnd - 1];
       const previousWord = word.slice(0, -1);
-      const previousWordHeadword = officialListManager.getHeadword(previousWord);
-      if (previousWordHeadword) {
-        officialListManager.subtract(previousWordHeadword);
-      }
+      // const previousWordHeadword = officialListManager.getHeadword(previousWord);
+      // if (previousWordHeadword) {
+      //   officialListManager.subtract(previousWordHeadword);
+      // }
       // TODO: Does this unmarkWord make sense here now, or
       // should it be markWord?
       textMarker.unmarkWord(previousWord, previousWordStart, previousWordEnd);
       trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }
 
+    // This timeout allows us to type a multi-letter word without
+    // them being analyzed for keyword matches on every letter entered
+    // (Is is canceled if a new letter is entered before the time limit)
     this.operationTimeoutID = window.setTimeout( () => {
       const fullText = insertion.postOperationFullText;
       const caretPositionBeforeMarking = trixEditor.getSelectedRange();
@@ -379,12 +372,15 @@ const operationManager = {
       const headword = officialListManager.getHeadword(word);
       if (headword) {
         textMarker.unmarkWord(word, wordStart, wordEnd);
-        officialListManager.formatHeadword(headword);
-        myList.refreshView();
       } else {
         textMarker.markWord(word, wordStart, wordEnd);
       }
       trixEditor.setSelectedRange(caretPositionBeforeMarking);
+      officialListManager.refresh();
+      if (headword) {
+        officialListManager.focusHeadword(headword);
+      }
+      myList.refresh();
     }, 500);
   },
 
@@ -396,33 +392,39 @@ const operationManager = {
     const headword = officialListManager.getHeadword(word);
     if (headword) {
       textMarker.unmarkWord(word, wordStart, wordEnd);
-      officialListManager.formatHeadword(headword);
-      myList.refreshView();
+      // officialListManager.focusHeadword(headword);
     } else {
       textMarker.markWord(word, wordStart, wordEnd);
     }
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
-  },
-
-  subtractWordAtIndex: function(fullText, index) {
-    const [wordStart, wordEnd] = retrieveWordCoordinates(fullText,
-                                                         index);
-    const word = retrieveWord(fullText, [wordStart, wordEnd]);
-    const headword = officialListManager.getHeadword(word);
+    officialListManager.refresh();
     if (headword) {
-      officialListManager.subtract(headword);
+      officialListManager.focusHeadword(headword);
     }
+    myList.refresh();
   },
 
-  subtractPreJoinWords: function(deletion) {
-    // Subtract first word
-    this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
-    // Subtract second word
-    this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex + 1);
-  },
+  // subtractWordAtIndex: function(fullText, index) {
+  //   const [wordStart, wordEnd] = retrieveWordCoordinates(fullText,
+  //                                                        index);
+  //   const word = retrieveWord(fullText, [wordStart, wordEnd]);
+  //   console.log(`word to subtract: ${word}`);
+  //   const headword = officialListManager.getHeadword(word);
+  //   // if (headword) {
+  //   //   officialListManager.subtract(headword);
+  //   //   console.log(`Should remove ${headword} from official list`);
+  //   // }
+  // },
+
+  // subtractPreJoinWords: function(deletion) {
+  //   // Subtract first word
+  //   // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
+  //   // Subtract second word
+  //   // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex + 1);
+  // },
 
   processDeletionInsideWord: function(deletion) {
-    this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
+    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
     this.processWordAtIndex(deletion, deletion.startIndex);
   },
 
@@ -430,25 +432,25 @@ const operationManager = {
     if (deletion.characterBeforeType === characterTypes.LETTER &&
        deletion.characterAfterType === characterTypes.LETTER) {
       // Subtract pre-join words if space deleted between words
-      this.subtractPreJoinWords(deletion);
+      // this.subtractPreJoinWords(deletion);
       // Process newly created word
       this.processWordAtIndex(deletion, deletion.startIndex - 1);
     }
   },
 
   processDeletionOfSingleCharacterWord: function(deletion) {
-    this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
+    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
     // TODO: Is this deactivateAttribute necessary?
     // trixEditor.deactivateAttribute('neilsNonMatch');
   },
 
   processDeletionAtEndOfWord: function(deletion) {
-    this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
+    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
     this.processWordAtIndex(deletion, deletion.startIndex - 1);
   },
 
   processDeletionAtStartOfWord: function(deletion) {
-    this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
+    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
     this.processWordAtIndex(deletion, deletion.startIndex);
   },
 
@@ -493,7 +495,7 @@ const operationManager = {
       this.processDeletionOutsideWord(deletion);
       break;
     case points.ON_SINGLE_CHARACTER_WORD:
-      this.processDeletionOfSingleCharacterWord(deletion);
+      // this.processDeletionOfSingleCharacterWord(deletion);
       break;
     case points.INSIDE_WORD:
       this.processDeletionInsideWord(deletion);
@@ -602,7 +604,7 @@ const officialListManager = {
     }
   },
 
-  refreshAllCounts: function() {
+  refresh: function() {
     let fullText = fullTextHistory.latest
     // Remove ending punctuation
     fullText = fullText.replace(/[^a-zA-Z']+$/, '');
@@ -627,18 +629,19 @@ const officialListManager = {
     });
   },
 
-  formatHeadword: function(headword) {
+  focusHeadword: function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     const row = $(markedHeadword).parent();
     const times = this.timesMarked.get(headword) || 0;
-    if (!row.hasClass('official-list-match')) {
-      row.addClass('official-list-match');
-    }
+    // TODO: I might need this:
+    // if (!row.hasClass('official-list-match')) {
+    //   row.addClass('official-list-match');
+    // }
     this.emphasizeCurrentHeadwordMatch(markedHeadword);
     $(`#official-${headword}-count`).text(times.toString());
   },
 
-  unformatHeadword: function(headword) {
+  unfocusHeadword: function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     const times = this.timesMarked.get(headword)
     if (!times) {
@@ -650,36 +653,35 @@ const officialListManager = {
     this.deemphasizeCurrentHeadwordMatch(markedHeadword);
   },
 
-  add: function(headword) {
-    let times = this.timesMarked.get(headword);
-    if (times) {
-      times = this.timesMarked.get(headword) + 1;
-      this.timesMarked.set(headword, times);
-    } else {
-      times = 1;
-      this.timesMarked.set(headword, times);
-    }
-    myList.redetermine(fullTextHistory, this);
-  },
+  // add: function(headword) {
+  //   let times = this.timesMarked.get(headword);
+  //   if (times) {
+  //     times = this.timesMarked.get(headword) + 1;
+  //     this.timesMarked.set(headword, times);
+  //   } else {
+  //     times = 1;
+  //     this.timesMarked.set(headword, times);
+  //   }
+  //   myList.refresh();
+  // },
 
-  subtract: function(headword) {
-    let times = this.timesMarked.get(headword)
-    if (!times) {
-      return;
-    }
-    if (times === 1) {
-      times = 0;
-      this.timesMarked.delete(headword);
-      this.timesMarked.set(headword, times);
-    } else {
-      times -= 1
-      this.timesMarked.set(headword, times);
-    }
-    officialListManager.unformatHeadword(headword);
-    // myList.remove(headword);
-    myList.redetermine(fullTextHistory, this);
-    myList.refreshView();
-  },
+  // subtract: function(headword) {
+  //   let times = this.timesMarked.get(headword)
+  //   if (!times) {
+  //     return;
+  //   }
+  //   if (times === 1) {
+  //     times = 0;
+  //     this.timesMarked.delete(headword);
+  //     this.timesMarked.set(headword, times);
+  //   } else {
+  //     times -= 1
+  //     this.timesMarked.set(headword, times);
+  //   }
+  //   officialListManager.unfocusHeadword(headword);
+  //   myList.refresh();
+  //   myList.refreshView();
+  // },
 
   populateOfficialList: function() {
     let rowCount = 1;
