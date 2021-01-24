@@ -254,10 +254,6 @@ const operationManager = {
       this.processDeletion(deletion);
       break;
     }
-
-    // if (length > 1) {
-    //   myList.refresh();
-    // }
   },
 
   processMultipleCharacterInsertion: function(insertion) {
@@ -280,9 +276,6 @@ const operationManager = {
           newText += this.htmlMarkWord(word);
         }
         index = wordEnd + 1;
-      // } else if (isPunctuation(character)) {
-      //   newText += this.htmlFormatPunctuation(character);
-      //   index += 1;
       } else {
         newText += character;
         index += 1;
@@ -296,40 +289,29 @@ const operationManager = {
     return '<neils-non-match>' + word + '</neils-non-match>';
   },
 
-  // htmlFormatPunctuation: function(character) {
-  //   return '<neils-punctuation>' + character + '</neils-punctuation>';
-  // },
-
-  // subtractPreSplitWord: function(insertion) {
-  //   this.subtractWordAtIndex(insertion.preOperationFullText, insertion.startIndex);
-  // },
-
   processWordAtIndex: function(operation, index) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
     const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]); 
     const headword = officialListManager.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
+
+    officialListManager.refresh();
+    myList.refresh();
     if (headword) {
       textMarker.unmarkWord(word, wordStart, wordEnd);
+      officialListManager.focusHeadword(headword);
     } else {
       textMarker.markWord(word, wordStart, wordEnd);
     }
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
-    officialListManager.refresh();
-    if (headword) {
-      officialListManager.focusHeadword(headword);
-    }
-    myList.refresh();
   },
 
   processLetterInsertionAtStartOrMiddleOfWord: function(insertion) {
-    // this.subtractPreSplitWord(insertion);
     this.processWordAtIndex(insertion, insertion.endIndex);
   },
 
   processNonLetterInsertionInsideWord: function(insertion) {
     console.log('processing non-letter insertion inside word');
-    // this.subtractPreSplitWord(insertion); 
     // process new word after insertion
     this.processWordAtIndex(insertion, insertion.endIndex);
     // process new word before insertion
@@ -343,19 +325,11 @@ const operationManager = {
     let [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex);
     const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     const headword = officialListManager.getHeadword(word);
-    // if (headword) {
-    //   // officialListManager.add(headword);
-    // }
     // Unmark previous word when adding letter to it
     if (word.length > 1) {
       const [previousWordStart, previousWordEnd] = [wordStart, wordEnd - 1];
       const previousWord = word.slice(0, -1);
-      // const previousWordHeadword = officialListManager.getHeadword(previousWord);
-      // if (previousWordHeadword) {
-      //   officialListManager.subtract(previousWordHeadword);
-      // }
-      // TODO: Does this unmarkWord make sense here now, or
-      // should it be markWord?
+
       textMarker.unmarkWord(previousWord, previousWordStart, previousWordEnd);
       trixEditor.setSelectedRange(caretPositionBeforeMarking);
     }
@@ -370,17 +344,15 @@ const operationManager = {
       const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex);
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       const headword = officialListManager.getHeadword(word);
+      officialListManager.refresh();
+      myList.refresh();
       if (headword) {
         textMarker.unmarkWord(word, wordStart, wordEnd);
+        officialListManager.focusHeadword(headword);
       } else {
         textMarker.markWord(word, wordStart, wordEnd);
       }
       trixEditor.setSelectedRange(caretPositionBeforeMarking);
-      officialListManager.refresh();
-      if (headword) {
-        officialListManager.focusHeadword(headword);
-      }
-      myList.refresh();
     }, 500);
   },
 
@@ -390,38 +362,17 @@ const operationManager = {
     const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex - 1);
     const word = retrieveWord(fullText, [wordStart, wordEnd]); 
     const headword = officialListManager.getHeadword(word);
+
+    officialListManager.refresh();
+    myList.refresh();
     if (headword) {
+      officialListManager.focusHeadword(headword);
       textMarker.unmarkWord(word, wordStart, wordEnd);
-      // officialListManager.focusHeadword(headword);
     } else {
       textMarker.markWord(word, wordStart, wordEnd);
     }
     trixEditor.setSelectedRange(caretPositionBeforeMarking);
-    officialListManager.refresh();
-    if (headword) {
-      officialListManager.focusHeadword(headword);
-    }
-    myList.refresh();
   },
-
-  // subtractWordAtIndex: function(fullText, index) {
-  //   const [wordStart, wordEnd] = retrieveWordCoordinates(fullText,
-  //                                                        index);
-  //   const word = retrieveWord(fullText, [wordStart, wordEnd]);
-  //   console.log(`word to subtract: ${word}`);
-  //   const headword = officialListManager.getHeadword(word);
-  //   // if (headword) {
-  //   //   officialListManager.subtract(headword);
-  //   //   console.log(`Should remove ${headword} from official list`);
-  //   // }
-  // },
-
-  // subtractPreJoinWords: function(deletion) {
-  //   // Subtract first word
-  //   // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
-  //   // Subtract second word
-  //   // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex + 1);
-  // },
 
   processDeletionInsideWord: function(deletion) {
     // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
@@ -485,10 +436,6 @@ const operationManager = {
     }
   },
 
-
-  // FIXME: when deleting letters from first word, it doesn't
-  // automatically unmark
-  
   processDeletion: function(deletion) {
     switch (deletion.point) {
     case points.OUTSIDE_WORD:
@@ -652,36 +599,6 @@ const officialListManager = {
     }
     this.deemphasizeCurrentHeadwordMatch(markedHeadword);
   },
-
-  // add: function(headword) {
-  //   let times = this.timesMarked.get(headword);
-  //   if (times) {
-  //     times = this.timesMarked.get(headword) + 1;
-  //     this.timesMarked.set(headword, times);
-  //   } else {
-  //     times = 1;
-  //     this.timesMarked.set(headword, times);
-  //   }
-  //   myList.refresh();
-  // },
-
-  // subtract: function(headword) {
-  //   let times = this.timesMarked.get(headword)
-  //   if (!times) {
-  //     return;
-  //   }
-  //   if (times === 1) {
-  //     times = 0;
-  //     this.timesMarked.delete(headword);
-  //     this.timesMarked.set(headword, times);
-  //   } else {
-  //     times -= 1
-  //     this.timesMarked.set(headword, times);
-  //   }
-  //   officialListManager.unfocusHeadword(headword);
-  //   myList.refresh();
-  //   myList.refreshView();
-  // },
 
   populateOfficialList: function() {
     let rowCount = 1;
