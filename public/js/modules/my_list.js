@@ -1,8 +1,8 @@
-function MyList(officialListManager) {
+function MyList(listData) {
 
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
-  this.officialListManager = officialListManager;
+  this.listData = listData;
   this.maxWordsInSublist = 10;
   this.sublists = [];
   this.sublistInflectionsMapping = {};
@@ -22,29 +22,28 @@ function MyList(officialListManager) {
     $('.my-list').append(table_parts.join(''));
   };
 
+  // TODO: Need to update this function and the refresh function in
+  // official_list_manager to use the data from the this.listData oblect
   this.refresh = function() {
-    // TODO: Iteration of array of all words also happens when
-    // multiple-word insertion occurs. No need to do it twice
     const fullText = this.trixEditor.getDocument().toString();
     const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
     const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
     // Need to record only the first appearance of each headword
     // in an array
-    const [sublistHeadwords, sublistInflectionsMapping] = this.buildSublistHeadwordsAndInflections(fullTextArray);
-    [this.sublistHeadwords, this.sublistInflectionsMapping] = [sublistHeadwords, sublistInflectionsMapping]; 
-    this.sublists = this.buildSublists(sublistHeadwords);
-
+    // const [sublistHeadwords, sublistInflectionsMapping] = this.buildSublistHeadwordsAndInflections(fullTextArray);
+    // [this.sublistHeadwords, this.sublistInflectionsMapping] = [sublistHeadwords, sublistInflectionsMapping]; 
+    this.sublists = this.buildSublists();
     $('#my-list-table').remove();
     this.show();
   };
 
-  this.buildSublists = function(sublistHeadwords) {
+  this.buildSublists = function() {
     let currentSublistNumber = this.maxWordsInSublist;
     const sublists = {};
     sublists[currentSublistNumber] = [];
     let index = 1;
 
-    sublistHeadwords.forEach(headword => {
+    this.listData.sublistHeadwords.forEach(headword => {
       sublists[currentSublistNumber].push(headword);
       if (index % this.maxWordsInSublist === 0) {
         currentSublistNumber = currentSublistNumber + this.maxWordsInSublist;
@@ -55,19 +54,19 @@ function MyList(officialListManager) {
     return sublists;
   },
 
-  this.buildSublistHeadwordsAndInflections = function(fullTextArray) {
-    const sublistInflectionsMapping = {};
-    const sublistHeadwords = [];
-    fullTextArray.forEach(word => {
-      word = (word === 'I') ? word : word.toLowerCase();
-      const headword = this.officialListManager.getHeadword(word);
-      if (headword && !sublistHeadwords.includes(headword)) {
-        sublistHeadwords.push(headword);
-        sublistInflectionsMapping[headword] = word;
-      };
-    });
-    return [sublistHeadwords, sublistInflectionsMapping];
-  },
+  // this.buildSublistHeadwordsAndInflections = function(fullTextArray) {
+  //   const sublistInflectionsMapping = {};
+  //   const sublistHeadwords = [];
+  //   fullTextArray.forEach(word => {
+  //     word = (word === 'I') ? word : word.toLowerCase();
+  //     const headword = this.listData.getHeadword(word);
+  //     if (headword && !sublistHeadwords.includes(headword)) {
+  //       sublistHeadwords.push(headword);
+  //       sublistInflectionsMapping[headword] = word;
+  //     };
+  //   });
+  //   return [sublistHeadwords, sublistInflectionsMapping];
+  // },
 
   this.highlightMatches = function(sublistNumber) {
     // const sublistInflections = []
@@ -75,7 +74,7 @@ function MyList(officialListManager) {
     let sublistInflection, startIndex, length;
     let wordsHighlighted = 0;
     selectedHeadwords.forEach(headword => {
-      sublistInflection = this.sublistInflectionsMapping[headword];
+      sublistInflection = listData.sublistInflectionsMapping[headword];
       startIndex = this.getStartIndex(sublistInflection);
       length = sublistInflection.length;
       this.highlightMatch(startIndex, length)
@@ -143,6 +142,5 @@ function MyList(officialListManager) {
     $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
   }
 }
-
 
 export { MyList };
