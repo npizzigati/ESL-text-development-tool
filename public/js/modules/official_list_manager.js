@@ -23,7 +23,6 @@ function OfficialListManager(listData) {
     $('.official-list-headwords').parent().removeClass('official-list-match');
 
     this.listData.timesMarked.forEach( (times, headword) => {
-      console.log(`headword: ${headword} ${times}`);
       $(`#official-${headword}`).parent().addClass('official-list-match');
       $(`#official-${headword}-count`).text(times.toString());
     });

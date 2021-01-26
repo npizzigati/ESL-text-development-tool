@@ -54,20 +54,6 @@ function MyList(listData) {
     return sublists;
   },
 
-  // this.buildSublistHeadwordsAndInflections = function(fullTextArray) {
-  //   const sublistInflectionsMapping = {};
-  //   const sublistHeadwords = [];
-  //   fullTextArray.forEach(word => {
-  //     word = (word === 'I') ? word : word.toLowerCase();
-  //     const headword = this.listData.getHeadword(word);
-  //     if (headword && !sublistHeadwords.includes(headword)) {
-  //       sublistHeadwords.push(headword);
-  //       sublistInflectionsMapping[headword] = word;
-  //     };
-  //   });
-  //   return [sublistHeadwords, sublistInflectionsMapping];
-  // },
-
   this.highlightMatches = function(sublistNumber) {
     // const sublistInflections = []
     const selectedHeadwords = this.sublists[sublistNumber];
@@ -130,7 +116,6 @@ function MyList(listData) {
     $('.my-list').on('click', '.my-sublist-number', event => {
       this.executeHighlight(event);
     });
-
   };
 
   this.executeHighlight = function(event) {
