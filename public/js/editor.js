@@ -32,11 +32,13 @@ Trix.config.textAttributes.searchHighlight = {
 };
 
 $(trixElement).on('trix-selection-change', () => {
+  console.log('operation being processed');
   operationManager.processOperation();
 });
 
 // Listener for clicks on matches in editor
-$('body').on('click', event => {
+$(trixElement).on('click', event => {
+  console.log('firing click event on body');
   // Stop first click event from firing in case of double click
   if (wordClickTimeoutID) {
     clearTimeout(wordClickTimeoutID)
@@ -50,12 +52,23 @@ $('body').on('click', event => {
     }
     const headword = listData.getHeadword(clickedWord);
     if (headword) {
-      const markedHeadword = document.querySelector(`#official-${headword}`);
-      markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-      officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
+      markOnOfficialList(headword);
+      markOnMyList(headword);
     }
   }, 200);
 });
+
+function markOnOfficialList(headword) {
+  const markedHeadword = document.querySelector(`#official-${headword}`);
+  markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+  officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
+}
+
+function markOnMyList(headword) {
+  const markedHeadword = document.querySelector(`#my-sublist-${headword}`);
+  markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+  myList.emphasizeCurrentHeadwordMatch(markedHeadword);
+}
 
 function getClickedWord() {
   const caretPosition = trixEditor.getSelectedRange();
@@ -74,7 +87,7 @@ Search.activateSearchListeners();
 
 const listData = new ListData();
 const officialListManager = new OfficialListManager(listData);
-const myList = new MyList(listData);
+const myList = new MyList(officialListManager, listData);
 const operationManager = new OperationManager(listData, officialListManager, myList);
 
 // Populate official word list with headwords

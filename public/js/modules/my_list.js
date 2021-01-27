@@ -1,12 +1,13 @@
-function MyList(listData) {
-
+function MyList(officialListManager, listData) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
   this.listData = listData;
+  this.officialListManager = officialListManager
   this.maxWordsInSublist = 10;
   this.sublists = [];
   this.sublistInflectionsMapping = {};
-  this.highlightedRanges = []
+  this.highlightedRanges = [];
+  this.currentlyMatchedWord = null;
 
   this.show = function() {
     const table_parts = [];
@@ -31,8 +32,6 @@ function MyList(listData) {
     return taggedHeadwords;
   }
 
-  // TODO: Need to update this function and the refresh function in
-  // official_list_manager to use the data from the this.listData oblect
   this.refresh = function() {
     const fullText = this.trixEditor.getDocument().toString();
     const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
@@ -44,6 +43,20 @@ function MyList(listData) {
     this.sublists = this.buildSublists();
     $('#my-list-table').remove();
     this.show();
+  };
+
+  this.emphasizeCurrentHeadwordMatch = function(markedHeadword) {
+    this.deemphasizeCurrentHeadwordMatch();
+    this.currentlyMatchedWord = $(markedHeadword);
+    this.currentlyMatchedWord.addClass('my-sublist-current-match');
+    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+  };
+
+  this.deemphasizeCurrentHeadwordMatch = function() {
+    if (this.currentlyMatchedWord) {
+      this.currentlyMatchedWord.removeClass('my-sublist-current-match');
+      this.currentlyMatchedWord = null;
+    }
   };
 
   this.buildSublists = function() {
@@ -73,7 +86,6 @@ function MyList(listData) {
       this.highlightMatch(startIndex, length)
       wordsHighlighted += 1;
       if (wordsHighlighted === 1) {
-        console.log('Should now be scrolling to first element');
         this.scrollToFirstMatch();
       }
     });
@@ -134,12 +146,29 @@ function MyList(listData) {
     });
   };
 
+  //TODO: extract these two mark methods to a module to be shared
+  //by my_list, official_list and editor
+  this.markOnOfficialList = function(headword) {
+    const markedHeadword = document.querySelector(`#official-${headword}`);
+    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+    this.officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
+  }
+
+  this.markOnMyList = function(headword) {
+    const markedHeadword = document.querySelector(`#my-sublist-${headword}`);
+    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+    this.emphasizeCurrentHeadwordMatch(markedHeadword);
+  }
+
   this.executeHighlight = function(headwords) {
+    if (headwords.length === 1) {
+      this.markOnMyList(headwords[0]);
+      this.markOnOfficialList(headwords[0]);
+    }
     this.clearHighlighting(false);
     const initialPosition = this.trixEditor.getSelectedRange();
     this.highlightMatches(headwords);
     this.trixEditor.setSelectedRange(initialPosition);
-    // TODO: Do I need to prevent multiple copies of this listener accumulating?
     $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
   }
 }

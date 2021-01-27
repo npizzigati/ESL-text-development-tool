@@ -28,6 +28,7 @@ trix-editor {
     color: black;
     caret-color: black;
     flex: 1 0 700px;
+    line-height: 1.1;
 }
 
 .layout-row1 {
@@ -122,6 +123,7 @@ trix-editor {
 .official-list-table {
     color: lightgrey;
     margin-left: 5px;
+    line-height: 1.2;
 }
 
 .official-list-rank {
@@ -149,8 +151,18 @@ trix-editor {
     padding-right: 5px;
 }
 
+#my-list-table {
+    border-collapse: separate;
+    border-spacing: 0 5px;
+    line-height: 1.2;
+}
+
 .my-sublist-words {
     padding-left: 5px;
+}
+
+.my-sublist-current-match {
+    border: 1px solid black;
 }
 
 .my-sublist-individual-word {

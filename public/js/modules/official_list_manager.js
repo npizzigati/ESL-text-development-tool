@@ -32,10 +32,6 @@ function OfficialListManager(listData) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     const row = $(markedHeadword).parent();
     const times = this.listData.timesMarked.get(headword) || 0;
-    // TODO: I might need this:
-    // if (!row.hasClass('official-list-match')) {
-    //   row.addClass('official-list-match');
-    // }
     this.emphasizeCurrentHeadwordMatch(markedHeadword);
     $(`#official-${headword}-count`).text(times.toString());
   };
