@@ -11,8 +11,9 @@ function MyList(listData) {
   this.show = function() {
     const table_parts = [];
     table_parts.push('<table id="my-list-table">');
-    Object.entries(this.sublists).forEach(([number, words]) => {
-      const sublist = words.join(', ');
+    Object.entries(this.sublists).forEach(([number, headwords]) => {
+      const taggedWords = this.tagSublistWords(headwords);
+      const sublist = taggedWords.join(', ');
       table_parts.push('<tr>');
       table_parts.push(`<td class="my-sublist-number" id="sublist-number-${number}">${number}</td>`);
       table_parts.push(`<td class="my-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
@@ -21,6 +22,14 @@ function MyList(listData) {
     table_parts.push('</table>');
     $('.my-list').append(table_parts.join(''));
   };
+
+  this.tagSublistWords = function(headwords) {
+    const taggedHeadwords = [];
+    headwords.forEach( headword => {
+      taggedHeadwords.push(`<span class="my-sublist-individual-word" id="my-sublist-${headword}">${headword}</span>`);
+    });
+    return taggedHeadwords;
+  }
 
   // TODO: Need to update this function and the refresh function in
   // official_list_manager to use the data from the this.listData oblect
@@ -54,9 +63,7 @@ function MyList(listData) {
     return sublists;
   },
 
-  this.highlightMatches = function(sublistNumber) {
-    // const sublistInflections = []
-    const selectedHeadwords = this.sublists[sublistNumber];
+  this.highlightMatches = function(selectedHeadwords) {
     let sublistInflection, startIndex, length;
     let wordsHighlighted = 0;
     selectedHeadwords.forEach(headword => {
@@ -74,8 +81,10 @@ function MyList(listData) {
 
   this.scrollToFirstMatch = function() {
     const highlightedElement = document.querySelector('mark');
-    highlightedElement.scrollIntoView({behavior: 'auto',
-                                      block: 'center'});
+    if (highlightedElement) {
+      highlightedElement.scrollIntoView({behavior: 'auto',
+                                        block: 'center'});
+    }
   }
 
   this.getStartIndex = function(sublistInflection) {
@@ -114,16 +123,23 @@ function MyList(listData) {
 
   this.activateListeners = function() {
     $('.my-list').on('click', '.my-sublist-number', event => {
-      this.executeHighlight(event);
+      const sublistNumber = parseInt($(event.target).text());
+      const selectedHeadwords = this.sublists[sublistNumber];
+      this.executeHighlight(selectedHeadwords);
+    });
+
+    $('.my-list').on('click', '.my-sublist-individual-word', event => {
+      const headword = $(event.target).text();
+      this.executeHighlight([headword]);
     });
   };
 
-  this.executeHighlight = function(event) {
+  this.executeHighlight = function(headwords) {
     this.clearHighlighting(false);
     const initialPosition = this.trixEditor.getSelectedRange();
-    const sublistNumber = parseInt($(event.target).text());
-    this.highlightMatches(sublistNumber);
+    this.highlightMatches(headwords);
     this.trixEditor.setSelectedRange(initialPosition);
+    // TODO: Do I need to prevent multiple copies of this listener accumulating?
     $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
   }
 }
