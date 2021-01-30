@@ -32,12 +32,9 @@ Trix.config.textAttributes.searchHighlight = {
 };
 
 $(trixElement).on('trix-selection-change', () => {
-  console.log('Selection change triggered');
   if (operationManager.multipleCharInsertionUnderway) {
-    console.log('multiple char insertion underway');
     return;
   }
-  console.log('processing going forward');
   operationManager.processOperation();
 });
 
@@ -75,7 +72,6 @@ function markOnMyList(headword) {
 function getClickedWord() {
   const caretPosition = trixEditor.getSelectedRange();
   const index = caretPosition[0];
-  console.log(`caretPos: ${caretPosition}`);
   const fullText = trixEditor.getDocument().toString();
   const clicked_character = fullText[index]
   if (!isWordCharacter(clicked_character)) {
