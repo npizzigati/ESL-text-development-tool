@@ -10,24 +10,25 @@ function MyList(officialListManager, listData) {
   this.currentlyMatchedWord = null;
 
   this.show = function() {
-    const table_parts = [];
-    table_parts.push('<table id="my-list-table">');
+    const parts = [];
+    parts.push('<table id="my-list-table">');
+    parts.push('<tbody class="my-list-table-body">');
     Object.entries(this.sublists).forEach(([number, headwords]) => {
       const taggedWords = this.tagSublistWords(headwords);
       const sublist = taggedWords.join(', ');
-      table_parts.push('<tr>');
-      table_parts.push(`<td class="my-sublist-number" id="sublist-number-${number}">${number}</td>`);
-      table_parts.push(`<td class="my-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
-      table_parts.push('</tr>');
+      parts.push('<tr>');
+      parts.push(`<td class="my-sublist-number" id="sublist-number-${number}">${number}</td>`);
+      parts.push(`<td class="my-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
+      parts.push('</tr>');
     });
-    table_parts.push('</table>');
-    $('.my-list').append(table_parts.join(''));
+    parts.push('</tbody></table>');
+    $('.my-list').append(parts.join(''));
   };
 
   this.tagSublistWords = function(headwords) {
     const taggedHeadwords = [];
     headwords.forEach( headword => {
-      taggedHeadwords.push(`<span class="my-sublist-individual-word" id="my-sublist-${headword}">${headword}</span>`);
+      taggedHeadwords.push(`<span class="my-sublist-individual-word" id="my-sublist-${headword}">${this.listData.originalHeadwordSpellings[headword]}</span>`);
     });
     return taggedHeadwords;
   }
@@ -38,14 +39,13 @@ function MyList(officialListManager, listData) {
     const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
     // Need to record only the first appearance of each headword
     // in an array
-    // const [sublistHeadwords, sublistInflectionsMapping] = this.buildSublistHeadwordsAndInflections(fullTextArray);
-    // [this.sublistHeadwords, this.sublistInflectionsMapping] = [sublistHeadwords, sublistInflectionsMapping]; 
     this.sublists = this.buildSublists();
     $('#my-list-table').remove();
     this.show();
   };
 
-  this.emphasizeCurrentHeadwordMatch = function(markedHeadword) {
+  this.emphasizeCurrentHeadwordMatch = function(headword) {
+    const markedHeadword = document.querySelector(`#my-sublist-${headword}`);
     this.deemphasizeCurrentHeadwordMatch();
     this.currentlyMatchedWord = $(markedHeadword);
     this.currentlyMatchedWord.addClass('my-sublist-current-match');
@@ -122,11 +122,22 @@ function MyList(officialListManager, listData) {
     if (this.highlightedRanges.length === 0) {
       return;
     }
-    this.highlightedRanges.forEach(range => {
-      this.trixEditor.setSelectedRange(range);
-      this.trixEditor.deactivateAttribute('searchHighlight');
-    });
-    this.highlightedRanges = [];
+    // This seems to work faster than iterating through the
+    // ranges and turning off highlighting that way.
+    // TODO: Change clearHighlighting in the Search module to do
+    // this too.
+    // And, doing it this way, there's no need to keep track of
+    // highlighted ranges.
+    const length = this.trixEditor.getDocument().toString().length;
+    this.trixEditor.setSelectedRange([0, length - 1]);
+    this.trixEditor.deactivateAttribute('searchHighlight');
+
+    // this.highlightedRanges.forEach(range => {
+    //   this.trixEditor.setSelectedRange(range);
+    //   this.trixEditor.deactivateAttribute('searchHighlight');
+    // });
+    // this.highlightedRanges = [];
+
     this.trixEditor.setSelectedRange(initialPosition);
     if (turnOffEditorListener) {
       $(this.trixElement).off('keyup', this.clearHighlighting);
@@ -141,8 +152,8 @@ function MyList(officialListManager, listData) {
     });
 
     $('.my-list').on('click', '.my-sublist-individual-word', event => {
-      const headword = $(event.target).text();
-      this.executeHighlight([headword]);
+      const downcasedHeadword = $(event.target).text().toLowerCase();
+      this.executeHighlight([downcasedHeadword]);
     });
   };
 
@@ -150,24 +161,21 @@ function MyList(officialListManager, listData) {
   //by my_list, official_list and editor
   this.markOnOfficialList = function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
-    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-    this.officialListManager.emphasizeCurrentHeadwordMatch(markedHeadword);
+    this.officialListManager.emphasizeCurrentHeadwordMatch(headword);
   }
 
   this.markOnMyList = function(headword) {
-    const markedHeadword = document.querySelector(`#my-sublist-${headword}`);
-    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-    this.emphasizeCurrentHeadwordMatch(markedHeadword);
+    this.emphasizeCurrentHeadwordMatch(headword);
   }
 
-  this.executeHighlight = function(headwords) {
-    if (headwords.length === 1) {
-      this.markOnMyList(headwords[0]);
-      this.markOnOfficialList(headwords[0]);
+  this.executeHighlight = function(selectedHeadwords) {
+    if (selectedHeadwords.length === 1) {
+      this.markOnMyList(selectedHeadwords[0]);
+      this.markOnOfficialList(selectedHeadwords[0]);
     }
     this.clearHighlighting(false);
     const initialPosition = this.trixEditor.getSelectedRange();
-    this.highlightMatches(headwords);
+    this.highlightMatches(selectedHeadwords);
     this.trixEditor.setSelectedRange(initialPosition);
     $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
   }

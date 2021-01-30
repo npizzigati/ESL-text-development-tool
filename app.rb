@@ -29,9 +29,9 @@ post '/upload' do
   target_path = File.join uploads_path, filename
   retrieve_upload(params, target_path)
   headwords_array = retrieve_headwords(target_path)
-  headwords_set = remove_duplicates(headwords_array)
-  @headwords_json = headwords_array.to_json
-  @inflections_map_json = extract_inflections(headwords_set).to_json
+  unique_headwords = remove_duplicates(headwords_array)
+  @headwords_json = unique_headwords.to_json
+  @inflections_map_json = extract_inflections(unique_headwords).to_json
   erb :editor
 end
 
@@ -56,11 +56,12 @@ end
 
 def extract_inflections(headwords)
   inflections_map = {}
+  downcased_headwords = headwords.map(&:downcase)
 
   File.open('data/inflections.txt') do |f|
     f.each_line do |line|
       inflection, lemma, _pos = line.split(', ')
-      inflections_map[inflection] = lemma if headwords.include?(lemma)
+      inflections_map[inflection.downcase] = lemma if downcased_headwords.include?(lemma.downcase)
     end
   end
 
@@ -72,16 +73,19 @@ def retrieve_headwords(target_path)
   create_headwords_array(raw_headword_text)
 end
 
-# TODO: Need to find an intelligent way to deal with uppercase words, like days of the week, etc.
 def retrieve_raw_headword_text(target_path)
-  text = File.read(target_path).downcase
-  text.gsub("\r\ni\r\n", "\r\nI\r\n")
+  File.read(target_path)
 end
 
 def remove_duplicates(headwords_array)
-  Set.new(headwords_array)
+  unique_headwords = []
+  headwords_array.each do |headword|
+    unique_headwords << headword unless unique_headwords.include?(headword)
+  end
+  unique_headwords
 end
 
 def create_headwords_array(raw_headword_text)
-  raw_headword_text.split("\r\n")
+  # Split words regardless of whether newline is CRLF or just LF
+  raw_headword_text.gsub("\r\n", "\n").split("\n")
 end

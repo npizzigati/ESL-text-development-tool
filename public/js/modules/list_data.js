@@ -6,6 +6,16 @@ function ListData() {
   this.sublistHeadwords = [];
   this.timesMarked = new Map();
 
+  this.buildOriginalHeadwordSpellings = function(headwords) {
+    const originalHeadwordSpellings = {};
+    headwords.forEach(headword => {
+      originalHeadwordSpellings[headword.toLowerCase()] = headword;
+    });
+    return originalHeadwordSpellings;
+  };
+
+  this.originalHeadwordSpellings = this.buildOriginalHeadwordSpellings(headwords);
+
   this.calculate = function() {
     const fullText = trixEditor.getDocument().toString();
     // Remove ending punctuation
@@ -34,7 +44,12 @@ function ListData() {
   };
 
   this.getHeadword = function(word) {
-    return (word === 'I') ? inflectionsMap[word] : inflectionsMap[word.toLowerCase()];
+    const headword = inflectionsMap[word.toLowerCase()]
+    if (headword) {
+      return headword.toLowerCase();
+    } else {
+      return undefined;
+    }
   };
 }
 

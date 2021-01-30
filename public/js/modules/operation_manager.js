@@ -72,6 +72,7 @@ const modes = {
 }
 
 function OperationManager(listData, officialListManager, myList) {
+  this.multipleCharInsertionUnderway = false;
   this.listData = listData;
   this.officialListManager = officialListManager;
   this.myList = myList;
@@ -201,32 +202,54 @@ function OperationManager(listData, officialListManager, myList) {
   };
 
   this.processMultipleCharacterInsertion = function(insertion) {
+    this.multipleCharInsertionUnderway = true;
     const fullText = insertion.postOperationFullText;
     let index = 0;
     const text = insertion.text;
     const length = text.length
     let word, wordStart, wordEnd, headword, character;
-    let newText = '';
+    const newTextSegments = [];
+    let segment = '';
 
     while (index < length) {
       character = text[index];
-      if (isWordCharacter(character)) {
+      if (character === '\n') {
+        newTextSegments.push(segment);
+        segment = '';
+        index += 1;
+      } else if (isWordCharacter(character)) {
         [wordStart, wordEnd] = retrieveWordCoordinates(text, index);
         word = retrieveWord(text, [wordStart, wordEnd]); 
         headword = this.listData.getHeadword(word);
         if (headword) {
-          newText += word;
+          segment += word;
         } else {
-          newText += this.htmlMarkWord(word);
+          segment += this.htmlMarkWord(word);
         }
         index = wordEnd + 1;
       } else {
-        newText += character;
+        segment += character;
         index += 1;
       }
     }
+    newTextSegments.push(segment);
     trixEditor.setSelectedRange([insertion.startIndex, insertion.endIndex])
-    trixEditor.insertHTML(newText);
+    this.multipleCharInsertionUnderway = true;
+    trixEditor.deleteInDirection('forward');
+    this.insertHTMLSegments(newTextSegments);
+    this.multipleCharInsertionUnderway = false;
+  };
+
+  this.insertHTMLSegments = function(newTextSegments) {
+    const numberOfSegments = newTextSegments.length;
+    let count = 0;
+    newTextSegments.forEach(segment => {
+      count += 1;
+      trixEditor.insertHTML(segment);
+      if (count < numberOfSegments) {
+        trixEditor.insertLineBreak();
+      }
+    });
   };
 
   this.htmlMarkWord = function(word) {
@@ -237,7 +260,6 @@ function OperationManager(listData, officialListManager, myList) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
     const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]); 
     const headword = this.listData.getHeadword(word);
-    console.log(`Inside processWordAtIndex: headword: ${headword}`);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
     this.listData.calculate();
@@ -257,7 +279,6 @@ function OperationManager(listData, officialListManager, myList) {
   };
 
   this.processNonLetterInsertionInsideWord = function(insertion) {
-    console.log('processing non-letter insertion inside word');
     // process new word after insertion
     this.processWordAtIndex(insertion, insertion.endIndex);
     // process new word before insertion
