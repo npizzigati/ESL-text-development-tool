@@ -71,10 +71,10 @@ const modes = {
   DELETION: 'deletion'
 }
 
-function OperationManager(listData, officialListManager, myList) {
+function OperationManager(listData, officialList, myList) {
   this.multipleCharInsertionUnderway = false;
   this.listData = listData;
-  this.officialListManager = officialListManager;
+  this.officialList = officialList;
   this.myList = myList;
   this.Operation = function(text, indices, mode) {
     this.text = text;
@@ -186,14 +186,14 @@ function OperationManager(listData, officialListManager, myList) {
         setTimeout( () => {
           this.processMultipleCharacterInsertion(insertion);
           this.listData.calculate();
-          this.officialListManager.refresh();
+          this.officialList.refresh();
           this.myList.refresh();
         }, 20);
       }
       break;
     case modes.DELETION:
       this.listData.calculate();
-      this.officialListManager.refresh();
+      this.officialList.refresh();
       this.myList.refresh();
       const deletion = new this.Operation(text, indices, modes.DELETION);
       this.processDeletion(deletion);
@@ -263,11 +263,11 @@ function OperationManager(listData, officialListManager, myList) {
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
     this.listData.calculate();
-    this.officialListManager.refresh();
+    this.officialList.refresh();
     this.myList.refresh();
     if (headword) {
       textMarker.unmarkWord(word, wordStart, wordEnd);
-      this.officialListManager.focusHeadword(headword);
+      this.officialList.focusHeadword(headword);
     } else {
       textMarker.markWord(word, wordStart, wordEnd);
     }
@@ -312,11 +312,11 @@ function OperationManager(listData, officialListManager, myList) {
       const word = retrieveWord(fullText, [wordStart, wordEnd]); 
       const headword = this.listData.getHeadword(word);
       this.listData.calculate();
-      this.officialListManager.refresh();
+      this.officialList.refresh();
       this.myList.refresh();
       if (headword) {
         textMarker.unmarkWord(word, wordStart, wordEnd);
-        this.officialListManager.focusHeadword(headword);
+        this.officialList.focusHeadword(headword);
       } else {
         textMarker.markWord(word, wordStart, wordEnd);
       }
@@ -332,10 +332,10 @@ function OperationManager(listData, officialListManager, myList) {
     const headword = this.listData.getHeadword(word);
 
     this.listData.calculate();
-    this.officialListManager.refresh();
+    this.officialList.refresh();
     this.myList.refresh();
     if (headword) {
-      this.officialListManager.focusHeadword(headword);
+      this.officialList.focusHeadword(headword);
       textMarker.unmarkWord(word, wordStart, wordEnd);
     } else {
       textMarker.markWord(word, wordStart, wordEnd);

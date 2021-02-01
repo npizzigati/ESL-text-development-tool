@@ -1,8 +1,8 @@
-function MyList(officialListManager, listData) {
+function MyList(officialList, listData) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
   this.listData = listData;
-  this.officialListManager = officialListManager
+  this.officialList = officialList
   this.maxWordsInSublist = 10;
   this.sublists = [];
   this.sublistInflectionsMapping = {};
@@ -149,7 +149,7 @@ function MyList(officialListManager, listData) {
   //by my_list, official_list and editor
   this.markOnOfficialList = function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
-    this.officialListManager.emphasizeCurrentHeadwordMatch(headword);
+    this.officialList.emphasizeCurrentHeadwordMatch(headword);
   }
 
   this.markOnMyList = function(headword) {

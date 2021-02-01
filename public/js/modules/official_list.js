@@ -1,4 +1,4 @@
-function OfficialListManager(listData) {
+function OfficialList(listData) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
   this.currentlyMatchedRow = null;
@@ -127,6 +127,8 @@ function OfficialListManager(listData) {
     }
   }
 
+  // TODO: Handle case where non-appearing word is clicked
+  // Put box around headword in myList
   this.highlightAllEditorMatches = function(headword) {
     let inflection, matchStart, matchEnd, length;
     let searchStart = 0;
@@ -172,4 +174,4 @@ function OfficialListManager(listData) {
 }
 
 
-export { OfficialListManager };
+export { OfficialList };

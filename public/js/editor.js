@@ -1,7 +1,7 @@
 import * as Search from './modules/search.js';
 import { MyList } from './modules/my_list.js';
 import { ListData } from './modules/list_data.js';
-import { OfficialListManager } from './modules/official_list_manager.js';
+import { OfficialList } from './modules/official_list.js';
 import { OperationManager } from './modules/operation_manager.js';
 import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates, determineWordStart,
@@ -73,7 +73,7 @@ function clearHighlighting() {
 function markOnOfficialList(headword) {
   // const markedHeadword = document.querySelector(`#official-${headword}`);
   // markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-  officialListManager.emphasizeCurrentHeadwordMatch(headword);
+  officialList.emphasizeCurrentHeadwordMatch(headword);
 }
 
 function markOnMyList(headword) {
@@ -95,15 +95,15 @@ function getClickedWord() {
 Search.activateSearchListeners();
 
 const listData = new ListData();
-const officialListManager = new OfficialListManager(listData);
-const myList = new MyList(officialListManager, listData);
-const operationManager = new OperationManager(listData, officialListManager, myList);
+const officialList = new OfficialList(listData);
+const myList = new MyList(officialList, listData);
+const operationManager = new OperationManager(listData, officialList, myList);
 
 // Populate official word list with headwords
-officialListManager.showOfficialList(headwords);
+officialList.showOfficialList(headwords);
 
 myList.show()
 myList.activateListeners();
-officialListManager.activateListeners();
+officialList.activateListeners();
 
 $('.search-box-container').hide();
