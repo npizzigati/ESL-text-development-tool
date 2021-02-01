@@ -1,4 +1,6 @@
 function OfficialListManager(listData) {
+  this.trixElement = document.querySelector("trix-editor");
+  this.trixEditor = this.trixElement.editor;
   this.currentlyMatchedRow = null;
   this.currentlyMatchedHeadword = null;
   this.listData = listData;
@@ -99,12 +101,72 @@ function OfficialListManager(listData) {
     }
   };
 
+  this.getMatchStartIndex = function(inflection, searchStart) {
+    const fullText = this.trixEditor.getDocument().toString().toLowerCase();
+    const re = new RegExp(`\\b${inflection}\\b`, 'i');
+    const result = re.exec(fullText.slice(searchStart));
+    // Result should always be found, but include this
+    // verification to prevent error
+    if (result) {
+      return result.index + searchStart;
+    }
+  };
+
+  // TODO: This is very similar to the function in my_list -- extract to another module?
+  this.highlightMatch = function(startIndex, endIndex) {
+    this.trixEditor.setSelectedRange([startIndex, endIndex]);
+    this.trixEditor.activateAttribute('searchHighlight');
+  };
+
+  // TODO: This is the same as the function in my_list -- extract to another module?
+  this.scrollToFirstMatch = function() {
+    const highlightedElement = document.querySelector('mark');
+    if (highlightedElement) {
+      highlightedElement.scrollIntoView({behavior: 'auto',
+                                        block: 'center'});
+    }
+  }
+
+  this.highlightAllEditorMatches = function(headword) {
+    let inflection, matchStart, matchEnd, length;
+    let searchStart = 0;
+    let wordsHighlighted = 0;
+    const initialPosition = this.trixEditor.getSelectedRange();
+    this.clearHighlighting();
+    this.listData.editorInflections[headword].forEach(inflection => {
+      matchStart = this.getMatchStartIndex(inflection, searchStart);
+      matchEnd = matchStart + inflection.length;
+      this.highlightMatch(matchStart, matchEnd);
+      searchStart = matchEnd + 1;
+      wordsHighlighted += 1;
+      if (wordsHighlighted === 1) {
+        this.scrollToFirstMatch();
+      }
+    });
+    this.trixEditor.setSelectedRange(initialPosition);
+  };
+
+  this.clearHighlighting = function() {
+    const initialPosition = this.trixEditor.getSelectedRange();
+    const length = this.trixEditor.getDocument().toString().length;
+    this.trixEditor.setSelectedRange([0, length - 1]);
+    this.trixEditor.deactivateAttribute('searchHighlight');
+    this.trixEditor.setSelectedRange(initialPosition);
+  };
+
   this.activateListeners = function() {
+    $('#official-list-header-headword').off();
     $('#official-list-header-headword').on('click', event => {
       this.showOfficialList([...headwords].sort());
     });
+    $('#official-list-header-rank').off();
     $('#official-list-header-rank').on('click', event => {
       this.showOfficialList(headwords);
+    });
+    $('.official-list-headwords').off();
+    $('.official-list-headwords').on('click', event => {
+      const headword = $(event.target).text().toLowerCase();
+      this.highlightAllEditorMatches(headword);
     });
   };
 }

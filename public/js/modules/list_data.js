@@ -24,11 +24,14 @@ function ListData() {
 
     this.timesMarked.clear();
     this.sublistInflectionsMapping = {};
+    this.editorInflections = {};
     this.sublistHeadwords = [];
 
     fullTextArray.forEach(word => {
-      word = (word === 'I') ? word : word.toLowerCase();
       const headword = this.getHeadword(word);
+      if (!headword) {
+        return;
+      }
       let times = this.timesMarked.get(headword);
       if (times) {
         times += 1;
@@ -36,10 +39,15 @@ function ListData() {
       } else {
         this.timesMarked.set(headword, 1);
       }
-      if (headword && !this.sublistHeadwords.includes(headword)) {
+      if (!this.sublistHeadwords.includes(headword)) {
         this.sublistHeadwords.push(headword);
         this.sublistInflectionsMapping[headword] = word;
       };
+      if (this.editorInflections[headword]) {
+        this.editorInflections[headword].push(word);
+      } else {
+        this.editorInflections[headword] = [word];
+      }
     });
   };
 

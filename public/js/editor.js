@@ -44,6 +44,9 @@ $(trixElement).on('click', event => {
   if (wordClickTimeoutID) {
     clearTimeout(wordClickTimeoutID)
   }
+  // Clear any highlighting
+  clearHighlighting();
+
   // It takes a fraction of a second for Trix to update caret
   // position;
   wordClickTimeoutID = setTimeout(() => {
@@ -58,6 +61,14 @@ $(trixElement).on('click', event => {
     }
   }, 200);
 });
+
+function clearHighlighting() {
+  const initialPosition = trixEditor.getSelectedRange();
+  const length = trixEditor.getDocument().toString().length;
+  trixEditor.setSelectedRange([0, length - 1]);
+  trixEditor.deactivateAttribute('searchHighlight');
+  trixEditor.setSelectedRange(initialPosition);
+};
 
 function markOnOfficialList(headword) {
   // const markedHeadword = document.querySelector(`#official-${headword}`);

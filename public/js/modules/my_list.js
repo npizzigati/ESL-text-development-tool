@@ -6,7 +6,6 @@ function MyList(officialListManager, listData) {
   this.maxWordsInSublist = 10;
   this.sublists = [];
   this.sublistInflectionsMapping = {};
-  this.highlightedRanges = [];
   this.currentlyMatchedWord = null;
 
   this.show = function() {
@@ -80,7 +79,7 @@ function MyList(officialListManager, listData) {
     let sublistInflection, startIndex, length;
     let wordsHighlighted = 0;
     selectedHeadwords.forEach(headword => {
-      sublistInflection = listData.sublistInflectionsMapping[headword];
+      sublistInflection = this.listData.sublistInflectionsMapping[headword];
       startIndex = this.getStartIndex(sublistInflection);
       length = sublistInflection.length;
       this.highlightMatch(startIndex, length)
@@ -114,14 +113,12 @@ function MyList(officialListManager, listData) {
     let endIndex = startIndex + length;
     this.trixEditor.setSelectedRange([startIndex, endIndex]);
     this.trixEditor.activateAttribute('searchHighlight');
-    this.highlightedRanges.push([startIndex, endIndex]);
   };
 
-  this.clearHighlighting = function(turnOffEditorListener = true) {
+  // TODO: This is the same or similar to functions in editor and
+  // search and official_list_manager-- refactor out to another module?
+  this.clearHighlighting = function() {
     const initialPosition = this.trixEditor.getSelectedRange();
-    if (this.highlightedRanges.length === 0) {
-      return;
-    }
     // This seems to work faster than iterating through the
     // ranges and turning off highlighting that way.
     // TODO: Change clearHighlighting in the Search module to do
@@ -131,20 +128,11 @@ function MyList(officialListManager, listData) {
     const length = this.trixEditor.getDocument().toString().length;
     this.trixEditor.setSelectedRange([0, length - 1]);
     this.trixEditor.deactivateAttribute('searchHighlight');
-
-    // this.highlightedRanges.forEach(range => {
-    //   this.trixEditor.setSelectedRange(range);
-    //   this.trixEditor.deactivateAttribute('searchHighlight');
-    // });
-    // this.highlightedRanges = [];
-
     this.trixEditor.setSelectedRange(initialPosition);
-    if (turnOffEditorListener) {
-      $(this.trixElement).off('keyup', this.clearHighlighting);
-    }
   };
 
   this.activateListeners = function() {
+    $('.my-list').off();
     $('.my-list').on('click', '.my-sublist-number', event => {
       const sublistNumber = parseInt($(event.target).text());
       const selectedHeadwords = this.sublists[sublistNumber];
@@ -173,11 +161,11 @@ function MyList(officialListManager, listData) {
       this.markOnMyList(selectedHeadwords[0]);
       this.markOnOfficialList(selectedHeadwords[0]);
     }
-    this.clearHighlighting(false);
+    this.clearHighlighting();
     const initialPosition = this.trixEditor.getSelectedRange();
     this.highlightMatches(selectedHeadwords);
     this.trixEditor.setSelectedRange(initialPosition);
-    $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
+    // $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
   }
 }
 
