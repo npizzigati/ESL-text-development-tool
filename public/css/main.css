@@ -3,6 +3,12 @@ body {
     font-family: Mukta, serif;
 }
 
+h1 {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: small;
+}
+
 strong, b, strong *, b * {
     font-weight: bold;
 }

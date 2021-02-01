@@ -8,6 +8,9 @@ require 'sinatra/custom_logger'
 require 'logger'
 require 'puma'
 
+# Escape all html output
+set :erb, escape_html: true
+
 enable :logging
 set :logger, Logger.new(STDOUT)
 

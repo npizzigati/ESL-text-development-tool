@@ -1,19 +1,15 @@
 <html>
   <head>
-    <title>Neil's Idea</title>
+    <title>Neil's Text Tool</title>
     <link rel="icon" href="/images/favicon.ico" />
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Mukta">
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/trix.css">
     <link rel="stylesheet" href="/css/main.css">
-    <script>
-      const inflectionsMap = <%== @inflections_map_json %>;
-      const headwords = <%== @headwords_json %>;
-    </script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="/js/trix.js"></script>
-    <script type="module" src="/js/editor.js"></script>
+    <%= yield_content :intialize_globals_and_load_editor %>
   </head>
 
   <body>
@@ -28,6 +24,7 @@
       </div>
     </div>
     <div class="layout-row1">
+      <%= yield %>
       <trix-editor></trix-editor>
       <div class="my-list">
         <p class="section-title">My List</p>
