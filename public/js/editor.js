@@ -73,12 +73,10 @@ function clearHighlighting() {
 };
 
 function markOnOfficialList(headword) {
-  console.log(`Should be marking ${headword} on officialList`);
   listManager.officialList.emphasizeCurrentHeadwordMatch(headword);
 }
 
 function markOnMyList(headword) {
-  console.log(`Should be marking ${headword} on myList`);
   listManager.myList.emphasizeCurrentHeadwordMatch(headword);
 }
 

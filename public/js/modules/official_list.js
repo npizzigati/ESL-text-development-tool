@@ -3,9 +3,6 @@ function OfficialList(listData, listManager) {
   this.trixEditor = this.trixElement.editor;
   this.currentlyMatchedRow = null;
   this.currentlyMatchedHeadword = null;
-  this.listData = listData;
-  // List manager should be doing more than this
-  this.myList = listManager.myList;
 
   this.buildRanks = function() {
     const ranks = {};
@@ -41,7 +38,7 @@ function OfficialList(listData, listManager) {
     $('.official-list-count').text('');
     $('.official-list-headwords').parent().removeClass('official-list-match');
 
-    this.listData.timesMarked.forEach( (times, headword) => {
+    listData.timesMarked.forEach( (times, headword) => {
       $(`#official-${headword}`).parent().addClass('official-list-match');
       $(`#official-${headword}-count`).text(times.toString());
     });
@@ -49,14 +46,14 @@ function OfficialList(listData, listManager) {
 
   this.focusHeadword = function(headword) {
     // const row = $(markedHeadword).parent();
-    const times = this.listData.timesMarked.get(headword) || 0;
+    const times = listData.timesMarked.get(headword) || 0;
     this.emphasizeCurrentHeadwordMatch(headword);
     $(`#official-${headword}-count`).text(times.toString());
   };
 
   this.unfocusHeadword = function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
-    const times = this.listData.timesMarked.get(headword)
+    const times = listData.timesMarked.get(headword)
     if (!times) {
       $(markedHeadword).parent().removeClass('official-list-match');
       $(`#official-${headword}-count`).text('');
@@ -138,7 +135,11 @@ function OfficialList(listData, listManager) {
     let wordsHighlighted = 0;
     const initialPosition = this.trixEditor.getSelectedRange();
     this.clearHighlighting();
-    this.listData.editorInflections[headword].forEach(inflection => {
+    const editorInflections = listData.editorInflections[headword];
+    if (!editorInflections) {
+      return;
+    }
+    listData.editorInflections[headword].forEach(inflection => {
       matchStart = this.getMatchStartIndex(inflection, searchStart);
       matchEnd = matchStart + inflection.length;
       this.highlightMatch(matchStart, matchEnd);
@@ -171,7 +172,12 @@ function OfficialList(listData, listManager) {
     $('.official-list-headwords').off();
     $('.official-list-headwords').on('click', event => {
       const headword = $(event.target).text().toLowerCase();
+      if (!listData.timesMarked.get(headword)) {
+        return;
+      }
       this.highlightAllEditorMatches(headword);
+      listManager.myList.markOnMyList(headword);
+      this.emphasizeCurrentHeadwordMatch(headword);
     });
   };
 }
