@@ -71,11 +71,12 @@ const modes = {
   DELETION: 'deletion'
 }
 
-function OperationManager(listData, officialList, myList) {
+// function OperationManager(listData, officialList, myList) {
+function OperationManager(listData, listManager) {
   this.multipleCharInsertionUnderway = false;
   this.listData = listData;
-  this.officialList = officialList;
-  this.myList = myList;
+  this.officialList = listManager.officialList;
+  this.myList = listManager.myList;
   this.Operation = function(text, indices, mode) {
     this.text = text;
     this.startIndex = indices.startIndex;

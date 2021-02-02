@@ -1,8 +1,8 @@
-function MyList(officialList, listData) {
+function MyList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
   this.listData = listData;
-  this.officialList = officialList
+  this.officialList = listManager.officialList;
   this.maxWordsInSublist = 10;
   this.sublists = [];
   this.sublistInflectionsMapping = {};

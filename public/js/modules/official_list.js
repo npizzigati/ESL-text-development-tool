@@ -1,9 +1,11 @@
-function OfficialList(listData) {
+function OfficialList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
   this.currentlyMatchedRow = null;
   this.currentlyMatchedHeadword = null;
   this.listData = listData;
+  // List manager should be doing more than this
+  this.myList = listManager.myList;
 
   this.buildRanks = function() {
     const ranks = {};
@@ -129,6 +131,7 @@ function OfficialList(listData) {
 
   // TODO: Handle case where non-appearing word is clicked
   // Put box around headword in myList
+  // Put box around headword in officialList
   this.highlightAllEditorMatches = function(headword) {
     let inflection, matchStart, matchEnd, length;
     let searchStart = 0;

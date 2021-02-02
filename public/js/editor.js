@@ -1,7 +1,6 @@
 import * as Search from './modules/search.js';
-import { MyList } from './modules/my_list.js';
+import { ListManager } from './modules/list_manager.js';
 import { ListData } from './modules/list_data.js';
-import { OfficialList } from './modules/official_list.js';
 import { OperationManager } from './modules/operation_manager.js';
 import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates, determineWordStart,
@@ -45,7 +44,10 @@ $(trixElement).on('click', event => {
     clearTimeout(wordClickTimeoutID)
   }
   // Clear any highlighting
-  clearHighlighting();
+  // Delay to allow time for trix to register cursor position
+  setTimeout(() => {
+    clearHighlighting();
+  }, 300);
 
   // It takes a fraction of a second for Trix to update caret
   // position;
@@ -71,13 +73,13 @@ function clearHighlighting() {
 };
 
 function markOnOfficialList(headword) {
-  // const markedHeadword = document.querySelector(`#official-${headword}`);
-  // markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
-  officialList.emphasizeCurrentHeadwordMatch(headword);
+  console.log(`Should be marking ${headword} on officialList`);
+  listManager.officialList.emphasizeCurrentHeadwordMatch(headword);
 }
 
 function markOnMyList(headword) {
-  myList.emphasizeCurrentHeadwordMatch(headword);
+  console.log(`Should be marking ${headword} on myList`);
+  listManager.myList.emphasizeCurrentHeadwordMatch(headword);
 }
 
 function getClickedWord() {
@@ -95,15 +97,17 @@ function getClickedWord() {
 Search.activateSearchListeners();
 
 const listData = new ListData();
-const officialList = new OfficialList(listData);
-const myList = new MyList(officialList, listData);
-const operationManager = new OperationManager(listData, officialList, myList);
+const listManager = new ListManager(listData);
+// const officialList = new OfficialList(listData);
+// const myList = new MyList(officialList, listData);
+// const operationManager = new OperationManager(listData, officialList, myList);
+const operationManager = new OperationManager(listData, listManager);
 
 // Populate official word list with headwords
-officialList.showOfficialList(headwords);
+listManager.officialList.showOfficialList(headwords);
 
-myList.show()
-myList.activateListeners();
-officialList.activateListeners();
+listManager.myList.show()
+listManager.myList.activateListeners();
+listManager.officialList.activateListeners();
 
 $('.search-box-container').hide();
