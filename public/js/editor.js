@@ -13,6 +13,7 @@ import { isWordCharacter, retrieveWord,
 const trixElement = document.querySelector("trix-editor");
 const trixEditor = trixElement.editor;
 let wordClickTimeoutID;
+let autosaveTimeoutID;
 
 // Add new HTML tag for words in list
 class NeilsNonMatch extends HTMLElement {}
@@ -35,6 +36,7 @@ $(trixElement).on('trix-selection-change', () => {
     return;
   }
   operationManager.processOperation();
+  autosave();
 });
 
 // Listener for clicks on matches in editor
@@ -63,6 +65,20 @@ $(trixElement).on('click', event => {
     }
   }, 200);
 });
+
+function autosave() {
+  if (autosaveTimeoutID) {
+    clearTimeout(autosaveTimeoutID);
+  }
+
+  // Save to local storage after pause to avoid multiple succesive saves
+  autosaveTimeoutID = setTimeout(() => {
+    console.log('Should be saving now');
+    localStorage.setItem('autosavedEditorContent', JSON.stringify(trixEditor))
+    localStorage.setItem('autosavedHeadwords', JSON.stringify(trixEditor))
+    localStorage.setItem('autosavedInflections', JSON.stringify(trixEditor))
+  }, 1000);
+}
 
 function clearHighlighting() {
   const initialPosition = trixEditor.getSelectedRange();
