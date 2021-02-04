@@ -156,9 +156,12 @@ function OperationManager(listData, listManager) {
 
   this.processOperation = function() {
     fullTextHistory.update();
-    if (isRangeCollapsed()) {
-      removeCaretFormatting();
-    }
+
+    // Not sure if this is still necessary
+    // if (isRangeCollapsed()) {
+    //   removeCaretFormatting();
+    // }
+
     if (!isContentChanged()) {
       return;
     }

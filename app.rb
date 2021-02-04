@@ -16,15 +16,20 @@ set :logger, Logger.new(STDOUT)
 
 UPLOADS_DIRECTORY_NAME = 'data'.freeze
 
-get '/' do
-  redirect :upload
-end
+# get '/' do
+#   redirect :upload
+# end
 
-get '/upload' do
+get '/' do
   erb :upload
 end
 
-post '/upload' do
+get '/editor' do
+  # This page is redirected to from :prepare_editor
+  erb :editor
+end
+
+post '/' do
   # Check if user uploaded a file
   return unless params[:file] && params[:file][:filename]
 
@@ -35,11 +40,7 @@ post '/upload' do
   unique_headwords = remove_duplicates(headwords_array)
   @headwords_json = unique_headwords.to_json
   @inflections_map_json = extract_inflections(unique_headwords).to_json
-  erb :editor
-end
-
-get '/editor' do
-  erb :editor
+  erb :prepare_editor
 end
 
 def root_path

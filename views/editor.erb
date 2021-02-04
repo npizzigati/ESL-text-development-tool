@@ -1,6 +1,7 @@
 <html>
   <head>
     <title>Neil's Text Tool</title>
+    <meta charset="utf-8" />
     <link rel="icon" href="/images/favicon.ico" />
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Mukta">
@@ -8,8 +9,9 @@
     <link rel="stylesheet" href="/css/trix.css">
     <link rel="stylesheet" href="/css/main.css">
     <script>
-      const inflectionsMap = <%== @inflections_map_json %>;
-      const headwords = <%== @headwords_json %>;
+     // These should not be globals!
+     const inflectionsMap = JSON.parse(localStorage.getItem('inflectionsMap'));
+     const headwords = JSON.parse(localStorage.getItem('headwords'));
     </script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="/js/trix.js"></script>

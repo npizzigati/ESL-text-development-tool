@@ -12,6 +12,11 @@ import { isWordCharacter, retrieveWord,
 
 const trixElement = document.querySelector("trix-editor");
 const trixEditor = trixElement.editor;
+
+const listData = new ListData();
+const listManager = new ListManager(listData);
+const operationManager = new OperationManager(listData, listManager);
+
 let wordClickTimeoutID;
 let autosaveTimeoutID;
 
@@ -31,53 +36,69 @@ Trix.config.textAttributes.searchHighlight = {
   inheritable: true
 };
 
-$(trixElement).on('trix-selection-change', () => {
-  if (operationManager.multipleCharInsertionUnderway) {
-    return;
-  }
-  operationManager.processOperation();
-  autosave();
-});
-
-// Listener for clicks on matches in editor
-$(trixElement).on('click', event => {
-  // Stop first click event from firing in case of double click
-  if (wordClickTimeoutID) {
-    clearTimeout(wordClickTimeoutID)
-  }
-  // Clear any highlighting
-  // Delay to allow time for trix to register cursor position
-  setTimeout(() => {
-    clearHighlighting();
-  }, 300);
-
-  // It takes a fraction of a second for Trix to update caret
-  // position;
-  wordClickTimeoutID = setTimeout(() => {
-    const clickedWord = getClickedWord();
-    if (!clickedWord) {
+function activateEditorListeners() {
+  $(trixElement).on('trix-selection-change', () => {
+    console.log('Trix selection change fired')
+    if (operationManager.multipleCharInsertionUnderway) {
       return;
     }
-    const headword = listData.getHeadword(clickedWord);
-    if (headword) {
-      markOnOfficialList(headword);
-      markOnMyList(headword);
+    operationManager.processOperation();
+    autosave();
+  });
+
+  // Listener for clicks on matches in editor
+  $(trixElement).on('click', event => {
+    // Stop first click event from firing in case of double click
+    if (wordClickTimeoutID) {
+      clearTimeout(wordClickTimeoutID)
     }
-  }, 200);
-});
+    // Clear any highlighting
+    // Delay to allow time for trix to register cursor position
+    setTimeout(() => {
+      clearHighlighting();
+    }, 300);
+
+    // It takes a fraction of a second for Trix to update caret
+    // position;
+    wordClickTimeoutID = setTimeout(() => {
+      const clickedWord = getClickedWord();
+      if (!clickedWord) {
+        return;
+      }
+      const headword = listData.getHeadword(clickedWord);
+      if (headword) {
+        markOnOfficialList(headword);
+        markOnMyList(headword);
+      }
+    }, 200);
+  });
+}
+
+function editorStartupActivities() {
+  const editorContent = localStorage.getItem('autosavedEditorContent');
+  if (editorContent) {
+    reloadContent(editorContent);
+  }
+  $(trixElement).focus();
+  listData.calculate();
+  listManager.officialList.refresh();
+  listManager.myList.refresh();
+  activateEditorListeners();
+}
 
 function autosave() {
   if (autosaveTimeoutID) {
     clearTimeout(autosaveTimeoutID);
   }
 
-  // Save to local storage after pause to avoid multiple succesive saves
   autosaveTimeoutID = setTimeout(() => {
     console.log('Should be saving now');
-    localStorage.setItem('autosavedEditorContent', JSON.stringify(trixEditor))
-    localStorage.setItem('autosavedHeadwords', JSON.stringify(trixEditor))
-    localStorage.setItem('autosavedInflections', JSON.stringify(trixEditor))
-  }, 1000);
+    localStorage.setItem('autosavedEditorContent', JSON.stringify(trixEditor));
+  }, 800);
+}
+
+function reloadContent(editorContent) {
+  trixEditor.loadJSON(JSON.parse(editorContent));
 }
 
 function clearHighlighting() {
@@ -110,13 +131,6 @@ function getClickedWord() {
 
 Search.activateSearchListeners();
 
-const listData = new ListData();
-const listManager = new ListManager(listData);
-// const officialList = new OfficialList(listData);
-// const myList = new MyList(officialList, listData);
-// const operationManager = new OperationManager(listData, officialList, myList);
-const operationManager = new OperationManager(listData, listManager);
-
 // Populate official word list with headwords
 listManager.officialList.showOfficialList(headwords);
 
@@ -125,3 +139,5 @@ listManager.myList.activateListeners();
 listManager.officialList.activateListeners();
 
 $('.search-box-container').hide();
+
+editorStartupActivities();
