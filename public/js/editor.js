@@ -39,9 +39,12 @@ Trix.config.textAttributes.searchHighlight = {
 function activateEditorListeners() {
   $(trixElement).on('trix-selection-change', () => {
     console.log('Trix selection change fired')
-    if (operationManager.multipleCharInsertionUnderway) {
-      return;
-    }
+    // Guard clause should also return right away if change is
+    // due to automatic events caused in processOperation --
+    // maybe something like isProcessOperationUnderway ?
+    // Weirdness also happens when I start typing in text body
+    // after refresh
+
     operationManager.processOperation();
     autosave();
   });
@@ -78,6 +81,7 @@ function editorStartupActivities() {
   const editorContent = localStorage.getItem('autosavedEditorContent');
   if (editorContent) {
     reloadContent(editorContent);
+    operationManager.updateFullTextHistory();
   }
   $(trixElement).focus();
   listData.calculate();
@@ -92,7 +96,6 @@ function autosave() {
   }
 
   autosaveTimeoutID = setTimeout(() => {
-    console.log('Should be saving now');
     localStorage.setItem('autosavedEditorContent', JSON.stringify(trixEditor));
   }, 800);
 }

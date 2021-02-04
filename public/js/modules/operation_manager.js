@@ -154,17 +154,22 @@ function OperationManager(listData, listManager) {
     this.point = this.determinePoint();
   };
 
+  this.updateFullTextHistory = function() {
+    fullTextHistory.update();
+  };
+
   this.processOperation = function() {
     fullTextHistory.update();
-
     // Not sure if this is still necessary
     // if (isRangeCollapsed()) {
     //   removeCaretFormatting();
     // }
 
-    if (!isContentChanged()) {
+    if (!isContentChanged() || this.multipleCharInsertionUnderway) {
+      console.log('Returning early');
       return;
     }
+    // console.log('Content changed. Processing operation');
     window.clearTimeout(this.operationTimeoutID);
     const [text, operation, indices] = this.getDelta();
     const length = text.length;
