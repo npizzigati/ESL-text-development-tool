@@ -169,7 +169,6 @@ function OperationManager(listData, listManager) {
       console.log('Returning early');
       return;
     }
-    // console.log('Content changed. Processing operation');
     window.clearTimeout(this.operationTimeoutID);
     const [text, operation, indices] = this.getDelta();
     const length = text.length;
@@ -420,7 +419,6 @@ function OperationManager(listData, listManager) {
       this.processDeletionOutsideWord(deletion);
       break;
     case points.ON_SINGLE_CHARACTER_WORD:
-      // this.processDeletionOfSingleCharacterWord(deletion);
       break;
     case points.INSIDE_WORD:
       this.processDeletionInsideWord(deletion);
