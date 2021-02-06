@@ -1,4 +1,3 @@
-import * as Search from './modules/search.js';
 import { ListManager } from './modules/list_manager.js';
 import { ListData } from './modules/list_data.js';
 import { OperationManager } from './modules/operation_manager.js';
@@ -29,14 +28,3 @@ const listData = new ListData();
 const listManager = new ListManager(listData);
 const operationManager = new OperationManager(listData, listManager);
 const editor = new Editor(listData, listManager, operationManager);
-
-Search.activateSearchListeners();
-
-// Populate official word list with headwords
-listManager.officialList.showOfficialList(headwords);
-
-// listManager.myList.show()
-listManager.myList.activateListeners();
-listManager.officialList.activateListeners();
-
-$('.search-box-container').hide();

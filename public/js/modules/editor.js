@@ -2,6 +2,8 @@ import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates, determineWordStart,
          determineWordEnd } from './utils/word_utilities.js';
 
+import { Search } from './utils/search.js';
+
 function Editor(listData, listManager, operationManager) {
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
@@ -98,6 +100,8 @@ function Editor(listData, listManager, operationManager) {
   };
 
   editorStartupActivities();
+  search = new Search(this);
+  search.activateSearchListeners();
 }
 
 export { Editor };
