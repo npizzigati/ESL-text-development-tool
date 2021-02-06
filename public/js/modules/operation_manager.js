@@ -2,77 +2,77 @@ import { isPunctuation, isWordCharacter, isRangeCollapsed,
          retrieveWord, retrieveWordCoordinates, determineWordStart,
          determineWordEnd } from './utils/word_utilities.js';
 
-const trixElement = document.querySelector("trix-editor");
-const trixEditor = trixElement.editor;
-
-function isSelection(caretPositionArray) {
-  caretPositionArray[0] !== caretPositionArray[1];
-}
-
-const fullTextHistory = {
-  latest: '',
-  previous: '',
-  removeEndingNewLine: function(str) {
-    return str.replace(/\n$/g, '');
-  },
-  update: function() {
-    this.previous = this.latest;
-    this.latest = this.removeEndingNewLine(trixEditor.getDocument().toString());
-  }
-};
-
-const textMarker = {
-  markWord: function(word, startIndex, endIndex) {
-    trixEditor.setSelectedRange([startIndex, endIndex + 1]);
-    trixEditor.activateAttribute('neilsNonMatch');
-  },
-
-  unmarkWord: function(word, startIndex, endIndex, deletedPart = null) {
-    if (word === deletedPart) {
-      trixEditor.deactivateAttribute('neilsNonMatch');
-      return;
-    }
-
-    word = (deletedPart) ? word + deletedPart : word;
-    trixEditor.setSelectedRange([startIndex, endIndex + 1]);
-    trixEditor.deactivateAttribute('neilsNonMatch');
-  }
-};
-
-function isContentChanged() {
-  return fullTextHistory.latest !== fullTextHistory.previous;
-}
-
-function removeCaretFormatting() {
-  if (trixEditor.attributeIsActive('neilsNonMatch')) {
-    trixEditor.deactivateAttribute('neilsNonMatch');
-  // } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
-  //   trixEditor.deactivateAttribute('neilsPunctuation');
-  }
-}
-
-// enums used in operationManager
-const points = {
-  START_OF_WORD: 'start of word',
-  END_OF_WORD: 'end of word',
-  INSIDE_WORD: 'inside word',
-  OUTSIDE_WORD: 'outside word',
-  ON_SINGLE_CHARACTER_WORD: 'on single character word'
-}
-
-const characterTypes = {
-  LETTER: 'letter',
-  NONLETTER: 'nonletter',
-  MULTIPLE: 'multiple'
-}
-
-const modes = {
-  INSERTION: 'insertion',
-  DELETION: 'deletion'
-}
-
-// function OperationManager(listData, officialList, myList) {
 function OperationManager(listData, listManager) {
+  const trixElement = document.querySelector("trix-editor");
+  const trixEditor = trixElement.editor;
+
+  const isSelection = function(caretPositionArray) {
+    caretPositionArray[0] !== caretPositionArray[1];
+  }
+
+  const fullTextHistory = {
+    latest: '',
+    previous: '',
+    removeEndingNewLine: function(str) {
+      return str.replace(/\n$/g, '');
+    },
+    update: function() {
+      this.previous = this.latest;
+      this.latest = this.removeEndingNewLine(trixEditor.getDocument().toString());
+    }
+  };
+
+  const textMarker = {
+    markWord: function(word, startIndex, endIndex) {
+      trixEditor.setSelectedRange([startIndex, endIndex + 1]);
+      trixEditor.activateAttribute('neilsNonMatch');
+    },
+
+    unmarkWord: function(word, startIndex, endIndex, deletedPart = null) {
+      if (word === deletedPart) {
+        trixEditor.deactivateAttribute('neilsNonMatch');
+        return;
+      }
+
+      word = (deletedPart) ? word + deletedPart : word;
+      trixEditor.setSelectedRange([startIndex, endIndex + 1]);
+      trixEditor.deactivateAttribute('neilsNonMatch');
+    }
+  };
+
+  const isContentChanged = function() {
+    return fullTextHistory.latest !== fullTextHistory.previous;
+  }
+
+  const removeCaretFormatting = function() {
+    if (trixEditor.attributeIsActive('neilsNonMatch')) {
+      trixEditor.deactivateAttribute('neilsNonMatch');
+    // } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
+    //   trixEditor.deactivateAttribute('neilsPunctuation');
+    }
+  }
+
+  // enums used in operationManager
+  const points = {
+    START_OF_WORD: 'start of word',
+    END_OF_WORD: 'end of word',
+    INSIDE_WORD: 'inside word',
+    OUTSIDE_WORD: 'outside word',
+    ON_SINGLE_CHARACTER_WORD: 'on single character word'
+  }
+
+  const characterTypes = {
+    LETTER: 'letter',
+    NONLETTER: 'nonletter',
+    MULTIPLE: 'multiple'
+  }
+
+  const modes = {
+    INSERTION: 'insertion',
+    DELETION: 'deletion'
+  }
+
+
   this.multipleCharInsertionUnderway = false;
   this.listData = listData;
   this.officialList = listManager.officialList;

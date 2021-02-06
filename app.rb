@@ -24,9 +24,9 @@ get '/' do
   erb :upload
 end
 
-get '/editor' do
+get '/main' do
   # This page is redirected to from :prepare_editor
-  erb :editor
+  erb :main
 end
 
 post '/' do

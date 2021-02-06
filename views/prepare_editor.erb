@@ -9,7 +9,7 @@
         localStorage.setItem('inflectionsMap', JSON.stringify(<%== @inflections_map_json %>));
         localStorage.setItem('headwords', JSON.stringify(<%== @headwords_json %>));
         const currentURL = location.href;
-        location.replace(currentURL + 'editor');
+        location.replace(currentURL + 'main');
        }, 200)
       </script>
   </head>
