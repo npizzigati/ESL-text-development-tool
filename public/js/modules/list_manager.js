@@ -10,7 +10,7 @@ function ListManager(listData) {
   this.officialList.activateListeners();
 
   // Populate official word list with headwords
-  this.officialList.showOfficialList(headwords);
+  this.officialList.showOfficialList(listData.headwords);
 }
 
 

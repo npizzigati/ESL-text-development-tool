@@ -5,16 +5,24 @@ function ListData() {
   this.sublistInflectionsMapping = {};
   this.sublistHeadwords = [];
   this.timesMarked = new Map();
+  this.inflectionsMap = JSON.parse(localStorage.getItem('inflectionsMap'));
+  this.headwords = JSON.parse(localStorage.getItem('headwords'));
+  removeHeadwordsAndInflectionsFromLocalStorage();
 
-  this.buildOriginalHeadwordSpellings = function(headwords) {
+  function removeHeadwordsAndInflectionsFromLocalStorage() {
+    localStorage.removeItem('inflectionsMap');
+    localStorage.removeItem('headwords');
+  };
+
+  this.buildOriginalHeadwordSpellings = function() {
     const originalHeadwordSpellings = {};
-    headwords.forEach(headword => {
+    this.headwords.forEach(headword => {
       originalHeadwordSpellings[headword.toLowerCase()] = headword;
     });
     return originalHeadwordSpellings;
   };
 
-  this.originalHeadwordSpellings = this.buildOriginalHeadwordSpellings(headwords);
+  this.originalHeadwordSpellings = this.buildOriginalHeadwordSpellings();
 
   this.calculate = function() {
     const fullText = trixEditor.getDocument().toString();
@@ -52,7 +60,7 @@ function ListData() {
   };
 
   this.getHeadword = function(word) {
-    const headword = inflectionsMap[word.toLowerCase()]
+    const headword = this.inflectionsMap[word.toLowerCase()]
     if (headword) {
       return headword.toLowerCase();
     } else {

@@ -100,7 +100,7 @@ function Editor(listData, listManager, operationManager) {
   };
 
   editorStartupActivities();
-  search = new Search(this);
+  const search = new Search(this);
   search.activateSearchListeners();
 }
 

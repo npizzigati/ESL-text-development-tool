@@ -7,7 +7,7 @@ function OfficialList(listData, listManager) {
   this.buildRanks = function() {
     const ranks = {};
     let count = 1;
-    headwords.forEach(headword => {
+    listData.headwords.forEach(headword => {
       ranks[headword.toLowerCase()] = count;
       count += 1;
     });
@@ -163,11 +163,11 @@ function OfficialList(listData, listManager) {
   this.activateListeners = function() {
     $('#official-list-header-headword').off();
     $('#official-list-header-headword').on('click', event => {
-      this.showOfficialList([...headwords].sort());
+      this.showOfficialList([...listData.headwords].sort());
     });
     $('#official-list-header-rank').off();
     $('#official-list-header-rank').on('click', event => {
-      this.showOfficialList(headwords);
+      this.showOfficialList(listData.headwords);
     });
     $('.official-list-headwords').off();
     $('.official-list-headwords').on('click', event => {
