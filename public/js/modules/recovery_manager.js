@@ -4,6 +4,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
 
   function list_autosaves() {
     const listParts = [];
+    const listPartsHtml = []
     $('#recovery-list').empty();
     let filename, fileContent, base_url, hyperlink, listPart, date, time;
     for (let i = 0; i < localStorage.length; i++) {
@@ -11,12 +12,15 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       fileContent = JSON.parse(localStorage.getItem(filename));
       date = fileContent.date;
       time = fileContent.time;
-      // base_url = location.origin;
-      // hyperlink = `base_url/${filename}`
-      listPart = `${time} - ${date} - ${filename}`
-      listParts.push(`<li class="autosave-file clickable" id="${filename}">${listPart}</li>`);
+      listPart = `${time} - ${date} - ${filename}`;
+      listParts.push(listPart);
     }
-    $('#recovery-list').append('<ul>' + listParts.join('') + '</ul>');
+    listParts.sort();
+    listParts.forEach( (listPart) => {
+      [time, date, filename] = listPart.split(' - ');
+      listPartsHtml.push(`<li class="autosave-file clickable" id="${filename}">${listPart}</li>`);
+    });
+    $('#recovery-list').append('<ul>' + listPartsHtml.join('') + '</ul>');
   }
 
   this.activateRecoveryListeners = function() {
