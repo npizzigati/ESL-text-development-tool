@@ -221,5 +221,9 @@ trix-editor {
 
 #recovery-list {
     display: none;
-    cursor: pointer
+    cursor: pointer;
+}
+
+.clickable {
+    cursor: pointer;
 }

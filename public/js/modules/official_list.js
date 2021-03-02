@@ -65,8 +65,8 @@ function OfficialList(listData, listManager) {
 
   this.tableheader = '<thead>' +
     '<tr>' +
-    '<th class="official-list-header" id="official-list-header-rank">Rank</th>' +
-    '<th class="official-list-header" id="official-list-header-headword">Headword</th>' +
+    '<th class="official-list-header clickable" id="official-list-header-rank">Rank</th>' +
+    '<th class="official-list-header clickable" id="official-list-header-headword">Headword</th>' +
     '<th class="official-list-header">Uses</th>' +
     '</tr>' +
     '</thead>';
