@@ -25,14 +25,7 @@ Trix.config.textAttributes.searchHighlight = {
   inheritable: true
 };
 
-// $('#new-tab-button').on('click', () => {
-//   hideNewTabButton();
-//   showNewHeadwordsForm();
-//   activateSubmitListener();
-// });
-
 function mainStartUpActions() {
-  showNewHeadwordsForm();
   activateSubmitListener();
   activatePageUnloadListener();
   const recoveryManager = new RecoveryManager(ListData, ListManager, OperationManager, Editor);
@@ -44,10 +37,6 @@ function activatePageUnloadListener() {
     // Custom message will not be displayed in modern browsers
     return 'Are you sure you want to leave? You are in the middle of something.';
   };
-}
-
-function showNewHeadwordsForm() {
-  $('#new-headwords-form').css('display', 'block');
 }
 
 function hideNewHeadwordsForm() {
@@ -62,9 +51,9 @@ function hideWaitMessage() {
   $('#new-headwords-wait-message').css('display', 'none');
 }
 
-function showNewTabButton() {
-  $('#new-tab-button').css('display', 'inline');
-}
+// function showNewTabButton() {
+//   $('#new-tab-button').css('display', 'inline');
+// }
 
 function hideNewTabButton() {
   $('#new-tab-button').css('display', 'none');
@@ -74,6 +63,7 @@ function activateSubmitListener() {
   $('#new-headwords-form').submit(function(e) {
     e.preventDefault(); 
     hideNewHeadwordsForm();
+    hideRecoveryMessage();
     showWaitMessage();
     const form = $(this);
     const url = form.attr('action');
@@ -89,10 +79,13 @@ function activateSubmitListener() {
     })
       .done(function(data, textStatus, jqXHR) {
         hideWaitMessage();
-        // showNewTabButton();
         openNewTab(JSON.parse(data));
       })
   });
+}
+
+function hideRecoveryMessage() {
+  $('#recovery-message').css('display', 'none');
 }
 
 function openNewTab(parsedData) {

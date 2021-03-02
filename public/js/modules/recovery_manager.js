@@ -22,6 +22,8 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     console.log('Activating recovery listeners');
 
     $('#recovery-message').on('click', function() {
+      $('#new-headwords-form').css('display', 'none');
+      $('.layout-row1').css('display','none')
       $('#recovery-list').css('display', 'block');
       list_autosaves();
     });
@@ -36,15 +38,25 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     })
   };
 
+  function showEditingEnvironment() {
+    $('.layout-row1').css('display','flex');
+  }
+
+  function hideRecoveryInfo() {
+    $('#recovery-message').css('display', 'none');
+    $('#recovery-list').css('display', 'none');
+  }
+
   function restoreEditingEnvironment(editorContent, headwordsAndInflections) {
     const listData = new ListData(headwordsAndInflections);
     const listManager = new ListManager(listData);
     const operationManager = new OperationManager(listData, listManager);
     const editor = new Editor(listData, listManager, operationManager);
     trixEditor.loadJSON(editorContent);
+    hideRecoveryInfo();
+    showEditingEnvironment();
   }
 
-  $('#recovery-message').css('display', 'block');
 }
 
 export { RecoveryManager };

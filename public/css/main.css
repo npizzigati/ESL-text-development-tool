@@ -43,7 +43,7 @@ trix-editor {
 }
 
 #new-headwords-form {
-    display: none;
+    display: inline;
 }
 
 #new-headwords-wait-message {
@@ -215,7 +215,7 @@ trix-editor {
 }
 
 #recovery-message {
-    display: none;
+    display: inline;
     cursor: pointer;
 }
 
