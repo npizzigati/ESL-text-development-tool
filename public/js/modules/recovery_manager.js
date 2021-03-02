@@ -53,10 +53,11 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     const operationManager = new OperationManager(listData, listManager);
     const editor = new Editor(listData, listManager, operationManager);
     trixEditor.loadJSON(editorContent);
+    operationManager.updateFullTextHistory();
     hideRecoveryInfo();
     showEditingEnvironment();
+    editor.executeStartupActions();
   }
-
 }
 
 export { RecoveryManager };

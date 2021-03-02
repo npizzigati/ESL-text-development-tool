@@ -10,18 +10,15 @@ function Editor(listData, listManager, operationManager) {
   let wordClickTimeoutID;
   let autosaveTimeoutID;
 
-  const editorStartupActivities = function() {
-    // const editorContent = localStorage.getItem('autosavedEditorContent');
-    // if (editorContent) {
-    //   reloadContent(editorContent);
-    //   operationManager.updateFullTextHistory();
-    // }
+  this.executeStartupActions = function() {
     $(trixElement).focus();
     listData.calculate();
     listManager.officialList.refresh();
     listManager.myList.refresh();
     activateEditorListeners();
     displaySearchIcon();
+    const search = new Search();
+    search.activateSearchListeners();
   };
 
   const displaySearchIcon = function() {
@@ -116,10 +113,6 @@ function Editor(listData, listManager, operationManager) {
     return retrieveWord(fullText, [wordStart, wordEnd]);
   };
 
-  editorStartupActivities();
-  const search = new Search();
-  // const search = new Search(this);
-  search.activateSearchListeners();
   const autosave = setUpAutosave();
 }
 

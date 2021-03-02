@@ -25,7 +25,7 @@ Trix.config.textAttributes.searchHighlight = {
   inheritable: true
 };
 
-function mainStartUpActions() {
+function executeStartupActions() {
   activateSubmitListener();
   activatePageUnloadListener();
   const recoveryManager = new RecoveryManager(ListData, ListManager, OperationManager, Editor);
@@ -79,7 +79,7 @@ function activateSubmitListener() {
     })
       .done(function(data, textStatus, jqXHR) {
         hideWaitMessage();
-        openNewTab(JSON.parse(data));
+        startNewEditingSession(JSON.parse(data));
       })
   });
 }
@@ -88,11 +88,12 @@ function hideRecoveryMessage() {
   $('#recovery-message').css('display', 'none');
 }
 
-function openNewTab(parsedData) {
+function startNewEditingSession(parsedData) {
   const listData = new ListData(parsedData);
   const listManager = new ListManager(listData);
   const operationManager = new OperationManager(listData, listManager);
   const editor = new Editor(listData, listManager, operationManager);
+  editor.executeStartupActions();
 }
 
-mainStartUpActions();
+executeStartupActions();
