@@ -1,8 +1,8 @@
 import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates, determineWordStart,
          determineWordEnd } from './utils/word_utilities.js';
-
 import { Search } from './utils/search.js';
+import { RecoveryManager } from './recovery_manager.js';
 
 function Editor(listData, listManager, operationManager) {
   const trixElement = document.querySelector("trix-editor");
@@ -12,17 +12,22 @@ function Editor(listData, listManager, operationManager) {
   let autosaveTimeoutID;
 
   const editorStartupActivities = function() {
-    const editorContent = localStorage.getItem('autosavedEditorContent');
-    if (editorContent) {
-      reloadContent(editorContent);
-      operationManager.updateFullTextHistory();
-    }
+    // const editorContent = localStorage.getItem('autosavedEditorContent');
+    // if (editorContent) {
+    //   reloadContent(editorContent);
+    //   operationManager.updateFullTextHistory();
+    // }
     $(trixElement).focus();
     listData.calculate();
     listManager.officialList.refresh();
     listManager.myList.refresh();
     activateEditorListeners();
+    displaySearchIcon();
   };
+
+  const displaySearchIcon = function() {
+    $('.search-icon-container').css('display', 'block');
+  }
 
   const activateEditorListeners = function() {
     $(trixElement).on('trix-selection-change', () => {
@@ -57,18 +62,27 @@ function Editor(listData, listManager, operationManager) {
     });
   };
 
-  const autosave = function() {
-    if (autosaveTimeoutID) {
-      clearTimeout(autosaveTimeoutID);
-    }
+  const setUpAutosave = function() {
+    sessionStorage.tabID = Math.random() * 10e16;
 
-    autosaveTimeoutID = setTimeout(() => {
-      localStorage.setItem('autosavedEditorContent', JSON.stringify(trixEditor));
-    }, 800);
-  };
+    const autosave = function() {
+      if (autosaveTimeoutID) {
+        clearTimeout(autosaveTimeoutID);
+      }
 
-  const reloadContent = function(editorContent) {
-    trixEditor.loadJSON(JSON.parse(editorContent));
+
+      autosaveTimeoutID = setTimeout(() => {
+        const tabID = sessionStorage.tabID;
+        const autosaveItem = {
+          date: new Date().toLocaleDateString(),
+          editorContent: trixEditor
+        }
+        const filename = `autosave-${tabID}`;
+        localStorage.setItem(filename, JSON.stringify(autosaveItem));
+      }, 800);
+    };
+
+    return autosave
   };
 
   const clearHighlighting = function() {
@@ -96,15 +110,16 @@ function Editor(listData, listManager, operationManager) {
       return null;
     }
     const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
-    return retrieveWord(fullText, [wordStart, wordEnd]); 
+    return retrieveWord(fullText, [wordStart, wordEnd]);
   };
 
   editorStartupActivities();
-  const search = new Search(this);
+  const search = new Search();
+  // const search = new Search(this);
   search.activateSearchListeners();
+  const autosave = setUpAutosave();
+  const recoveryManager = new RecoveryManager();
+  recoveryManager.activateRecoveryListeners();
 }
 
 export { Editor };
-
-
-

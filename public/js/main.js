@@ -24,7 +24,79 @@ Trix.config.textAttributes.searchHighlight = {
   inheritable: true
 };
 
-const listData = new ListData();
-const listManager = new ListManager(listData);
-const operationManager = new OperationManager(listData, listManager);
-const editor = new Editor(listData, listManager, operationManager);
+// $('#new-tab-button').on('click', () => {
+//   hideNewTabButton();
+//   showNewHeadwordsForm();
+//   activateSubmitListener();
+// });
+
+function mainStartUpActions() {
+  showNewHeadwordsForm();
+  activateSubmitListener();
+  activatePageUnloadListener();
+}
+
+function activatePageUnloadListener() {
+  window.onbeforeunload = () => {
+    // Custom message will not be displayed in modern browsers
+    return 'Are you sure you want to leave? You are in the middle of something.';
+  };
+}
+
+function showNewHeadwordsForm() {
+  $('#new-headwords-form').css('display', 'block');
+}
+
+function hideNewHeadwordsForm() {
+  $('#new-headwords-form').css('display', 'none');
+}
+
+function showWaitMessage() {
+  $('#new-headwords-wait-message').css('display', 'block');
+}
+
+function hideWaitMessage() {
+  $('#new-headwords-wait-message').css('display', 'none');
+}
+
+function showNewTabButton() {
+  $('#new-tab-button').css('display', 'inline');
+}
+
+function hideNewTabButton() {
+  $('#new-tab-button').css('display', 'none');
+}
+
+function activateSubmitListener() {
+  $('#new-headwords-form').submit(function(e) {
+    e.preventDefault(); 
+    hideNewHeadwordsForm();
+    showWaitMessage();
+    const form = $(this);
+    const url = form.attr('action');
+    const formData = new FormData();
+    const file = $('#file')[0].files[0];
+    formData.append('file', file);
+    $.ajax({
+      type: 'POST',
+      url: url,
+      data: formData,
+      contentType: false,
+      processData: false
+    })
+      .done(function(data, textStatus, jqXHR) {
+        hideWaitMessage();
+        // showNewTabButton();
+        openNewTab(JSON.parse(data));
+      })
+  });
+}
+
+function openNewTab(parsedData) {
+  const listData = new ListData(parsedData);
+  const listManager = new ListManager(listData);
+  const operationManager = new OperationManager(listData, listManager);
+  const editor = new Editor(listData, listManager, operationManager);
+}
+
+mainStartUpActions();

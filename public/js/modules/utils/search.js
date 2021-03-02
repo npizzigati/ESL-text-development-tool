@@ -51,9 +51,9 @@ function Search() {
       mainSearch.clearHighlighting();
       trixEditor.setSelectedRange(originalCaretPos);
     }, 100);
-  }
+  };
 
-  function activateSearchListeners() {
+  this.activateSearchListeners = function() {
     $(trixElement).on('mouseup', () => {
       exitSearch();
     });
@@ -78,19 +78,19 @@ function Search() {
       mainSearch.searcher = new Searcher(searchBox.val());
       mainSearch.searcher.execute();
     });
-  }
+  };
 
   function hideSearchContainer() {
     searchBoxContainer.css('display', 'none');
     searchIconContainer.css('display', 'block');
-  }
+  };
 
   function showSearchContainer() {
     searchIconContainer.css('display', 'none');
     searchBoxContainer.css('display', 'flex');
     searchBox.val('');
     searchBox.focus();
-  }
+  };
 
   function Searcher(searchString) {
     this.fullText = trixEditor.getDocument().toString();
@@ -107,7 +107,7 @@ function Search() {
       // if (last(mainSearch.highlightedRanges)[1]).includes
       this.scrollToMatch(this.matches[this.matchNumber]);
       searchBox.focus();
-    }
+    };
 
     this.nextMatchDown = function() {
       this.matchNumber = (this.matchNumber + 1) % this.matches.length;
@@ -116,7 +116,7 @@ function Search() {
       this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
       this.scrollToMatch(this.matches[this.matchNumber]);
       searchBox.focus();
-    }
+    };
 
     this.highlightMatch = function(startIndex, length) {
       let endIndex = startIndex + length;
@@ -124,7 +124,7 @@ function Search() {
       trixEditor.activateAttribute('searchHighlight');
       trixEditor.setSelectedRange([startIndex, startIndex]);
       mainSearch.highlightedRanges.push([startIndex, endIndex]);
-    }
+    };
 
     this.execute = function() {
       mainSearch.clearHighlighting;
@@ -149,7 +149,7 @@ function Search() {
         $('#search-down').on('click', this.nextMatchDown.bind(this));
         $('#search-up').on('click', this.nextMatchUp.bind(this));
       }
-    }
+    };
 
     this.findMatches = function(text, searchString, startIndex = 0) {
       let fragment = text.slice(startIndex);
@@ -162,7 +162,7 @@ function Search() {
       return [fullTextMatchIndex].concat(this.findMatches(text,
                                             searchString,
                                             startIndex));
-    }
+    };
 
     this.scrollToMatch = function(startIndex) {
       // No need to scroll if building on previous match
@@ -172,10 +172,10 @@ function Search() {
       const highlightedElement = document.querySelector('mark');
       highlightedElement.scrollIntoView({behavior: 'auto',
                                         block: 'center'});
-    }
-  } 
+    };
+  }
 
-  activateSearchListeners();
+  this.activateSearchListeners();
   $('.search-box-container').hide();
 }
 

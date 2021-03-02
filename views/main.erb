@@ -14,6 +14,14 @@
   </head>
 
   <body>
+    <div id="new-headwords-form">
+      <form action='/' enctype="multipart/form-data" method='POST'>
+          <span>Headwords: </span> 
+          <input id="file" name="file" type="file" />
+          <input type="submit" value="Upload" />
+      </form>
+    </div>
+    <div id="new-headwords-wait-message">Please wait (this should take about 10 seconds)</div>
     <div class="search-icon-container">
       <input class="search-icon" type="image" src="/images/search-icon.png"></input> 
     </div>
@@ -24,13 +32,22 @@
         <button id="search-down" class="search-arrow">&#8595;</button>
       </div>
     </div>
+    <!-- <div class="new-tab-container">
+         <button id="new-tab-button">+</input> 
+         </div> -->
     <div class="layout-row1">
       <trix-editor></trix-editor>
       <div class="my-list">
         <p class="section-title">My List</p>
       </div>
       <div class="official-list">
+        <p class="section-title">Official List</p>
       </div>
     </div>
+    <div id="recovery-message">
+      Click here to show autosaved files
+    </div>
+    <div id="recovery-list">
+    <div>
   </body>
 </html>

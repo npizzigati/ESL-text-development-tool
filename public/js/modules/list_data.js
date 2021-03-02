@@ -1,18 +1,12 @@
 const trixElement = document.querySelector("trix-editor");
 const trixEditor = trixElement.editor;
 
-function ListData() {
+function ListData(parsedData) {
   this.sublistInflectionsMapping = {};
   this.sublistHeadwords = [];
   this.timesMarked = new Map();
-  this.inflectionsMap = JSON.parse(localStorage.getItem('inflectionsMap'));
-  this.headwords = JSON.parse(localStorage.getItem('headwords'));
-  removeHeadwordsAndInflectionsFromLocalStorage();
-
-  function removeHeadwordsAndInflectionsFromLocalStorage() {
-    localStorage.removeItem('inflectionsMap');
-    localStorage.removeItem('headwords');
-  };
+  this.headwords = parsedData.headwords;
+  this.inflectionsMap = parsedData.inflections_map;
 
   this.buildOriginalHeadwordSpellings = function() {
     const originalHeadwordSpellings = {};

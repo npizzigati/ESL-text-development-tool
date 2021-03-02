@@ -42,6 +42,15 @@ trix-editor {
     height: 500px;
 }
 
+#new-headwords-form {
+    display: none;
+}
+
+#new-headwords-wait-message {
+    display: none;
+    margin: 3px 3px;
+}
+
 .search-arrow-button-container {
   display: flex;
   flex-direction: row;
@@ -80,6 +89,7 @@ trix-editor {
     margin: 5px 0 4px 0;
     width: 13px;
     height: 13px;
+    display: none;
 }
 
 .search-icon {
@@ -91,7 +101,7 @@ trix-editor {
 }
 
 .search-box-container {
-    display: flex;
+    display: none;
     border: 1px solid #bbb;
     border-radius: 0px;
     width: -moz-max-content;
@@ -149,6 +159,7 @@ trix-editor {
 
 .official-list-headwords {
     text-align: left;
+    cursor: pointer;
 }
 
 .official-list-count {
@@ -200,4 +211,15 @@ trix-editor {
 }
 
 .my-sublist-individual-word {
+    cursor: pointer;
+}
+
+#recovery-message {
+    display: none;
+    cursor: pointer;
+}
+
+#recovery-list {
+    display: none;
+    cursor: pointer
 }

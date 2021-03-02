@@ -20,12 +20,12 @@ UPLOADS_DIRECTORY_NAME = 'data'.freeze
 #   redirect :upload
 # end
 
-get '/' do
-  erb :upload
-end
+# get '/' do
+#   erb :upload
+# end
 
-get '/main' do
-  # This page is redirected to from :prepare_editor
+get '/' do
+  # :prepare_editor redirects to this page
   erb :main
 end
 
@@ -34,13 +34,15 @@ post '/' do
   return unless params[:file] && params[:file][:filename]
 
   filename = params[:file][:filename]
+  puts "upload file: #{filename}"
   target_path = File.join uploads_path, filename
   retrieve_upload(params, target_path)
   headwords_array = retrieve_headwords(target_path)
   unique_headwords = remove_duplicates(headwords_array)
-  @headwords_json = unique_headwords.to_json
-  @inflections_map_json = extract_inflections(unique_headwords).to_json
-  erb :prepare_editor
+  # headwords_json = unique_headwords.to_json
+  # inflections_map_json = extract_inflections(unique_headwords).to_json
+  inflections_map = extract_inflections(unique_headwords)
+  { 'headwords' => unique_headwords, 'inflections_map' => inflections_map }.to_json
 end
 
 def root_path
