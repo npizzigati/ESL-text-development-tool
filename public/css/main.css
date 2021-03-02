@@ -227,3 +227,7 @@ trix-editor {
 .clickable {
     cursor: pointer;
 }
+
+.autosave-file:hover {
+    background: silver;
+}

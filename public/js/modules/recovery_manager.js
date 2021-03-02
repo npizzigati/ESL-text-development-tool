@@ -5,15 +5,16 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
   function list_autosaves() {
     const listParts = [];
     $('#recovery-list').empty();
-    let filename, fileContent, base_url, hyperlink, listPart, date;
+    let filename, fileContent, base_url, hyperlink, listPart, date, time;
     for (let i = 0; i < localStorage.length; i++) {
       filename = localStorage.key(i)
-      fileContent = JSON.parse(localStorage.getItem(filename)); 
+      fileContent = JSON.parse(localStorage.getItem(filename));
       date = fileContent.date;
+      time = fileContent.time;
       // base_url = location.origin;
-      // hyperlink = `base_url/${filename}` 
-      listPart = `${date} - ${filename}`
-      listParts.push(`<li class="autosave-file" id="${filename}">${listPart}</li>`);
+      // hyperlink = `base_url/${filename}`
+      listPart = `${time} - ${date} - ${filename}`
+      listParts.push(`<li class="autosave-file clickable" id="${filename}">${listPart}</li>`);
     }
     $('#recovery-list').append('<ul>' + listParts.join('') + '</ul>');
   }
@@ -23,7 +24,8 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
 
     $('#recovery-message').on('click', function() {
       $('#new-headwords-form').css('display', 'none');
-      $('.layout-row1').css('display','none')
+      $('.layout-row1').css('display','none');
+      $('#recovery-message').html('Choose autosave file to load');
       $('#recovery-list').css('display', 'block');
       list_autosaves();
     });

@@ -69,8 +69,10 @@ function Editor(listData, listManager, operationManager) {
 
       autosaveTimeoutID = setTimeout(() => {
         const tabID = sessionStorage.tabID;
+        const dateTime = new Date();
         const autosaveItem = {
-          date: new Date().toLocaleDateString(),
+          date: dateTime.toLocaleDateString(),
+          time: dateTime.toLocaleTimeString(),
           editorContent: trixEditor,
           headwordsAndInflections: {
             headwords: listData.headwords,
