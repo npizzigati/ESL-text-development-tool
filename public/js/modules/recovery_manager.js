@@ -1,4 +1,4 @@
-const RecoveryManager = function() {
+const RecoveryManager = function(ListData, ListManager, OperationManager, Editor) {
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
 
@@ -31,11 +31,16 @@ const RecoveryManager = function() {
       const filename = event.target.id;
       const fileContent = JSON.parse(localStorage.getItem(filename));
       const editorContent = fileContent.editorContent
-      reloadContent(editorContent);
+      const headwordsAndInflections = fileContent.headwordsAndInflections;
+      restoreEditingEnvironment(editorContent, headwordsAndInflections);
     })
   };
 
-  function reloadContent(editorContent) {
+  function restoreEditingEnvironment(editorContent, headwordsAndInflections) {
+    const listData = new ListData(headwordsAndInflections);
+    const listManager = new ListManager(listData);
+    const operationManager = new OperationManager(listData, listManager);
+    const editor = new Editor(listData, listManager, operationManager);
     trixEditor.loadJSON(editorContent);
   }
 

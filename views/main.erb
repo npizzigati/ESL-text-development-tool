@@ -16,10 +16,15 @@
   <body>
     <div id="new-headwords-form">
       <form action='/' enctype="multipart/form-data" method='POST'>
-          <span>Headwords: </span> 
+          <span>Choose headwords for new session: </span> 
           <input id="file" name="file" type="file" />
           <input type="submit" value="Upload" />
       </form>
+    </div>
+    <div id="recovery-message">
+      Or click here to recover an autosaved session
+    </div>
+    <div id="recovery-list">
     </div>
     <div id="new-headwords-wait-message">Please wait (this should take about 10 seconds)</div>
     <div class="search-icon-container">
@@ -44,10 +49,5 @@
         <p class="section-title">Official List</p>
       </div>
     </div>
-    <div id="recovery-message">
-      Click here to show autosaved files
-    </div>
-    <div id="recovery-list">
-    <div>
   </body>
 </html>

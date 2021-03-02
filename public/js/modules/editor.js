@@ -2,7 +2,6 @@ import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates, determineWordStart,
          determineWordEnd } from './utils/word_utilities.js';
 import { Search } from './utils/search.js';
-import { RecoveryManager } from './recovery_manager.js';
 
 function Editor(listData, listManager, operationManager) {
   const trixElement = document.querySelector("trix-editor");
@@ -75,7 +74,11 @@ function Editor(listData, listManager, operationManager) {
         const tabID = sessionStorage.tabID;
         const autosaveItem = {
           date: new Date().toLocaleDateString(),
-          editorContent: trixEditor
+          editorContent: trixEditor,
+          headwordsAndInflections: {
+            headwords: listData.headwords,
+            inflections_map: listData.inflectionsMap
+          }
         }
         const filename = `autosave-${tabID}`;
         localStorage.setItem(filename, JSON.stringify(autosaveItem));
@@ -118,8 +121,6 @@ function Editor(listData, listManager, operationManager) {
   // const search = new Search(this);
   search.activateSearchListeners();
   const autosave = setUpAutosave();
-  const recoveryManager = new RecoveryManager();
-  recoveryManager.activateRecoveryListeners();
 }
 
 export { Editor };

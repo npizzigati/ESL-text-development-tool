@@ -2,6 +2,7 @@ import { ListManager } from './modules/list_manager.js';
 import { ListData } from './modules/list_data.js';
 import { OperationManager } from './modules/operation_manager.js';
 import { Editor } from './modules/editor.js';
+import { RecoveryManager } from './modules/recovery_manager.js';
 
 // TODO: Add "am" to inflections list ("be"); also check
 // contractions; also "I'm"; "ai" is listed as an inflection of "be" and that
@@ -34,6 +35,8 @@ function mainStartUpActions() {
   showNewHeadwordsForm();
   activateSubmitListener();
   activatePageUnloadListener();
+  const recoveryManager = new RecoveryManager(ListData, ListManager, OperationManager, Editor);
+  recoveryManager.activateRecoveryListeners();
 }
 
 function activatePageUnloadListener() {
