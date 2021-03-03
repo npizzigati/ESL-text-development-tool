@@ -85,6 +85,7 @@ function Editor(listData, listManager, operationManager) {
         }
         const dateTime = new Date();
         const autosaveItem = {
+          timestamp: dateTime.getTime(),
           date: dateTime.toLocaleDateString(),
           time: dateTime.toLocaleTimeString(),
           editorContent: trixEditor,
