@@ -29,7 +29,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     $('#recovery-message').on('click', function() {
       $('#new-headwords-form').css('display', 'none');
       $('.layout-row1').css('display','none');
-      $('#recovery-message').html('Choose autosave file to load');
+      $('#recovery-message').html('Select session to recover:');
       $('#recovery-list').css('display', 'block');
       list_autosaves();
     });
@@ -40,7 +40,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       const fileContent = JSON.parse(localStorage.getItem(filename));
       const editorContent = fileContent.editorContent
       const headwordsAndInflections = fileContent.headwordsAndInflections;
-      restoreEditingEnvironment(editorContent, headwordsAndInflections);
+      restoreEditingEnvironment(editorContent, headwordsAndInflections, filename);
     })
   };
 
@@ -53,7 +53,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     $('#recovery-list').css('display', 'none');
   }
 
-  function restoreEditingEnvironment(editorContent, headwordsAndInflections) {
+  function restoreEditingEnvironment(editorContent, headwordsAndInflections, filename) {
     const listData = new ListData(headwordsAndInflections);
     const listManager = new ListManager(listData);
     const operationManager = new OperationManager(listData, listManager);
@@ -62,7 +62,10 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     operationManager.updateFullTextHistory();
     hideRecoveryInfo();
     showEditingEnvironment();
-    editor.executeStartupActions();
+    // Send the recovered filename into editor so we can
+    // Delete that autosave file when we create a new one
+    // If the user updates
+    editor.executeStartupActions(filename);
   }
 }
 

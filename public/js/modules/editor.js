@@ -4,31 +4,39 @@ import { isWordCharacter, retrieveWord,
 import { Search } from './utils/search.js';
 
 function Editor(listData, listManager, operationManager) {
+
+  this.recoveredFilename = null;
+
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
 
   let wordClickTimeoutID;
   let autosaveTimeoutID;
 
-  this.executeStartupActions = function() {
+  this.executeStartupActions = function(recoveredFilename = null) {
+    if (recoveredFilename) {
+      this.recoveredFilename = recoveredFilename;
+    }
+
     $(trixElement).focus();
     listData.calculate();
     listManager.officialList.refresh();
     listManager.myList.refresh();
-    activateEditorListeners();
+    this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();
     search.activateSearchListeners();
+    this.autosave = this.setUpAutosave();
   };
 
   const displaySearchIcon = function() {
     $('.search-icon-container').css('display', 'block');
   }
 
-  const activateEditorListeners = function() {
+  this.activateEditorListeners = function() {
     $(trixElement).on('trix-selection-change', () => {
       operationManager.processOperation();
-      autosave();
+      this.autosave();
     });
     // Listener for clicks on matches in editor
     $(trixElement).on('click', event => {
@@ -58,17 +66,23 @@ function Editor(listData, listManager, operationManager) {
     });
   };
 
-  const setUpAutosave = function() {
-    sessionStorage.tabID = Math.random() * 10e16;
+  this.setUpAutosave = function() {
+    const tabID = Math.random() * 10e16;
+    let updated = false;
+    const recoveredFilename = this.recoveredFilename;
 
     const autosave = function() {
       if (autosaveTimeoutID) {
         clearTimeout(autosaveTimeoutID);
       }
 
-
       autosaveTimeoutID = setTimeout(() => {
-        const tabID = sessionStorage.tabID;
+        // On first update, remove previous file from localStorage
+        // so it can be replaced by new one
+        if (updated === false && recoveredFilename) {
+          localStorage.removeItem(recoveredFilename);
+          updated = true;
+        }
         const dateTime = new Date();
         const autosaveItem = {
           date: dateTime.toLocaleDateString(),
@@ -114,8 +128,6 @@ function Editor(listData, listManager, operationManager) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
     return retrieveWord(fullText, [wordStart, wordEnd]);
   };
-
-  const autosave = setUpAutosave();
 }
 
 export { Editor };
