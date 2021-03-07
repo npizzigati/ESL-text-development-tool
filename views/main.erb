@@ -14,32 +14,33 @@
   </head>
 
   <body>
-    <span id="new-headwords-form">
-      <form action='/' enctype="multipart/form-data" method='POST'>
-          <span>Choose headwords for new session: </span> 
-          <input id="file" name="file" type="file" />
-          <input type="submit" value="Upload" />
-      </form>
-    </span>
-    <span id="recovery-message">
-      Or click here to recover an autosaved session
-    </span>
-    <div id="recovery-list">
-    </div>
-    <div id="new-headwords-wait-message">Please wait (this should take about 10 seconds)</div>
-    <div class="search-icon-container">
-      <input class="search-icon" type="image" src="/images/search-icon.png"></input> 
-    </div>
-    <div class="search-box-container">
-      <input id="search-box" class="search-box" name="searchText">
-      <div class="search-arrow-button-container">
-        <button id="search-up" class="search-arrow">&#8593;</button>
-        <button id="search-down" class="search-arrow">&#8595;</button>
+    <div id="layout-row0">
+      <p id="page-title"><strong>Neil's Text Tool</strong></p>
+      <span id="new-headwords-form">
+        <form action='/' enctype="multipart/form-data" method='POST'>
+          <span>Welcome to <strong>Neil's Text Tool</strong>.  Choose headwords for new session: </span> 
+            <input id="file" name="file" type="file" />
+            <input type="submit" value="Upload" />
+        </form>
+      </span>
+      <span id="recovery-message">
+        Or click here to recover an autosaved session
+      </span>
+      <div id="recovery-list">
+      </div>
+      <div id="new-headwords-wait-message">Please wait (this should take about 10 seconds)</div>
+      <div class="search-icon-container">
+        <input class="search-icon" type="image" src="/images/search-icon.png"></input> 
+      </div>
+      <div class="search-box-container">
+        <input id="search-box" class="search-box" name="searchText">
+        <div class="search-arrow-button-container">
+          <button id="search-up" class="search-arrow">&#8593;</button>
+          <button id="search-down" class="search-arrow">&#8595;</button>
+        </div>
       </div>
     </div>
-    <!-- <div class="new-tab-container">
-         <button id="new-tab-button">+</input> 
-         </div> -->
+
     <div class="layout-row1">
       <trix-editor></trix-editor>
       <div class="my-list">

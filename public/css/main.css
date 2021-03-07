@@ -42,6 +42,11 @@ trix-editor {
     height: 500px;
 }
 
+.layout-row0 {
+    display: block;
+    height: 30px;
+}
+
 #new-headwords-form {
     display: inline;
 }
@@ -230,4 +235,9 @@ trix-editor {
 
 .autosave-file:hover {
     background: silver;
+}
+
+#page-title {
+
+    display: none;
 }

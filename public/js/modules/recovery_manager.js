@@ -37,6 +37,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       $('.layout-row1').css('display','none');
       $('#recovery-message').html('Select session to recover:');
       $('#recovery-list').css('display', 'block');
+      $('#page-title').css('display', 'block');
       list_autosaves();
     });
 

@@ -51,6 +51,10 @@ function hideWaitMessage() {
   $('#new-headwords-wait-message').css('display', 'none');
 }
 
+function showPageTitle() {
+  $('#page-title').css('display', 'block');
+}
+
 // function showNewTabButton() {
 //   $('#new-tab-button').css('display', 'inline');
 // }
@@ -64,6 +68,7 @@ function activateSubmitListener() {
     e.preventDefault(); 
     hideNewHeadwordsForm();
     hideRecoveryMessage();
+    showPageTitle();
     showWaitMessage();
     const form = $(this);
     const url = form.attr('action');

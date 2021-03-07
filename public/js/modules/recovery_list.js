@@ -60,7 +60,7 @@ const RecoveryList = function(entries) {
       filename = entries[key].filename;
       date = entries[key].date;
       time = entries[key].time;
-      htmlEntries.push(`<li class="autosave-file clickable" id="${filename}">${date} - ${time} timestamp: ${key} filename: ${filename}</li>`);
+      htmlEntries.push(`<li class="autosave-file clickable" id="${filename}">${date} - ${time}</li>`);
       count += 1;
       if (count == maxEntries) break;
     };
