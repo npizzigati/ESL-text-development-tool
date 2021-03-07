@@ -166,7 +166,7 @@ function OperationManager(listData, listManager) {
     // }
 
     if (!isContentChanged() || this.multipleCharInsertionUnderway) {
-      console.log('Returning early');
+      // console.log('Returning early');
       return;
     }
     window.clearTimeout(this.operationTimeoutID);

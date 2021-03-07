@@ -19,7 +19,6 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       filename = localStorage.key(i)
       fileContent = JSON.parse(localStorage.getItem(filename));
       timestamp = fileContent.timestamp;
-      console.log(`timestamp ${timestamp}`);
       entries[timestamp] = {
         date: fileContent.date,
         time: fileContent.time,
@@ -30,8 +29,6 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
   }
 
   this.activateRecoveryListeners = function() {
-    console.log('Activating recovery listeners');
-
     $('#recovery-message').on('click', function() {
       $('#new-headwords-form').css('display', 'none');
       $('.layout-row1').css('display','none');
@@ -42,7 +39,6 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     });
 
     $('#recovery-list').on('click', '.autosave-file', function(event) {
-      console.log('event: ' + event.target.id);
       const filename = event.target.id;
       const fileContent = JSON.parse(localStorage.getItem(filename));
       const editorContent = fileContent.editorContent

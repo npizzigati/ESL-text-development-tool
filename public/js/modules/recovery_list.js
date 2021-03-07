@@ -47,7 +47,6 @@ const RecoveryList = function(entries) {
 
       return 0
     });
-    console.log(`keys: ${keys}`);
     return keys;
   }
 
