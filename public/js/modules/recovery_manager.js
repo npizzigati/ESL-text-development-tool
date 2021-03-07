@@ -1,8 +1,17 @@
+import { RecoveryList } from './recovery_list.js'
+
 const RecoveryManager = function(ListData, ListManager, OperationManager, Editor) {
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
 
   function list_autosaves() {
+    const entries = retrieveAutosaveEntriesFromLocalStorage();
+    const htmlListItems = new RecoveryList(entries).retrieveHtmlListItems();
+    // Display list items
+    $('#recovery-list').append('<ul>' + htmlListItems.join('') + '</ul>');
+  }
+
+  function retrieveAutosaveEntriesFromLocalStorage() {
     const entries = {};
     $('#recovery-list').empty();
     let filename, fileContent, base_url, hyperlink, listPart, date, time, timestamp;
@@ -10,30 +19,14 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       filename = localStorage.key(i)
       fileContent = JSON.parse(localStorage.getItem(filename));
       timestamp = fileContent.timestamp;
+      console.log(`timestamp ${timestamp}`);
       entries[timestamp] = {
         date: fileContent.date,
         time: fileContent.time,
         filename: filename 
       }
     }
-
-    // Sort autosave entries, oldest first
-    const keys = Object.keys(entries);
-    keys.sort((a, b) => {
-      parseInt(a, 10) - parseInt(b, 10)
-    });
-
-    // Build list items to be displayed
-    htmlEntries = [];
-    keys.forEach( (key) => {
-      filename = entries[key].filename; 
-      date = entries[key].date;
-      time = entries[key].time;
-      htmlEntries.push(`<li class="autosave-file clickable" id="${filename}">${date} - ${time}</li>`);
-    });
-
-    // Display list items
-    $('#recovery-list').append('<ul>' + htmlEntries.join('') + '</ul>');
+    return entries;
   }
 
   this.activateRecoveryListeners = function() {
