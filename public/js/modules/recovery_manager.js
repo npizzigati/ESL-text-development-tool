@@ -8,6 +8,9 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     const entries = retrieveAutosaveEntriesFromLocalStorage();
     const htmlListItems = new RecoveryList(entries).retrieveHtmlListItems();
     // Display list items
+    if (htmlListItems.length === 0) {
+      $('#recovery-list').append('<em>No autosave entries yet</em>');
+    }
     $('#recovery-list').append('<ul>' + htmlListItems.join('') + '</ul>');
   }
 
