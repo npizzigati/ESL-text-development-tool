@@ -6,7 +6,9 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
 
   function listAutosaves() {
     const entries = retrieveAutosaveEntriesFromLocalStorage();
-    const htmlListItems = new RecoveryList(entries).retrieveHtmlListItems();
+    const recoveryList = new RecoveryList(entries);
+    const htmlListItems = recoveryList.retrieveHtmlListItems();
+    recoveryList.deleteOldListItems();
     // Display list items
     if (htmlListItems.length === 0) {
       $('#recovery-list').append('<em>No autosave entries yet</em>');

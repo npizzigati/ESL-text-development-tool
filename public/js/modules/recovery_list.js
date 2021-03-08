@@ -19,15 +19,41 @@ const RecoveryList = function(entries) {
   * Since keys are sorted oldest first, the entries at the 
   * start of the array are the ones to be deleted
   */
+
   this.deleteOldListItems = function() {
+    const oldFilenames = this.retrieveOldFilenames();
+    oldFilenames.forEach( filename => {
+      localStorage.removeItem(filename);
+    });
+  }
+
+  this.retrieveOldFilenames = function() {
+    const oldTimestamps = this.retrieveOldTimestamps();
+    const oldFilenames = [];
+    let filename, fileContent, timestamp;
+    const totalItems = localStorage.length;
+    for (let i = 0; i < totalItems; i++) {
+      filename = localStorage.key(i)
+      fileContent = JSON.parse(localStorage.getItem(filename));
+      timestamp = fileContent.timestamp;
+      if (oldTimestamps.includes(timestamp.toString())) {
+        oldFilenames.push(filename);
+      }
+    }
+    return oldFilenames;
+  }
+
+  // FIXME: This method is returning null
+  this.retrieveOldTimestamps = function() {
     const length = this.sortedKeys.length;
-    let quantityToDelete;
-    if (length > 20) {
-      quantityToDelete = length - 20 
-      this.sortedKeys.slice(0, quantityToDelete).forEach( key => {
-        localStorage.removeItem(key);
+    const oldTimestamps = []
+    const quantityToDelete = length - this.maxEntries;
+    if (length > this.maxEntries) {
+      this.sortedKeys.slice(-quantityToDelete).forEach( key => {
+        oldTimestamps.push(key);
       });
     }
+    return oldTimestamps;
   };
 
   /**
@@ -59,7 +85,7 @@ const RecoveryList = function(entries) {
       filename = entries[key].filename;
       date = entries[key].date;
       time = entries[key].time;
-      htmlEntries.push(`<li class="autosave-file clickable" id="${filename}">${date} - ${time}</li>`);
+      htmlEntries.push(`<li class="autosave-file clickable" id="${filename}">${date} - ${time} filename: ${filename}</li>`);
       count += 1;
       if (count == maxEntries) break;
     };
