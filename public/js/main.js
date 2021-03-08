@@ -26,6 +26,7 @@ Trix.config.textAttributes.searchHighlight = {
 };
 
 function executeStartupActions() {
+  activateFileChooserListener();
   activateSubmitListener();
   activatePageUnloadListener();
   const recoveryManager = new RecoveryManager(ListData, ListManager, OperationManager, Editor);
@@ -40,7 +41,7 @@ function activatePageUnloadListener() {
 }
 
 function hideNewHeadwordsForm() {
-  $('#new-headwords-form').css('display', 'none');
+  $('#new-headwords-form-container').css('display', 'none');
 }
 
 function showWaitMessage() {
@@ -63,8 +64,16 @@ function hideNewTabButton() {
   $('#new-tab-button').css('display', 'none');
 }
 
+function activateFileChooserListener() {
+  console.log('Activating File Listener');
+  $('#file-upload')[0].addEventListener('change', function() {
+      // document.getElementById('file-form').submit();
+    $('#file-form').submit();
+  });
+};
+
 function activateSubmitListener() {
-  $('#new-headwords-form').submit(function(e) {
+  $('#file-form').submit(function(e) {
     e.preventDefault(); 
     hideNewHeadwordsForm();
     hideRecoveryMessage();
@@ -73,7 +82,7 @@ function activateSubmitListener() {
     const form = $(this);
     const url = form.attr('action');
     const formData = new FormData();
-    const file = $('#file')[0].files[0];
+    const file = $('#file-upload')[0].files[0];
     formData.append('file', file);
     $.ajax({
       type: 'POST',

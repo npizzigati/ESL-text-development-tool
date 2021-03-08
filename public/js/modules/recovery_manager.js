@@ -30,7 +30,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
 
   this.activateRecoveryListeners = function() {
     $('#recovery-message').on('click', function() {
-      $('#new-headwords-form').css('display', 'none');
+      $('#new-headwords-form-container').css('display', 'none');
       $('.layout-row1').css('display','none');
       $('#recovery-message').html('Select session to recover:');
       $('#recovery-list').css('display', 'block');

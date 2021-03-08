@@ -47,7 +47,7 @@ trix-editor {
     height: 30px;
 }
 
-#new-headwords-form {
+#new-headwords-form-container {
     display: inline;
 }
 
@@ -224,6 +224,10 @@ trix-editor {
     cursor: pointer;
 }
 
+#recovery-message:hover {
+    text-decoration: underline;
+}
+
 #recovery-list {
     display: none;
     cursor: pointer;
@@ -238,6 +242,16 @@ trix-editor {
 }
 
 #page-title {
-
     display: none;
+}
+
+#file-upload {
+    display: none;
+}
+
+.custom-file-upload {
+    border: 1px solid black;
+    display: inline-block;
+    padding: 1px 5px;
+    cursor: pointer;
 }

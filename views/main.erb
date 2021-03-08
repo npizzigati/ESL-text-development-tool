@@ -16,13 +16,16 @@
   <body>
     <div id="layout-row0">
       <p id="page-title"><strong>Neil's Text Tool</strong></p>
-      <span id="new-headwords-form">
-        <form action='/' enctype="multipart/form-data" method='POST'>
+      <div id="new-headwords-form-container">
+        <form id="file-form" action='/' enctype="multipart/form-data" method='POST'>
           <span>Welcome to <strong>Neil's Text Tool</strong>.  Choose headwords for new session: </span> 
-            <input id="file" name="file" type="file" />
-            <input type="submit" value="Upload" />
+          <label for="file-upload" class="custom-file-upload">
+              Choose File
+          </label>
+          <input id="file-upload" name="file" type="file" />
+          <!-- <input type="submit" value="Upload" /> -->
         </form>
-      </span>
+      </div>
       <span id="recovery-message">
         Or click here to recover an autosaved session
       </span>
