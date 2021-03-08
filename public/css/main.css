@@ -233,6 +233,16 @@ trix-editor {
     cursor: pointer;
 }
 
+#cancel-recovery {
+    cursor:pointer;
+    color: red;
+    margin: 10px 0;
+}
+
+#cancel-recovery:hover {
+    text-decoration: underline;
+}
+
 .clickable {
     cursor: pointer;
 }
@@ -254,4 +264,8 @@ trix-editor {
     display: inline-block;
     padding: 1px 5px;
     cursor: pointer;
+}
+
+.no-hover:hover {
+    text-decoration: none !important;
 }

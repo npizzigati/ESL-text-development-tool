@@ -4,7 +4,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
 
-  function list_autosaves() {
+  function listAutosaves() {
     const entries = retrieveAutosaveEntriesFromLocalStorage();
     const htmlListItems = new RecoveryList(entries).retrieveHtmlListItems();
     // Display list items
@@ -12,6 +12,14 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       $('#recovery-list').append('<em>No autosave entries yet</em>');
     }
     $('#recovery-list').append('<ul>' + htmlListItems.join('') + '</ul>');
+    $('#recovery-list').append('<p id="cancel-recovery">Return to main screen</p>');
+    activateRecoveryCancelListener();
+  }
+
+  function activateRecoveryCancelListener() {
+    $('#cancel-recovery').on('click', () => {
+      switchLayoutToMain();
+    });
   }
 
   function retrieveAutosaveEntriesFromLocalStorage() {
@@ -33,12 +41,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
 
   this.activateRecoveryListeners = function() {
     $('#recovery-message').on('click', function() {
-      $('#new-headwords-form-container').css('display', 'none');
-      $('.layout-row1').css('display','none');
-      $('#recovery-message').html('Select session to recover:');
-      $('#recovery-list').css('display', 'block');
-      $('#page-title').css('display', 'block');
-      list_autosaves();
+      switchLayoutToRecovery();
     });
 
     $('#recovery-list').on('click', '.autosave-file', function(event) {
@@ -49,6 +52,28 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       restoreEditingEnvironment(editorContent, headwordsAndInflections, filename);
     })
   };
+
+  function switchLayoutToRecovery() {
+    $('#new-headwords-form-container').css('display', 'none');
+    $('.layout-row1').css('display','none');
+    $('#recovery-message').html('Select session to recover:');
+    $('#recovery-message').css('cursor', 'default');
+    $('#recovery-message').addClass('no-hover');
+    $('#recovery-list').css('display', 'block');
+    $('#page-title').css('display', 'block');
+    listAutosaves();
+  }
+
+  function switchLayoutToMain() {
+    $('#new-headwords-form-container').css('display', 'inline');
+    $('.layout-row1').css('display','flex');
+    $('#recovery-message').html('Or click here to recover an autosaved session');
+    $('#recovery-message').css('cursor', 'pointer');
+    $('#recovery-message').removeClass('no-hover');
+    $('#recovery-list').css('display', 'none');
+    $('#page-title').css('display', 'none');
+    $('#recovery-list').css('display', 'none');
+  }
 
   function showEditingEnvironment() {
     $('.layout-row1').css('display','flex');
