@@ -46,10 +46,15 @@ function hideNewHeadwordsForm() {
 
 function showWaitMessage() {
   $('#new-headwords-wait-message').css('display', 'block');
+  window.intervalId = setInterval(() => {
+    const message = $('#new-headwords-wait-message').html();
+    $('#new-headwords-wait-message').html(message + ' .');
+  }, 500);
 }
 
 function hideWaitMessage() {
   $('#new-headwords-wait-message').css('display', 'none');
+  clearInterval(window.intervalId);
 }
 
 function showPageTitle() {
