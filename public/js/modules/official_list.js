@@ -160,7 +160,9 @@ function OfficialList(listData, listManager) {
   this.activateListeners = function() {
     $('#official-list-header-headword').off();
     $('#official-list-header-headword').on('click', event => {
-      this.showOfficialList([...listData.headwords].sort());
+      this.showOfficialList([...listData.headwords].sort((a, b) => {
+        return a.localeCompare(b, undefined, {sensitivity: 'base'});
+      }));
     });
     $('#official-list-header-rank').off();
     $('#official-list-header-rank').on('click', event => {
