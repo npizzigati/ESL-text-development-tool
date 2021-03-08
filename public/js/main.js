@@ -70,7 +70,6 @@ function hideNewTabButton() {
 }
 
 function activateFileChooserListener() {
-  console.log('Activating File Listener');
   $('#file-upload')[0].addEventListener('change', function() {
       // document.getElementById('file-form').submit();
     $('#file-form').submit();
