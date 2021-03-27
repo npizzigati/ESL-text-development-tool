@@ -7,6 +7,7 @@ require 'json'
 require 'sinatra/custom_logger'
 require 'logger'
 require 'puma'
+require 'pg'
 
 # Escape all html output
 set :erb, escape_html: true
@@ -16,13 +17,13 @@ set :logger, Logger.new(STDOUT)
 
 UPLOADS_DIRECTORY_NAME = 'data'.freeze
 
-# get '/' do
-#   redirect :upload
-# end
+before do
+  @db = PG.connect(dbname: 'neilsidea')
+end
 
-# get '/' do
-#   erb :upload
-# end
+after do
+  @db.close
+end
 
 get '/' do
   # :prepare_editor redirects to this page
@@ -33,6 +34,7 @@ post '/' do
   # Check if user uploaded a file
   return unless params[:file] && params[:file][:filename]
 
+  record_in_stats('Posted headwords file')
   filename = params[:file][:filename]
   puts "upload file: #{filename}"
   target_path = File.join uploads_path, filename
@@ -94,4 +96,13 @@ end
 def create_headwords_array(raw_headword_text)
   # Split words regardless of whether newline is CRLF or just LF
   raw_headword_text.gsub("\r\n", "\n").split("\n")
+end
+
+def record_in_stats(source_description)
+  sql = <<~SQL
+    INSERT INTO stats(source)
+    VALUES
+    (source_description);
+  SQL
+  @db.exec(sql)
 end

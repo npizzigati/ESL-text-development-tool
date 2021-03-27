@@ -21,6 +21,7 @@ GEM
     nio4r (2.5.4)
     nokogiri (1.10.10)
       mini_portile2 (~> 2.4.0)
+    pg (1.2.3)
     public_suffix (4.0.6)
     puma (5.0.4)
       nio4r (~> 2.0)
@@ -53,6 +54,7 @@ DEPENDENCIES
   capybara
   erubis
   minitest
+  pg
   puma
   rack-test
   sinatra (~> 2.1.0)
