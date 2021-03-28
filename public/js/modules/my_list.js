@@ -1,3 +1,6 @@
+import { AssumedList } from './my_list_subwindows/assumed_list.js';
+// TODO: fix error when clicking on an assumed headword in text (can't scroll to null)
+
 function MyList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
@@ -7,6 +10,12 @@ function MyList(listData, listManager) {
   this.sublists = [];
   this.sublistInflectionsMapping = {};
   this.currentlyMatchedWord = null;
+
+  this.setUp = function() {
+    this.assumedList = new AssumedList(listData);
+    this.assumedList.show();
+    this.refresh();
+  }
 
   this.show = function() {
     const parts = [];
@@ -165,7 +174,6 @@ function MyList(listData, listManager) {
     const initialPosition = this.trixEditor.getSelectedRange();
     this.highlightMatches(selectedHeadwords);
     this.trixEditor.setSelectedRange(initialPosition);
-    // $(this.trixElement).on('keyup', this.clearHighlighting.bind(this));
   }
 }
 

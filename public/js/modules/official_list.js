@@ -4,6 +4,10 @@ function OfficialList(listData, listManager) {
   this.currentlyMatchedRow = null;
   this.currentlyMatchedHeadword = null;
 
+  this.setUp = function() {
+    this.refresh();
+  };
+
   this.buildRanks = function() {
     const ranks = {};
     let count = 1;

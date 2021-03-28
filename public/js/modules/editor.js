@@ -20,8 +20,8 @@ function Editor(listData, listManager, operationManager) {
 
     $(trixElement).focus();
     listData.calculate();
-    listManager.officialList.refresh();
-    listManager.myList.refresh();
+    listManager.officialList.setUp();
+    listManager.myList.setUp();
     this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();
@@ -58,7 +58,7 @@ function Editor(listData, listManager, operationManager) {
           return;
         }
         const headword = listData.getHeadword(clickedWord);
-        if (headword) {
+        if (headword && !listData.isAssumedWord(headword)) {
           markOnOfficialList(headword);
           markOnMyList(headword);
         }

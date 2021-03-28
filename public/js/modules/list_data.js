@@ -6,6 +6,7 @@ function ListData(parsedData) {
   this.sublistHeadwords = [];
   this.timesMarked = new Map();
   this.headwords = parsedData.headwords;
+  this.assumedWords = ['go', 'Be'];
   this.inflectionsMap = parsedData.inflections_map;
 
   this.buildOriginalHeadwordSpellings = function() {
@@ -17,6 +18,10 @@ function ListData(parsedData) {
   };
 
   this.originalHeadwordSpellings = this.buildOriginalHeadwordSpellings();
+
+  this.isAssumedWord = function(headword) {
+    return this.assumedWords.map(w => w.toLowerCase()).includes(headword);
+  };  
 
   this.calculate = function() {
     const fullText = trixEditor.getDocument().toString();
@@ -31,7 +36,7 @@ function ListData(parsedData) {
 
     fullTextArray.forEach(word => {
       const headword = this.getHeadword(word);
-      if (!headword) {
+      if (!headword || this.isAssumedWord(headword)) {
         return;
       }
       let times = this.timesMarked.get(headword);

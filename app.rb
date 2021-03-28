@@ -102,7 +102,7 @@ def record_in_stats(source_description)
   sql = <<~SQL
     INSERT INTO stats(source)
     VALUES
-    (source_description);
+      ($1)
   SQL
-  @db.exec(sql)
+  @db.exec_params(sql, [source_description])
 end
