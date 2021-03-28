@@ -21,7 +21,7 @@ function Editor(listData, listManager, operationManager) {
     $(trixElement).focus();
     listData.calculate();
     listManager.officialList.setUp();
-    listManager.myList.setUp();
+    listManager.autoList.setUp();
     this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();
@@ -60,7 +60,7 @@ function Editor(listData, listManager, operationManager) {
         const headword = listData.getHeadword(clickedWord);
         if (headword && !listData.isAssumedWord(headword)) {
           markOnOfficialList(headword);
-          markOnMyList(headword);
+          markOnAutoList(headword);
         }
       }, 200);
     });
@@ -114,8 +114,8 @@ function Editor(listData, listManager, operationManager) {
     listManager.officialList.emphasizeCurrentHeadwordMatch(headword);
   };
 
-  const markOnMyList = function(headword) {
-    listManager.myList.emphasizeCurrentHeadwordMatch(headword);
+  const markOnAutoList = function(headword) {
+    listManager.autoList.emphasizeCurrentHeadwordMatch(headword);
   };
 
   const getClickedWord = function() {

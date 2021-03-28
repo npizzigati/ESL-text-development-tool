@@ -1,6 +1,6 @@
 import { AssumedList } from './assumed_list.js';
 
-function MyList(listData, listManager) {
+function AutoList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
   this.listData = listData;
@@ -160,13 +160,13 @@ function MyList(listData, listManager) {
     this.officialList.emphasizeCurrentHeadwordMatch(headword);
   }
 
-  this.markOnMyList = function(headword) {
+  this.markOnAutoList = function(headword) {
     this.emphasizeCurrentHeadwordMatch(headword);
   }
 
   this.executeHighlight = function(selectedHeadwords) {
     if (selectedHeadwords.length === 1) {
-      this.markOnMyList(selectedHeadwords[0]);
+      this.markOnAutoList(selectedHeadwords[0]);
       this.markOnOfficialList(selectedHeadwords[0]);
     }
     this.clearHighlighting();
@@ -176,4 +176,4 @@ function MyList(listData, listManager) {
   }
 }
 
-export { MyList };
+export { AutoList };

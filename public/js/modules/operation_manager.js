@@ -76,7 +76,7 @@ function OperationManager(listData, listManager) {
   this.multipleCharInsertionUnderway = false;
   this.listData = listData;
   this.officialList = listManager.officialList;
-  this.myList = listManager.myList;
+  this.autoList = listManager.autoList;
   this.Operation = function(text, indices, mode) {
     this.text = text;
     this.startIndex = indices.startIndex;
@@ -195,14 +195,14 @@ function OperationManager(listData, listManager) {
           this.processMultipleCharacterInsertion(insertion);
           this.listData.calculate();
           this.officialList.refresh();
-          this.myList.refresh();
+          this.autoList.refresh();
         }, 20);
       }
       break;
     case modes.DELETION:
       this.listData.calculate();
       this.officialList.refresh();
-      this.myList.refresh();
+      this.autoList.refresh();
       const deletion = new this.Operation(text, indices, modes.DELETION);
       this.processDeletion(deletion);
       break;
@@ -272,7 +272,7 @@ function OperationManager(listData, listManager) {
 
     this.listData.calculate();
     this.officialList.refresh();
-    this.myList.refresh();
+    this.autoList.refresh();
     if (headword) {
       textMarker.unmarkWord(word, wordStart, wordEnd);
       this.officialList.focusHeadword(headword);
@@ -321,7 +321,7 @@ function OperationManager(listData, listManager) {
       const headword = this.listData.getHeadword(word);
       this.listData.calculate();
       this.officialList.refresh();
-      this.myList.refresh();
+      this.autoList.refresh();
       if (headword) {
         textMarker.unmarkWord(word, wordStart, wordEnd);
         this.officialList.focusHeadword(headword);
@@ -341,7 +341,7 @@ function OperationManager(listData, listManager) {
 
     this.listData.calculate();
     this.officialList.refresh();
-    this.myList.refresh();
+    this.autoList.refresh();
     if (headword) {
       this.officialList.focusHeadword(headword);
       textMarker.unmarkWord(word, wordStart, wordEnd);
