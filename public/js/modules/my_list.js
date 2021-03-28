@@ -1,5 +1,4 @@
-import { AssumedList } from './my_list_subwindows/assumed_list.js';
-// TODO: fix error when clicking on an assumed headword in text (can't scroll to null)
+import { AssumedList } from './assumed_list.js';
 
 function MyList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
