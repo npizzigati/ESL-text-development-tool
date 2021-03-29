@@ -14,6 +14,7 @@ function AutoList(listData, listManager) {
   }
 
   this.build = function() {
+    this.sublists = this.buildSublists();
     $('#auto-list-table').remove();
     const parts = [];
     parts.push('<table id="auto-list-table">');
@@ -52,16 +53,15 @@ function AutoList(listData, listManager) {
     return $('.auto-list').css('display') == 'none';
   };
 
-  this.refresh = function() {
-    // const fullText = this.trixEditor.getDocument().toString();
-    // const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
-    // const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
-
-    // Need to record only the first appearance of each headword
-    // in an array
-    this.sublists = this.buildSublists();
-    this.build();
-  };
+  // this.refresh = function() {
+  //   // const fullText = this.trixEditor.getDocument().toString();
+  //   // const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
+  //   // const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
+  //   // Need to record only the first appearance of each headword
+  //   // in an array
+  //   this.sublists = this.buildSublists();
+  //   this.build();
+  // };
 
   this.emphasizeCurrentHeadwordMatch = function(headword) {
     const markedHeadword = document.querySelector(`#my-sublist-${headword}`);
