@@ -13,7 +13,7 @@ function AutoList(listData, listManager) {
     this.show();
   }
 
-  this.build = function() {
+  this.refresh = function() {
     this.sublists = this.buildSublists();
     $('#auto-list-table').remove();
     const parts = [];
