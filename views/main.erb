@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Neil's Text Tool</title>
@@ -33,7 +34,7 @@
       </div>
       <div id="new-headwords-wait-message">Processing headwords</div>
       <div class="search-icon-container">
-        <input class="search-icon" type="image" src="/images/search-icon.png"></input> 
+        <input class="search-icon" type="image" src="/images/search-icon.png">
       </div>
       <div class="search-box-container">
         <input id="search-box" class="search-box" name="searchText">
@@ -46,8 +47,14 @@
 
     <div class="layout-row1">
       <trix-editor></trix-editor>
-      <div class="my-list">
-        <p class="section-title">My Lists</p>
+      <div class="special-lists">
+        <p class="section-title">
+          <span id="auto-list-title">Auto List</span>
+          &nbsp;&nbsp;&nbsp;
+          <span id="assumed-list-title">Assumed List</span>
+        </p>
+        <div class="auto-list"></div>
+        <div class="assumed-list"></div>
       </div>
       <div class="official-list">
         <p class="section-title">Official List</p>

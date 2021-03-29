@@ -22,6 +22,7 @@ function Editor(listData, listManager, operationManager) {
     listData.calculate();
     listManager.officialList.setUp();
     listManager.autoList.setUp();
+    listManager.assumedList.setUp();
     this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();

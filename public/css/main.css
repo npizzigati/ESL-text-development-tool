@@ -134,7 +134,7 @@ trix-editor {
 }
 
 #official-list-table {
-    color: lightgrey;
+    color: lightgray;
     margin: 0 auto;
     line-height: 1.2;
 }
@@ -151,6 +151,18 @@ trix-editor {
     font-size: x-small;
     color: black;
     font-weight: bold;
+}
+
+.active-list-title {
+    text-decoration: underline;
+}
+
+#assumed-list-title {
+    cursor: pointer;
+}
+
+#auto-list-title {
+    cursor: pointer;
 }
 
 .official-list-first-line-spacer {
@@ -183,7 +195,7 @@ trix-editor {
     padding-right: 5px;
 }
 
-.my-list {
+.special-lists {
     /* font-family: "Nova Mono", monospace; */
     flex: 0 0 350px;
     border: 1px solid #bbb;
@@ -192,7 +204,13 @@ trix-editor {
     font-size: small;
 }
 
-.my-list-table-body {
+.auto-list-table-body {
+    border-collapse: separate;
+    border-spacing: 0 9px;
+    line-height: 1.4;
+}
+
+.assumed-list-table-body {
     border-collapse: separate;
     border-spacing: 0 9px;
     line-height: 1.4;

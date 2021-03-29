@@ -112,13 +112,13 @@ function OfficialList(listData, listManager) {
     }
   };
 
-  // TODO: This is very similar to the function in my_list -- extract to another module?
+  // TODO: This is very similar to the function in auto_list -- extract to another module?
   this.highlightMatch = function(startIndex, endIndex) {
     this.trixEditor.setSelectedRange([startIndex, endIndex]);
     this.trixEditor.activateAttribute('searchHighlight');
   };
 
-  // TODO: This is the same as the function in my_list -- extract to another module?
+  // TODO: This is the same as the function in auto_list -- extract to another module?
   this.scrollToFirstMatch = function() {
     const highlightedElement = document.querySelector('mark');
     if (highlightedElement) {

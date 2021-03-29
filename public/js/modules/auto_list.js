@@ -1,5 +1,3 @@
-import { AssumedList } from './assumed_list.js';
-
 function AutoList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
@@ -11,15 +9,15 @@ function AutoList(listData, listManager) {
   this.currentlyMatchedWord = null;
 
   this.setUp = function() {
-    this.assumedList = new AssumedList(listData);
-    this.assumedList.show();
     this.refresh();
+    this.show();
   }
 
-  this.show = function() {
+  this.build = function() {
+    $('#auto-list-table').remove();
     const parts = [];
-    parts.push('<table id="my-list-table">');
-    parts.push('<tbody class="my-list-table-body">');
+    parts.push('<table id="auto-list-table">');
+    parts.push('<tbody class="auto-list-table-body">');
     Object.entries(this.sublists).forEach(([number, headwords]) => {
       const taggedWords = this.tagSublistWords(headwords);
       const sublist = taggedWords.join(', ');
@@ -29,7 +27,7 @@ function AutoList(listData, listManager) {
       parts.push('</tr>');
     });
     parts.push('</tbody></table>');
-    $('.my-list').append(parts.join(''));
+    $('.auto-list').append(parts.join(''));
   };
 
   this.tagSublistWords = function(headwords) {
@@ -38,7 +36,21 @@ function AutoList(listData, listManager) {
       taggedHeadwords.push(`<span class="my-sublist-individual-word" id="my-sublist-${headword}">${this.listData.originalHeadwordSpellings[headword]}</span>`);
     });
     return taggedHeadwords;
-  }
+  };
+
+  this.show = function() {
+    $('.auto-list').css('display', 'block');
+    $('#auto-list-title').addClass('active-list-title');
+  };
+
+  this.hide = function() {
+    $('#auto-list-title').removeClass('active-list-title');
+    $('.auto-list').css('display', 'none');
+  };
+
+  this.isHidden = function() {
+    return $('.auto-list').css('display') == 'none';
+  };
 
   this.refresh = function() {
     const fullText = this.trixEditor.getDocument().toString();
@@ -47,8 +59,7 @@ function AutoList(listData, listManager) {
     // Need to record only the first appearance of each headword
     // in an array
     this.sublists = this.buildSublists();
-    $('#my-list-table').remove();
-    this.show();
+    this.build();
   };
 
   this.emphasizeCurrentHeadwordMatch = function(headword) {
@@ -140,21 +151,21 @@ function AutoList(listData, listManager) {
   };
 
   this.activateListeners = function() {
-    $('.my-list').off();
-    $('.my-list').on('click', '.my-sublist-number', event => {
+    $('.special-lists').off();
+    $('.special-lists').on('click', '.my-sublist-number', event => {
       const sublistNumber = parseInt($(event.target).text());
       const selectedHeadwords = this.sublists[sublistNumber];
       this.executeHighlight(selectedHeadwords);
     });
 
-    $('.my-list').on('click', '.my-sublist-individual-word', event => {
+    $('.special-lists').on('click', '.my-sublist-individual-word', event => {
       const downcasedHeadword = $(event.target).text().toLowerCase();
       this.executeHighlight([downcasedHeadword]);
     });
   };
 
   //TODO: extract these two mark methods to a module to be shared
-  //by my_list, official_list and editor
+  //by auto_list, official_list and editor
   this.markOnOfficialList = function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     this.officialList.emphasizeCurrentHeadwordMatch(headword);
