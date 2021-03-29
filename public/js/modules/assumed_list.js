@@ -16,19 +16,17 @@ function AssumedList(listData, listManager) {
       if (i < length) {
         parts.push(`<td>${listData.assumedWords[i]}</td>`);
       } else {
-        parts.push(`<td><input id="new-assumed-word" type="text" placeholder="new word">`);
-        parts.push(`&nbsp;<button id="new-assumed-word-button">&check;</button></td>`);
+        parts.push('<td>');
+        parts.push('<form id="new-assumed-word-form">');
+        parts.push('<input id="new-assumed-word-input" type="text" placeholder="new word">');
+        parts.push('&nbsp;<input id="new-assumed-word-button" type="submit" value="&check;">');
+        parts.push('</form>');
+        parts.push('</td>');
       }
       parts.push('</tr>');
     }
     parts.push('</tbody></table>');
     $('.assumed-list').append(parts.join(''));
-  };
-
-  
-
-  this.add = function(headword) {
-    // this.assumedWords.push(headword)
   };
 
   this.show = function() {
@@ -46,7 +44,15 @@ function AssumedList(listData, listManager) {
   };
 
   this.activateListeners = function() {
-    
+    $('.assumed-list').on('submit', '#new-assumed-word-form', event => {
+      event.preventDefault();
+      const word = $('#new-assumed-word-input').val();
+      listData.assumedWords.push(word);
+      this.refresh();
+      listData.calculate();
+      listManager.autoList.refresh();
+      // FIXME: the above is not refreshing the autoList
+    });
   };
 }
 

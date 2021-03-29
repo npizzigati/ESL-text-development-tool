@@ -45,6 +45,7 @@ function ListManager(listData) {
 
   this.activateListeners();
   this.autoList.activateListeners();
+  this.assumedList.activateListeners();
   this.officialList.activateListeners();
 
   // Populate official word list with headwords

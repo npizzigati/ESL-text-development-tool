@@ -53,9 +53,10 @@ function AutoList(listData, listManager) {
   };
 
   this.refresh = function() {
-    const fullText = this.trixEditor.getDocument().toString();
-    const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
-    const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
+    // const fullText = this.trixEditor.getDocument().toString();
+    // const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
+    // const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
+
     // Need to record only the first appearance of each headword
     // in an array
     this.sublists = this.buildSublists();
