@@ -93,7 +93,8 @@ function Editor(listData, listManager, operationManager) {
           headwordsAndInflections: {
             headwords: listData.headwords,
             inflections_map: listData.inflectionsMap
-          }
+          },
+          assumedWords: listData.assumedWords
         }
         const filename = `autosave-${tabID}`;
         localStorage.setItem(filename, JSON.stringify(autosaveItem));

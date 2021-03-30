@@ -17,11 +17,10 @@ function AssumedList(listData, listManager) {
       if (i < length) {
         word = listData.assumedWords[i];
         parts.push(`<td class="assumed-word-row"><span>${word}&nbsp;</span><button button='button'>DELETE</button></td>`);
-        // parts.push(`<td class="assumed-word-row">${word}</td>`);
       } else {
         parts.push('<td>');
         parts.push('<form id="new-assumed-word-form">');
-        parts.push('<input id="new-assumed-word-input" type="text" placeholder="new word">');
+        parts.push('<input id="new-assumed-word-input" type="text" placeholder="new headword">');
         parts.push('&nbsp;<input id="new-assumed-word-button" type="submit" value="&check;">');
         parts.push('</form>');
         parts.push('</td>');
@@ -49,7 +48,7 @@ function AssumedList(listData, listManager) {
   this.activateListeners = function() {
     $('.assumed-list').on('submit', '#new-assumed-word-form', event => {
       event.preventDefault();
-      const word = $('#new-assumed-word-input').val();
+      const word = $('#new-assumed-word-input').val().trim();
       listData.assumedWords.push(word);
       this.refresh();
       listData.calculate();

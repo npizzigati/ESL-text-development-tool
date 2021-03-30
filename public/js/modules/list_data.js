@@ -1,12 +1,12 @@
 const trixElement = document.querySelector("trix-editor");
 const trixEditor = trixElement.editor;
 
-function ListData(parsedData) {
+function ListData(parsedData, assumedWords = []) {
   this.sublistInflectionsMapping = {};
   this.sublistHeadwords = [];
   this.timesMarked = new Map();
   this.headwords = parsedData.headwords;
-  this.assumedWords = ['go', 'Be'];
+  this.assumedWords = assumedWords;
   this.inflectionsMap = parsedData.inflections_map;
 
   this.buildOriginalHeadwordSpellings = function() {

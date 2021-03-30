@@ -51,7 +51,8 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       const fileContent = JSON.parse(localStorage.getItem(filename));
       const editorContent = fileContent.editorContent
       const headwordsAndInflections = fileContent.headwordsAndInflections;
-      restoreEditingEnvironment(editorContent, headwordsAndInflections, filename);
+      const assumedWords = fileContent.assumedWords;
+      restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, filename);
     })
   };
 
@@ -86,8 +87,8 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     $('#recovery-list').css('display', 'none');
   }
 
-  function restoreEditingEnvironment(editorContent, headwordsAndInflections, filename) {
-    const listData = new ListData(headwordsAndInflections);
+  function restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, filename) {
+    const listData = new ListData(headwordsAndInflections, assumedWords);
     const listManager = new ListManager(listData);
     const operationManager = new OperationManager(listData, listManager);
     const editor = new Editor(listData, listManager, operationManager);
