@@ -10,11 +10,14 @@ function AssumedList(listData, listManager) {
     parts.push('<table id="assumed-list-table">');
     parts.push('<tbody class="assumed-list-table-body">');
     length = listData.assumedWords.length;
+    let word;
     for(let i = 0; i < length + 1; i++) {
       parts.push('<tr>');
       parts.push(`<td>${(i + 1).toString()}&nbsp;</td>`);
       if (i < length) {
-        parts.push(`<td>${listData.assumedWords[i]}</td>`);
+        word = listData.assumedWords[i];
+        parts.push(`<td class="assumed-word-row"><span>${word}&nbsp;</span><button button='button'>DELETE</button></td>`);
+        // parts.push(`<td class="assumed-word-row">${word}</td>`);
       } else {
         parts.push('<td>');
         parts.push('<form id="new-assumed-word-form">');
@@ -52,6 +55,34 @@ function AssumedList(listData, listManager) {
       listData.calculate();
       listManager.autoList.refresh();
       // FIXME: the above is not refreshing the autoList
+    });
+
+    $('.assumed-list').on('mouseenter', '.assumed-word-row span, button', event => {
+      const target = $(event.target);
+      if (target.is('button')) {
+        target.css('display', 'inline');
+      } else if (target.is('span')) {
+        const button = target.parent().find('button');
+        button.css('display', 'inline');
+      }
+    });
+    $('.assumed-list').on('mouseleave', '.assumed-word-row span, button', event => {
+      const target = $(event.target);
+      if (target.is('button')) {
+        target.css('display', 'none');
+      } else if (target.is('span')) {
+        const button = target.parent().find('button');
+        button.css('display', 'none');
+      }
+    });
+    $('.assumed-list').on('click', '.assumed-word-row button', event => {
+      const target = $(event.target);
+      const word = target.parent().find('span').text().trim();
+      const indexToBeRemoved = listData.assumedWords.indexOf(word);
+      listData.assumedWords.splice(indexToBeRemoved, 1);
+      listData.calculate();
+      listManager.autoList.refresh();
+      this.refresh();
     });
   };
 }
