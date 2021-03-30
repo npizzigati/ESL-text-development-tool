@@ -2,6 +2,7 @@ import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates, determineWordStart,
          determineWordEnd } from './utils/word_utilities.js';
 import { Search } from './utils/search.js';
+import { Autosave } from './autosave.js';
 
 function Editor(listData, listManager, operationManager) {
 
@@ -11,7 +12,6 @@ function Editor(listData, listManager, operationManager) {
   const trixEditor = trixElement.editor;
 
   let wordClickTimeoutID;
-  let autosaveTimeoutID;
 
   this.executeStartupActions = function(recoveredFilename = null) {
     if (recoveredFilename) {
@@ -27,7 +27,7 @@ function Editor(listData, listManager, operationManager) {
     displaySearchIcon();
     const search = new Search();
     search.activateSearchListeners();
-    this.autosave = this.setUpAutosave();
+    this.autosave = Autosave.setUpAutosave(listData, this.recoveredFilename);
   };
 
   const displaySearchIcon = function() {
@@ -65,43 +65,6 @@ function Editor(listData, listManager, operationManager) {
         }
       }, 200);
     });
-  };
-
-  this.setUpAutosave = function() {
-    const tabID = Math.random() * 10e16;
-    let updated = false;
-    const recoveredFilename = this.recoveredFilename;
-
-    const autosave = function() {
-      if (autosaveTimeoutID) {
-        clearTimeout(autosaveTimeoutID);
-      }
-
-      autosaveTimeoutID = setTimeout(() => {
-        // On first update, remove previous file from localStorage
-        // so it can be replaced by new one
-        if (updated === false && recoveredFilename) {
-          localStorage.removeItem(recoveredFilename);
-          updated = true;
-        }
-        const dateTime = new Date();
-        const autosaveItem = {
-          timestamp: dateTime.getTime(),
-          date: dateTime.toLocaleDateString(),
-          time: dateTime.toLocaleTimeString(),
-          editorContent: trixEditor,
-          headwordsAndInflections: {
-            headwords: listData.headwords,
-            inflections_map: listData.inflectionsMap
-          },
-          assumedWords: listData.assumedWords
-        }
-        const filename = `autosave-${tabID}`;
-        localStorage.setItem(filename, JSON.stringify(autosaveItem));
-      }, 800);
-    };
-
-    return autosave
   };
 
   const clearHighlighting = function() {
