@@ -17,13 +17,13 @@ set :logger, Logger.new(STDOUT)
 
 UPLOADS_DIRECTORY_NAME = 'data'.freeze
 
-before do
-  @db = if Sinatra::Base.production?
-          PG.connect(ENV['DATABASE_URL'])
-        else
-          PG.connect(dbname: 'neilsidea')
-        end
-end
+# before do
+#   @db = if Sinatra::Base.production?
+#           PG.connect(ENV['DATABASE_URL'])
+#         else
+#           PG.connect(dbname: 'neilsidea')
+#         end
+# end
 
 after do
   @db.close
@@ -38,7 +38,7 @@ post '/' do
   # Check if user uploaded a file
   return unless params[:file] && params[:file][:filename]
 
-  record_in_stats('Posted headwords file')
+  # record_in_stats('Posted headwords file')
   filename = params[:file][:filename]
   puts "upload file: #{filename}"
   target_path = File.join uploads_path, filename
