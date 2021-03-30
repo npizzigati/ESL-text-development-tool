@@ -25,9 +25,9 @@ UPLOADS_DIRECTORY_NAME = 'data'.freeze
 #         end
 # end
 
-after do
-  @db.close
-end
+# after do
+#   @db.close
+# end
 
 get '/' do
   # :prepare_editor redirects to this page
