@@ -22,7 +22,7 @@ function Editor(listData, listManager, operationManager) {
     listData.calculate();
     listManager.officialList.setUp();
     listManager.autoList.setUp();
-    listManager.assumedList.setUp();
+    listManager.assumedList.setUp(this.recoveredFilename);
     this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();

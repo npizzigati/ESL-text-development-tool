@@ -1,5 +1,9 @@
+import { Autosave } from './autosave.js';
+
 function AssumedList(listData, listManager) {
-  this.setUp = function() {
+  this.setUp = function(recoveredFilename) {
+    this.recoveredFilename = recoveredFilename;
+    this.autosave = Autosave.setUpAutosave(listData, this.recoveredFilename);
     this.refresh();
     this.hide();
   };
@@ -53,6 +57,7 @@ function AssumedList(listData, listManager) {
       this.refresh();
       listData.calculate();
       listManager.autoList.refresh();
+      this.autosave();
       // FIXME: the above is not refreshing the autoList
     });
 
@@ -82,6 +87,7 @@ function AssumedList(listData, listManager) {
       listData.calculate();
       listManager.autoList.refresh();
       this.refresh();
+      this.autosave();
     });
   };
 }
