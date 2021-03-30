@@ -18,7 +18,11 @@ set :logger, Logger.new(STDOUT)
 UPLOADS_DIRECTORY_NAME = 'data'.freeze
 
 before do
-  @db = PG.connect(dbname: 'neilsidea')
+  @db = if Sinatra::Base.production?
+          PG.connect(ENV['DATABASE URL'])
+        else
+          PG.connect(dbname: 'neilsidea')
+        end
 end
 
 after do
