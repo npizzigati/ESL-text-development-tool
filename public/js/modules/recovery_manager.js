@@ -4,11 +4,17 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
 
+  this.executeStartupActions = function() {
+    const entries = retrieveAutosaveEntriesFromLocalStorage();
+    const recoveryList = new RecoveryList(entries);
+    recoveryList.deleteOldListItems();
+  }
+
   function listAutosaves() {
     const entries = retrieveAutosaveEntriesFromLocalStorage();
     const recoveryList = new RecoveryList(entries);
     const htmlListItems = recoveryList.retrieveHtmlListItems();
-    recoveryList.deleteOldListItems();
+    // recoveryList.deleteOldListItems();
     // Display list items
     if (htmlListItems.length === 0) {
       $('#recovery-list').append('<em>No autosave entries yet</em>');

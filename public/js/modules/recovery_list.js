@@ -13,19 +13,19 @@ const RecoveryList = function(entries) {
   */
   this.retrieveHtmlListItems = function() {
     return buildListItems(this.sortedKeys, this.entries, this.maxEntries);
-  }
+  };
+
   /**
   * Deletes old items (beyond this.maxEntries) from localStorage
   * Since keys are sorted oldest first, the entries at the 
   * start of the array are the ones to be deleted
   */
-
   this.deleteOldListItems = function() {
     const oldFilenames = this.retrieveOldFilenames();
     oldFilenames.forEach( filename => {
       localStorage.removeItem(filename);
     });
-  }
+  };
 
   this.retrieveOldFilenames = function() {
     const oldTimestamps = this.retrieveOldTimestamps();
@@ -41,9 +41,8 @@ const RecoveryList = function(entries) {
       }
     }
     return oldFilenames;
-  }
+  };
 
-  // FIXME: This method is returning null
   this.retrieveOldTimestamps = function() {
     const length = this.sortedKeys.length;
     const oldTimestamps = []

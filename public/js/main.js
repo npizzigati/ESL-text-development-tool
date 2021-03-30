@@ -31,6 +31,7 @@ function executeStartupActions() {
   activatePageUnloadListener();
   const recoveryManager = new RecoveryManager(ListData, ListManager, OperationManager, Editor);
   recoveryManager.activateRecoveryListeners();
+  recoveryManager.executeStartupActions();
 }
 
 function activatePageUnloadListener() {
