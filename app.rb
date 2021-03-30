@@ -19,7 +19,7 @@ UPLOADS_DIRECTORY_NAME = 'data'.freeze
 
 before do
   @db = if Sinatra::Base.production?
-          PG.connect(ENV['DATABASE URL'])
+          PG.connect(ENV['DATABASE_URL'])
         else
           PG.connect(dbname: 'neilsidea')
         end
