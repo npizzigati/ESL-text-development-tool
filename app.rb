@@ -48,6 +48,7 @@ post '/' do
   # headwords_json = unique_headwords.to_json
   # inflections_map_json = extract_inflections(unique_headwords).to_json
   inflections_map = extract_inflections(unique_headwords)
+  add_temporary_modifications!(inflections_map) # This is temporary... until I implement user modifications to inflections
   { 'headwords' => unique_headwords, 'inflections_map' => inflections_map }.to_json
 end
 
@@ -64,6 +65,13 @@ def retrieve_upload(params, target_path)
   # Save file in target_path
   tempfile = params[:file][:tempfile]
   File.open(target_path, 'wb') { |f| f.write tempfile.read }
+end
+
+def add_temporary_modifications!(inflections_map)
+  temporary_inflections = { 'interesting' => 'interest' }
+  temporary_inflections.each do |k, v|
+    inflections_map[k] = v
+  end
 end
 
 def extract_inflections(headwords)
