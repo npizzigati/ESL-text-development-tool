@@ -1,4 +1,4 @@
-const trixElement = document.querySelector("trix-editor");
+const trixElement = document.querySelector('trix-editor');
 const trixEditor = trixElement.editor;
 
 function ListData(parsedData, assumedWords = []) {
