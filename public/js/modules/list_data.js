@@ -49,7 +49,7 @@ function ListData(parsedData, assumedWords = []) {
       if (!this.sublistHeadwords.includes(headword)) {
         this.sublistHeadwords.push(headword);
         this.sublistInflectionsMapping[headword] = word;
-      };
+      }
       if (this.editorInflections[headword]) {
         this.editorInflections[headword].push(word);
       } else {
