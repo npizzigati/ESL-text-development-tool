@@ -21,7 +21,7 @@ function ListData(parsedData, assumedWords = []) {
 
   this.isAssumedWord = function(headword) {
     return this.assumedWords.map(w => w.toLowerCase()).includes(headword);
-  };  
+  };
 
   this.calculate = function() {
     const fullText = trixEditor.getDocument().toString();
