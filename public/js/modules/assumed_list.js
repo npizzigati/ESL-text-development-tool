@@ -58,7 +58,6 @@ function AssumedList(listData, listManager) {
       listData.calculate();
       listManager.autoList.refresh();
       this.autosave();
-      // FIXME: the above is not refreshing the autoList
     });
 
     $('.assumed-list').on('mouseenter', '.assumed-word-row span, button', event => {
