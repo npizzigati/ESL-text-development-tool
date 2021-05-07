@@ -13,9 +13,9 @@ function AssumedList(listData, listManager) {
     const parts = [];
     parts.push('<table id="assumed-list-table">');
     parts.push('<tbody class="assumed-list-table-body">');
-    length = listData.assumedWords.length;
+    const length = listData.assumedWords.length;
     let word;
-    for(let i = 0; i < length + 1; i++) {
+    for (let i = 0; i < length + 1; i++) {
       parts.push('<tr>');
       parts.push(`<td>${(i + 1).toString()}&nbsp;</td>`);
       if (i < length) {
