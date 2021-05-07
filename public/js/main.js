@@ -66,20 +66,20 @@ function showPageTitle() {
 //   $('#new-tab-button').css('display', 'inline');
 // }
 
-function hideNewTabButton() {
-  $('#new-tab-button').css('display', 'none');
-}
+// function hideNewTabButton() {
+//   $('#new-tab-button').css('display', 'none');
+// }
 
 function activateFileChooserListener() {
   $('#file-upload')[0].addEventListener('change', function() {
-      // document.getElementById('file-form').submit();
+    // document.getElementById('file-form').submit();
     $('#file-form').submit();
   });
-};
+}
 
 function activateSubmitListener() {
   $('#file-form').submit(function(e) {
-    e.preventDefault(); 
+    e.preventDefault();
     hideNewHeadwordsForm();
     hideRecoveryMessage();
     showPageTitle();
@@ -96,10 +96,10 @@ function activateSubmitListener() {
       contentType: false,
       processData: false
     })
-      .done(function(data, textStatus, jqXHR) {
+      .done(function(data, _textStatus, _jqXHR) {
         hideWaitMessage();
         startNewEditingSession(JSON.parse(data));
-      })
+      });
   });
 }
 
