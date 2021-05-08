@@ -35,7 +35,7 @@ const Autosave = {
       }, 800);
     };
 
-    return autosave
+    return autosave;
   }
 };
 
