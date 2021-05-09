@@ -29,7 +29,7 @@ const Autosave = {
             inflections_map: listData.inflectionsMap
           },
           assumedWords: listData.assumedWords
-        }
+        };
         const filename = `autosave-${tabID}`;
         localStorage.setItem(filename, JSON.stringify(autosaveItem));
       }, 800);
