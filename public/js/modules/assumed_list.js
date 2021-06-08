@@ -46,7 +46,7 @@ function AssumedList(listData, listManager) {
   };
 
   this.isHidden = function() {
-    return $('.assumed-list').css('display') == 'none';
+    return $('.assumed-list').css('display') === 'none';
   };
 
   this.activateListeners = function() {

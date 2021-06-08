@@ -29,7 +29,8 @@ function executeStartupActions() {
   activateFileChooserListener();
   activateSubmitListener();
   activatePageUnloadListener();
-  const recoveryManager = new RecoveryManager(ListData, ListManager, OperationManager, Editor);
+  const recoveryManager =
+        new RecoveryManager(ListData, ListManager, OperationManager, Editor);
   recoveryManager.activateRecoveryListeners();
   recoveryManager.executeStartupActions();
 }

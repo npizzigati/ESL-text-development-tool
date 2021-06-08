@@ -1,7 +1,6 @@
 require 'bundler/setup'
 
 require 'sinatra'
-require 'sinatra/reloader' if development?
 require 'tilt/erubis'
 require 'json'
 require 'sinatra/custom_logger'

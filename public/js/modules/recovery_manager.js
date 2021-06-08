@@ -55,11 +55,11 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     $('#recovery-list').on('click', '.autosave-file', function(event) {
       const filename = event.target.id;
       const fileContent = JSON.parse(localStorage.getItem(filename));
-      const editorContent = fileContent.editorContent
+      const editorContent = fileContent.editorContent;
       const headwordsAndInflections = fileContent.headwordsAndInflections;
       const assumedWords = fileContent.assumedWords;
       restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, filename);
-    })
+    });
   };
 
   function switchLayoutToRecovery() {

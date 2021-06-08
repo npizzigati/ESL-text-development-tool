@@ -11,7 +11,7 @@ function AutoList(listData, listManager) {
   this.setUp = function() {
     this.refresh();
     this.show();
-  }
+  };
 
   this.refresh = function() {
     this.sublists = this.buildSublists();
@@ -23,8 +23,8 @@ function AutoList(listData, listManager) {
       const taggedWords = this.tagSublistWords(headwords);
       const sublist = taggedWords.join(', ');
       parts.push('<tr>');
-      parts.push(`<td class="my-sublist-number" id="sublist-number-${number}">${number}</td>`);
-      parts.push(`<td class="my-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
+      parts.push(`<td class="auto-sublist-number" id="sublist-number-${number}">${number}</td>`);
+      parts.push(`<td class="auto-sublist-words" id="sublist-words-${number}">${sublist}</td>`);
       parts.push('</tr>');
     });
     parts.push('</tbody></table>');
@@ -34,7 +34,7 @@ function AutoList(listData, listManager) {
   this.tagSublistWords = function(headwords) {
     const taggedHeadwords = [];
     headwords.forEach( headword => {
-      taggedHeadwords.push(`<span class="my-sublist-individual-word" id="my-sublist-${headword}">${this.listData.originalHeadwordSpellings[headword]}</span>`);
+      taggedHeadwords.push(`<span class="auto-sublist-individual-word" id="auto-sublist-${headword}">${this.listData.originalHeadwordSpellings[headword]}</span>`);
     });
     return taggedHeadwords;
   };
@@ -64,16 +64,16 @@ function AutoList(listData, listManager) {
   // };
 
   this.emphasizeCurrentHeadwordMatch = function(headword) {
-    const markedHeadword = document.querySelector(`#my-sublist-${headword}`);
+    const markedHeadword = document.querySelector(`#auto-sublist-${headword}`);
     this.deemphasizeCurrentHeadwordMatch();
     this.currentlyMatchedWord = $(markedHeadword);
-    this.currentlyMatchedWord.addClass('my-sublist-current-match');
+    this.currentlyMatchedWord.addClass('auto-sublist-current-match');
     markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
   };
 
   this.deemphasizeCurrentHeadwordMatch = function() {
     if (this.currentlyMatchedWord) {
-      this.currentlyMatchedWord.removeClass('my-sublist-current-match');
+      this.currentlyMatchedWord.removeClass('auto-sublist-current-match');
       this.currentlyMatchedWord = null;
     }
   };
@@ -153,13 +153,13 @@ function AutoList(listData, listManager) {
 
   this.activateListeners = function() {
     $('.special-lists').off();
-    $('.special-lists').on('click', '.my-sublist-number', event => {
+    $('.special-lists').on('click', '.auto-sublist-number', event => {
       const sublistNumber = parseInt($(event.target).text());
       const selectedHeadwords = this.sublists[sublistNumber];
       this.executeHighlight(selectedHeadwords);
     });
 
-    $('.special-lists').on('click', '.my-sublist-individual-word', event => {
+    $('.special-lists').on('click', '.auto-sublist-individual-word', event => {
       const downcasedHeadword = $(event.target).text().toLowerCase();
       this.executeHighlight([downcasedHeadword]);
     });
@@ -170,11 +170,11 @@ function AutoList(listData, listManager) {
   this.markOnOfficialList = function(headword) {
     const markedHeadword = document.querySelector(`#official-${headword}`);
     this.officialList.emphasizeCurrentHeadwordMatch(headword);
-  }
+  };
 
   this.markOnAutoList = function(headword) {
     this.emphasizeCurrentHeadwordMatch(headword);
-  }
+  };
 
   this.executeHighlight = function(selectedHeadwords) {
     if (selectedHeadwords.length === 1) {
@@ -185,7 +185,7 @@ function AutoList(listData, listManager) {
     const initialPosition = this.trixEditor.getSelectedRange();
     this.highlightMatches(selectedHeadwords);
     this.trixEditor.setSelectedRange(initialPosition);
-  }
+  };
 }
 
 export { AutoList };

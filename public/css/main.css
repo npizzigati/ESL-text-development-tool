@@ -131,6 +131,7 @@ trix-editor {
     overflow: auto scroll;
     font-size: small;
     margin-left: 4px;
+    text-align: center;
 }
 
 #official-list-table {
@@ -154,10 +155,22 @@ trix-editor {
 }
 
 .active-list-title {
-    text-decoration: underline;
+    background: lightgray;
 }
 
 #assumed-list-title {
+    cursor: pointer;
+}
+
+#my-list-title {
+    cursor: pointer;
+}
+
+#my-list-chooser {
+    display:none;
+}
+
+#auto-list-title {
     cursor: pointer;
 }
 
@@ -166,10 +179,6 @@ td.assumed-word-row button {
     color: red;
     font-size: x-small;
     padding: 0;
-}
-
-#auto-list-title {
-    cursor: pointer;
 }
 
 .official-list-first-line-spacer {
@@ -217,30 +226,45 @@ td.assumed-word-row button {
     line-height: 1.4;
 }
 
+.my-list-table-body {
+    border-collapse: separate;
+    border-spacing: 0 9px;
+    line-height: 1.4;
+}
+
 .assumed-list-table-body {
     border-collapse: separate;
     border-spacing: 0 9px;
     line-height: 1.4;
 }
 
-.my-sublist-words {
+.auto-sublist-words {
     padding-left: 5px;
 }
 
-.my-sublist-current-match {
+.auto-sublist-current-match {
     border: 1px solid black;
 }
 
-.section-title {
+.section-titles {
     font-size: x-small;
     color: black;
     font-weight: bold;
     text-align: center;
-    padding-top: 1px;
+    padding-top: 2px;
     padding-bottom: 4px;
+    list-style-type: none;
+    text-align: center;
 }
 
-.my-sublist-individual-word {
+.section-titles li {
+    display: inline-block;
+    border: 1px solid;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.auto-sublist-individual-word {
     cursor: pointer;
 }
 

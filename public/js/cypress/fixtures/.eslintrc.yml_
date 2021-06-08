@@ -51,7 +51,6 @@ rules:
     - error
     - 2
     - SwitchCase: 1
-      ArrayExpression: "first"
   keyword-spacing: error
   linebreak-style: error
   max-depth: error

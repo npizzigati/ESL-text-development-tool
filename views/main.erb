@@ -23,7 +23,7 @@
           <label for="file-upload" class="custom-file-upload">
               Choose File
           </label>
-          <input id="file-upload" name="file" type="file" />
+          <input id="file-upload" name="file" type="file"  data-cy="file-input"/>
         </form>
       </div>
       <span id="recovery-message">
@@ -47,19 +47,17 @@
     <div class="layout-row1">
       <trix-editor></trix-editor>
       <div class="special-lists">
-        <p class="section-title">
-          <span id="auto-list-title">Auto List</span>
-          &nbsp;&nbsp;&nbsp;
-          <span id="my-list-title">My List</span>
-          &nbsp;&nbsp;&nbsp;
-          <span id="assumed-list-title">Assumed Words</span>
-        </p>
+        <ul class="section-titles">
+          <li id="auto-list-title" data-cy="auto-list-title">Auto List</li>
+          <li id="my-list-title" data-cy="my-list-title">My List</li>
+          <li id="assumed-list-title" data-cy="assumed-list-title">Assumed Words</li>
+        </ul>
         <div class="auto-list"></div>
         <div class="assumed-list"></div>
-        <div class="my-list"></div>
+        <div class="my-list"><input type="file" id="my-list-chooser"></div>
       </div>
       <div class="official-list">
-        <p class="section-title">Official List</p>
+        <p class="section-titles">Official List</p>
       </div>
     </div>
   </body>

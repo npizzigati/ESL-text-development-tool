@@ -23,6 +23,7 @@ function Editor(listData, listManager, operationManager) {
     listManager.officialList.setUp();
     listManager.autoList.setUp();
     listManager.assumedList.setUp(this.recoveredFilename);
+    listManager.myList.setUp();
     this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();
@@ -32,7 +33,7 @@ function Editor(listData, listManager, operationManager) {
 
   const displaySearchIcon = function() {
     $('.search-icon-container').css('display', 'block');
-  }
+  };
 
   this.activateEditorListeners = function() {
     $(trixElement).on('trix-selection-change', () => {
@@ -43,7 +44,7 @@ function Editor(listData, listManager, operationManager) {
     $(trixElement).on('click', event => {
       // Stop first click event from firing in case of double click
       if (wordClickTimeoutID) {
-        clearTimeout(wordClickTimeoutID)
+        clearTimeout(wordClickTimeoutID);
       }
       // Clear any highlighting
       // Delay to allow time for trix to register cursor position

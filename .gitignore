@@ -1,3 +1,6 @@
 log.txt
 Gemfile.lock
-/public/js/node_modules/
+public/js/node_modules/
+scratch.js
+/data/headwords_order_of_frequency.txt
+/public/js/.indium.json
