@@ -1,18 +1,42 @@
-import { Autosave } from './autosave.js';
+import { ListString, BadInputError} from './list_parser.js';
+import { Autosave } from '../autosave.js';
 
 function MyList(listData, listManager) {
+  this.parsedList = [];
 
   this.refresh = function () {
     $('#my-list-table').remove();
+    const parts = this.buildParts();
+    console.log('parts: '.concat(JSON.stringify(parts)));
+    $('.my-list').append(parts.join(''));
+  };
+
+  this.buildParts = function () {
+    console.log('building parts');
+    console.log('parsedList.length '.concat(this.parsedList.length));
+    if (this.parsedList.length === 0) return [];
+
     const parts = [];
     parts.push('<table id="my-list-table">');
     parts.push('<tbody class="my-list-table-body">');
-    parts.push('<tr>');
-    parts.push(`<td>10</td>`);
-    parts.push(`<td>Some words here</td>`);
-    parts.push('</tr>');
+    const rows = this.buildRows();
+    parts.push(rows);
     parts.push('</tbody></table>');
-    $('.my-list').append(parts.join(''));
+    return parts;
+  };
+
+  this.buildRows = function () {
+    const rowArray = this.parsedList.map((words, index) => {
+      const row = [];
+      const lineNumber = (index + 1) * 10;
+      const rowContents = words.join(' ');
+      row.push('<tr>');
+      row.push(`<td>${lineNumber}</td>`);
+      row.push(`<td>${rowContents}</td>`);
+      row.push('</tr>');
+      return row.join('');
+    });
+    return rowArray.join('');
   };
 
   this.readFile = function (input) {
@@ -21,8 +45,12 @@ function MyList(listData, listManager) {
 
     reader.readAsText(file);
 
-    reader.onload = function () {
-      console.log(reader.result);
+    reader.onload = () => {
+      const wordList = reader.result;
+      this.parsedList = new ListString(wordList).parse();
+      // Should handle any errors I throw
+
+      this.refresh();
     };
 
     reader.onerror = function() {

@@ -13,6 +13,10 @@ function Editor(listData, listManager, operationManager) {
 
   let wordClickTimeoutID;
 
+  const displaySearchIcon = function() {
+    $('.search-icon-container').css('display', 'block');
+  };
+
   this.executeStartupActions = function(recoveredFilename = null) {
     if (recoveredFilename) {
       this.recoveredFilename = recoveredFilename;
@@ -29,10 +33,6 @@ function Editor(listData, listManager, operationManager) {
     const search = new Search();
     search.activateSearchListeners();
     this.autosave = Autosave.setUpAutosave(listData, this.recoveredFilename);
-  };
-
-  const displaySearchIcon = function() {
-    $('.search-icon-container').css('display', 'block');
   };
 
   this.activateEditorListeners = function() {
