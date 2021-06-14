@@ -5,9 +5,7 @@ Quick-Start Guide:
 Point your browser to https://neils-text-tool.herokuapp.com/
 (Chrome or a Chrome-based browser recommended)
 
-Upload Your [headwords](https://en.wikipedia.org/wiki/Headword) file. 
-
-The file should be plain text, with each headword on a separate line and no other information. Headwords should be ordered by word frequency, with the most frequently appearing words first.
+Upload Your [headwords](https://en.wikipedia.org/wiki/Headword) file. The file should be plain text, with each headword on a separate line and no other information. Headwords should be ordered by word frequency, with the most frequently appearing words first.
 
 A list of the first 5000 most commonly used English words can be freely downloaded from https://www.wordfrequency.info. A good headwords file to begin with might have the first 1000 most common words.
 
@@ -17,7 +15,7 @@ You can now begin entering your text in the editor pane to the left. Words conta
 
 The rightmost pane, the "official list," lists all your headwords, along with their general frequency rank and the frequency they appear in your text.
 
-The middle pane, the "auto list," lists only the headwords that appear in your text, in the order in which they appear.
+The middle pane default tab, the "auto list," lists only the headwords that appear in your text, in the order in which they appear.
 
 Clicking on any headword in the official list pane will highlight all the appearance(s) of the word in the main editor pane, including its inflections, as well as the headword in the auto list pane.
 
@@ -35,6 +33,11 @@ Importing Texts
 
 Texts can be pasted into the editor and the frequency lists will automatically update.
 
-The "Assumed Words" List
+The "Assumed Words" Tab
 
-If there are any words in your headwords file that you would not like to include in the frequency counts (because, for example, you assume your students already know them), you can exclude these words by entering them into the "assumed words" list, which you can access by clicking on heading to the right of the "auto words" heading (in the middle pane).
+If there are any words in your headwords file that you would not like to include in the frequency counts (because, for example, you assume your students already know them), you can exclude these words by entering them into the "assumed words" list, which you can access by clicking on the tab to the right of the "auto words" tab (in the middle pane).
+
+The "My List" Tab (Experimental)
+
+You can upload a sublist of headwords that you want to introduce in order in your text via the "my words" tab. Each line of your "my list" must have ten space-separated words, preceded by the section number heading (which is the section number followed by a colon). [Click here to see a sample "my list" file]. 
+
