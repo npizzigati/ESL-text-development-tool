@@ -43,22 +43,26 @@ class ListString {
   validateCharacters(words, lineNumber) {
     words.forEach(word => {
       if (/[^a-z]/gi.test(word)) {
-        throw new BadInputError(`Invalid character on line ${lineNumber}`);
+        const message = `Invalid character on line ${lineNumber}`;
+        throw new BadInputError(message);
       }
     });
   }
 
   validateNumberOfWords(numberOfWords, lineNumber) {
     if (numberOfWords < 10) {
-      throw new BadInputError(`Too few words on line ${lineNumber}`);
+      throw new BadInputError(`Too few words on line ${lineNumber}` +
+                              '(each line must contain at least 10 words).');
     } else if (numberOfWords > 10) {
-      throw new BadInputError(`Too many words on line ${lineNumber}`);
+      throw new BadInputError(`Too many words on line ${lineNumber} ` +
+                              '(lines may contain no more than 10 words).');
     }
   }
 
   clean() {
     const normalized = this.normalizeLineEndings(this.contents);
-    return this.removeNumberPrefixes(normalized);
+    const unprefixed = this.removeNumberPrefixes(normalized);
+    return this.removeAnyCommas(unprefixed);
   }
 
   normalizeLineEndings(string) {
@@ -66,7 +70,11 @@ class ListString {
   }
 
   removeNumberPrefixes(string) {
-    return string.replace(/^\s*\d+:\s/gm, '');
+    return string.replace(/^\s*\d+\s?:\s*/gm, '');
+  }
+
+  removeAnyCommas(string) {
+    return string.replace(/,/g, '');
   }
 }
 

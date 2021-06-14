@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 function AutoList(listData, listManager) {
   this.trixElement = document.querySelector("trix-editor");
   this.trixEditor = this.trixElement.editor;
@@ -50,18 +51,8 @@ function AutoList(listData, listManager) {
   };
 
   this.isHidden = function() {
-    return $('.auto-list').css('display') == 'none';
+    return $('.auto-list').css('display') === 'none';
   };
-
-  // this.refresh = function() {
-  //   // const fullText = this.trixEditor.getDocument().toString();
-  //   // const fullTextOnlyWords = fullText.replace(/[^a-zA-Z']+$/, '');
-  //   // const fullTextArray = fullTextOnlyWords.trim().split(/[^a-zA-Z']+/);
-  //   // Need to record only the first appearance of each headword
-  //   // in an array
-  //   this.sublists = this.buildSublists();
-  //   this.build();
-  // };
 
   this.emphasizeCurrentHeadwordMatch = function(headword) {
     const markedHeadword = document.querySelector(`#auto-sublist-${headword}`);
@@ -87,13 +78,13 @@ function AutoList(listData, listManager) {
     this.listData.sublistHeadwords.forEach(headword => {
       sublists[currentSublistNumber].push(headword);
       if (index % this.maxWordsInSublist === 0) {
-        currentSublistNumber = currentSublistNumber + this.maxWordsInSublist;
+        currentSublistNumber += this.maxWordsInSublist;
         sublists[currentSublistNumber] = [];
       }
       index += 1;
     });
     return sublists;
-  },
+  };
 
   this.highlightMatches = function(selectedHeadwords) {
     let sublistInflection, startIndex, length;
@@ -102,7 +93,7 @@ function AutoList(listData, listManager) {
       sublistInflection = this.listData.sublistInflectionsMapping[headword];
       startIndex = this.getStartIndex(sublistInflection);
       length = sublistInflection.length;
-      this.highlightMatch(startIndex, length)
+      this.highlightMatch(startIndex, length);
       wordsHighlighted += 1;
       if (wordsHighlighted === 1) {
         this.scrollToFirstMatch();

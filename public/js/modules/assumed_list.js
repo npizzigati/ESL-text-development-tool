@@ -57,6 +57,7 @@ function AssumedList(listData, listManager) {
       this.refresh();
       listData.calculate();
       listManager.autoList.refresh();
+      listManager.myList.refresh();
       this.autosave();
     });
 
@@ -85,6 +86,7 @@ function AssumedList(listData, listManager) {
       listData.assumedWords.splice(indexToBeRemoved, 1);
       listData.calculate();
       listManager.autoList.refresh();
+      listManager.myList.refresh();
       this.refresh();
       this.autosave();
     });

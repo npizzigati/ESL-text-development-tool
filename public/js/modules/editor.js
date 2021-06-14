@@ -41,7 +41,7 @@ function Editor(listData, listManager, operationManager) {
       this.autosave();
     });
     // Listener for clicks on matches in editor
-    $(trixElement).on('click', event => {
+    $(trixElement).on('click', _event => {
       // Stop first click event from firing in case of double click
       if (wordClickTimeoutID) {
         clearTimeout(wordClickTimeoutID);
@@ -88,8 +88,8 @@ function Editor(listData, listManager, operationManager) {
     const caretPosition = trixEditor.getSelectedRange();
     const index = caretPosition[0];
     const fullText = trixEditor.getDocument().toString();
-    const clicked_character = fullText[index]
-    if (!isWordCharacter(clicked_character)) {
+    const clickedCharacter = fullText[index];
+    if (!isWordCharacter(clickedCharacter)) {
       return null;
     }
     const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);

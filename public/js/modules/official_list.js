@@ -17,7 +17,7 @@ function OfficialList(listData, listManager) {
     });
     return ranks;
   };
-  
+
   this.ranks = this.buildRanks();
 
   this.emphasizeCurrentHeadwordMatch = function(headword) {
@@ -127,9 +127,6 @@ function OfficialList(listData, listManager) {
     }
   }
 
-  // TODO: Handle case where non-appearing word is clicked
-  // Put box around headword in autoList
-  // Put box around headword in officialList
   this.highlightAllEditorMatches = function(headword) {
     let inflection, matchStart, matchEnd, length;
     let searchStart = 0;

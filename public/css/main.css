@@ -230,6 +230,15 @@ td.assumed-word-row button {
     border-collapse: separate;
     border-spacing: 0 9px;
     line-height: 1.4;
+    color: lightgray;
+}
+
+.my-list-correct-row-match {
+    color: black;
+}
+
+.my-list-incorrect-row-match {
+    color: blue;
 }
 
 .assumed-list-table-body {
@@ -262,6 +271,7 @@ td.assumed-word-row button {
     border: 1px solid;
     padding-left: 5px;
     padding-right: 5px;
+    user-select: none;
 }
 
 .auto-sublist-individual-word {

@@ -2,6 +2,7 @@ import { isPunctuation, isWordCharacter, isRangeCollapsed,
          retrieveWord, retrieveWordCoordinates, determineWordStart,
          determineWordEnd } from './utils/word_utilities.js';
 
+/* eslint-disable max-lines-per-function */
 function OperationManager(listData, listManager) {
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
@@ -77,6 +78,7 @@ function OperationManager(listData, listManager) {
   this.listData = listData;
   this.officialList = listManager.officialList;
   this.autoList = listManager.autoList;
+  this.myList = listManager.myList;
   this.Operation = function(text, indices, mode) {
     this.text = text;
     this.startIndex = indices.startIndex;
@@ -92,12 +94,12 @@ function OperationManager(listData, listManager) {
       } else {
         return characterTypes.NONLETTER;
       }
-    } 
+    }
 
     this.determineCharacterType = function() {
       if (this.text.length > 1) {
         return characterTypes.MULTIPLE;
-      } 
+      }
       return this.letterOrNonLetter(this.text);
     }
 
@@ -114,6 +116,8 @@ function OperationManager(listData, listManager) {
     this.characterBeforeType = this.determineCharacterBeforeType();
 
     this.determinePoint = function() {
+
+      /* eslint-disable indent */
       switch (mode) {
       case modes.INSERTION:
         if (this.characterBeforeType === characterTypes.LETTER
@@ -150,7 +154,7 @@ function OperationManager(listData, listManager) {
         }
         break;
       }
-    }
+    };
     this.point = this.determinePoint();
   };
 
@@ -174,6 +178,7 @@ function OperationManager(listData, listManager) {
     const length = text.length;
 
     switch (operation) {
+    /* eslint-disable indent */
     case modes.INSERTION:
       // As a workaround for issue where formatting persists
       // after deleting a space following a list word, if first
@@ -184,7 +189,6 @@ function OperationManager(listData, listManager) {
         trixEditor.deactivateAttribute('neilsNonMatch');
         trixEditor.setSelectedRange(initialRange);
       }
-      
       const insertion = new this.Operation(text, indices, modes.INSERTION);
       if (length === 1) {
         this.processOneCharacterInsertion(insertion);
@@ -196,6 +200,7 @@ function OperationManager(listData, listManager) {
           this.listData.calculate();
           this.officialList.refresh();
           this.autoList.refresh();
+          this.myList.refresh();
         }, 20);
       }
       break;
@@ -203,10 +208,12 @@ function OperationManager(listData, listManager) {
       this.listData.calculate();
       this.officialList.refresh();
       this.autoList.refresh();
+      this.myList.refresh();
       const deletion = new this.Operation(text, indices, modes.DELETION);
       this.processDeletion(deletion);
       break;
     }
+    /* eslint-enable indent */
   };
 
   this.processMultipleCharacterInsertion = function(insertion) {
@@ -227,7 +234,7 @@ function OperationManager(listData, listManager) {
         index += 1;
       } else if (isWordCharacter(character)) {
         [wordStart, wordEnd] = retrieveWordCoordinates(text, index);
-        word = retrieveWord(text, [wordStart, wordEnd]); 
+        word = retrieveWord(text, [wordStart, wordEnd]);
         headword = this.listData.getHeadword(word);
         if (headword) {
           segment += word;
@@ -266,13 +273,14 @@ function OperationManager(listData, listManager) {
 
   this.processWordAtIndex = function(operation, index) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
-    const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]); 
+    const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]);
     const headword = this.listData.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
     this.listData.calculate();
     this.officialList.refresh();
     this.autoList.refresh();
+    this.myList.refresh();
     if (headword) {
       textMarker.unmarkWord(word, wordStart, wordEnd);
       this.officialList.focusHeadword(headword);
@@ -298,7 +306,7 @@ function OperationManager(listData, listManager) {
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
     const fullText = insertion.postOperationFullText;
     let [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex);
-    const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+    const word = retrieveWord(fullText, [wordStart, wordEnd]);
     const headword = this.listData.getHeadword(word);
     // Unmark previous word when adding letter to it
     if (word.length > 1) {
@@ -317,11 +325,12 @@ function OperationManager(listData, listManager) {
       const caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
       const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex);
-      const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+      const word = retrieveWord(fullText, [wordStart, wordEnd]);
       const headword = this.listData.getHeadword(word);
       this.listData.calculate();
       this.officialList.refresh();
       this.autoList.refresh();
+      this.myList.refresh();
       if (headword) {
         textMarker.unmarkWord(word, wordStart, wordEnd);
         this.officialList.focusHeadword(headword);
@@ -336,12 +345,13 @@ function OperationManager(listData, listManager) {
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
     const fullText = insertion.postOperationFullText;
     const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex - 1);
-    const word = retrieveWord(fullText, [wordStart, wordEnd]); 
+    const word = retrieveWord(fullText, [wordStart, wordEnd]);
     const headword = this.listData.getHeadword(word);
 
     this.listData.calculate();
     this.officialList.refresh();
     this.autoList.refresh();
+    this.myList.refresh();
     if (headword) {
       this.officialList.focusHeadword(headword);
       textMarker.unmarkWord(word, wordStart, wordEnd);
@@ -439,11 +449,11 @@ function OperationManager(listData, listManager) {
     }
     const latestLength = latest.length;
     const previousLength = previous.length;
-    const deltaLength = Math.abs(latestLength - previousLength); 
+    const deltaLength = Math.abs(latestLength - previousLength);
     let startIndex, endIndex, text, indices;
 
     if (latestLength > previousLength) {
-      endIndex = trixEditor.getSelectedRange()[0] 
+      endIndex = trixEditor.getSelectedRange()[0]
       startIndex = endIndex - deltaLength;
       text = fullTextHistory.latest.slice(startIndex, endIndex);
       indices = {
@@ -452,7 +462,7 @@ function OperationManager(listData, listManager) {
       }
       return [text, modes.INSERTION, indices];
     } else {
-      startIndex = trixEditor.getSelectedRange()[0] 
+      startIndex = trixEditor.getSelectedRange()[0]
       endIndex = startIndex + deltaLength;
       text = fullTextHistory.previous.slice(startIndex, endIndex);
       indices = {
