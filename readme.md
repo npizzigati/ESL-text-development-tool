@@ -5,11 +5,11 @@ Quick-Start Guide:
 Point your browser to https://neils-text-tool.herokuapp.com/
 (Chrome or a Chrome-based browser recommended)
 
-Upload Your Headwords https://en.wikipedia.org/wiki/Headword file. 
+Upload Your [headwords](https://en.wikipedia.org/wiki/Headword) file. 
 
 The file should be plain text, with each headword on a separate line and no other information. Headwords should be ordered by word frequency, with the most frequently appearing words first.
 
-A list of the first 5000 most commonly used English words can be freely downloaded from  https://www.wordfrequency.info. A good headwords file to begin with might have the first 1000 most common words.
+A list of the first 5000 most commonly used English words can be freely downloaded from https://www.wordfrequency.info. A good headwords file to begin with might have the first 1000 most common words.
 
 Create Your Text
 
