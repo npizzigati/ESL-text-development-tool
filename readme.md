@@ -36,8 +36,3 @@ Texts can be pasted into the editor and the frequency lists will automatically u
 The "Assumed Words" Tab
 
 If there are any words in your headwords file that you would not like to include in the frequency counts (because, for example, you assume your students already know them), you can exclude these words by entering them into the "assumed words" list, which you can access by clicking on the tab to the right of the "auto words" tab (in the middle pane).
-
-The "My List" Tab (Experimental)
-
-You can upload a sublist of headwords that you want to introduce in order in your text via the "my words" tab. Each line of your "my list" must have ten space-separated words, preceded by the section number heading (which is the section number followed by a colon). [Click here to see a sample "my list" file]. 
-
