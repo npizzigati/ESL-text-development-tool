@@ -307,7 +307,8 @@ function OperationManager(listData, listManager) {
     const fullText = insertion.postOperationFullText;
     let [wordStart, wordEnd] = retrieveWordCoordinates(fullText, insertion.startIndex);
     const word = retrieveWord(fullText, [wordStart, wordEnd]);
-    const headword = this.listData.getHeadword(word);
+    // const headword = this.listData.getHeadword(word);
+
     // Unmark previous word when adding letter to it
     if (word.length > 1) {
       const [previousWordStart, previousWordEnd] = [wordStart, wordEnd - 1];

@@ -241,6 +241,10 @@ td.assumed-word-row button {
     color: blue;
 }
 
+.my-list-no-row-match {
+    cursor: auto;
+}
+
 .assumed-list-table-body {
     border-collapse: separate;
     border-spacing: 0 9px;
@@ -274,7 +278,7 @@ td.assumed-word-row button {
     user-select: none;
 }
 
-.auto-sublist-individual-word {
+.clickable-individual-word {
     cursor: pointer;
 }
 

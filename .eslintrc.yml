@@ -51,7 +51,9 @@ rules:
     - error
     - 2
     - SwitchCase: 1
+      MemberExpression: "off"
       ArrayExpression: "first"
+      ObjectExpression: "first"
   keyword-spacing: error
   linebreak-style: error
   max-depth: error
@@ -148,6 +150,7 @@ rules:
     - error
     - args: all
       argsIgnorePattern: "^_"
+      varsIgnorePattern: "^_"
       caughtErrors: all
       caughtErrorsIgnorePattern: "^_"
       vars: local

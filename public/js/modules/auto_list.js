@@ -1,13 +1,19 @@
 /* eslint-disable max-lines-per-function */
+/* eslint-disable max-len */
 function AutoList(listData, listManager) {
-  this.trixElement = document.querySelector("trix-editor");
-  this.trixEditor = this.trixElement.editor;
+  // Check for document so we can skip these lines in testing
+  if (typeof document !== "undefined") {
+    this.trixElement = document.querySelector("trix-editor");
+    this.trixEditor = this.trixElement.editor;
+  }
   this.listData = listData;
   this.officialList = listManager.officialList;
-  this.maxWordsInSublist = 10;
+  this.defaultMaxWordsPerSublistRow = 10;
   this.sublists = [];
   this.sublistInflectionsMapping = {};
   this.currentlyMatchedWord = null;
+  this.myListRowLengths = [];
+  this.rowEntries = [];
 
   this.setUp = function() {
     this.refresh();
@@ -15,12 +21,15 @@ function AutoList(listData, listManager) {
   };
 
   this.refresh = function() {
+    // TODO -- determine if sublists are built based on myList and
+    // call correct method
     this.sublists = this.buildSublists();
     $('#auto-list-table').remove();
     const parts = [];
     parts.push('<table id="auto-list-table">');
     parts.push('<tbody class="auto-list-table-body">');
-    Object.entries(this.sublists).forEach(([number, headwords]) => {
+    this.rowEntries = Object.entries(this.sublists).sort((a, b) => a[0] - b[0]);
+    this.rowEntries.forEach(([number, headwords]) => {
       const taggedWords = this.tagSublistWords(headwords);
       const sublist = taggedWords.join(', ');
       parts.push('<tr>');
@@ -35,7 +44,7 @@ function AutoList(listData, listManager) {
   this.tagSublistWords = function(headwords) {
     const taggedHeadwords = [];
     headwords.forEach( headword => {
-      taggedHeadwords.push(`<span class="auto-sublist-individual-word" id="auto-sublist-${headword}">${this.listData.originalHeadwordSpellings[headword]}</span>`);
+      taggedHeadwords.push(`<span class="clickable-individual-word" id="auto-sublist-${headword}">${this.listData.originalHeadwordSpellings[headword]}</span>`);
     });
     return taggedHeadwords;
   };
@@ -69,21 +78,40 @@ function AutoList(listData, listManager) {
     }
   };
 
-  this.buildSublists = function() {
-    let currentSublistNumber = this.maxWordsInSublist;
-    const sublists = {};
-    sublists[currentSublistNumber] = [];
-    let index = 1;
+  this.updateRowLengths = function () {
+    // parsedLists is an object keyed by the rowId with values
+    // being the word lists on each row
 
-    this.listData.sublistHeadwords.forEach(headword => {
-      sublists[currentSublistNumber].push(headword);
-      if (index % this.maxWordsInSublist === 0) {
-        currentSublistNumber += this.maxWordsInSublist;
-        sublists[currentSublistNumber] = [];
+    // Handle the case where myList hasn't been created yet
+    if (listManager.myList === undefined) return [];
+
+    const myListRows = listManager.myList.rows;
+    if (myListRows.length === 0) return [];
+
+    this.myListRowLengths = myListRows.map(row => row.length);
+  };
+
+  this.buildSublists = function () {
+    const headwords = listData.sublistHeadwords.slice();
+    const rows = {};
+    let rowLimit;
+    let currentRowNumber = 10;
+    const rowLengths = this.myListRowLengths.slice();
+    rows[currentRowNumber] = [];
+
+    while (listData.sublistHeadwords.length > 0) {
+      rowLimit = rowLengths.shift() || this.defaultMaxWordsPerSublistRow;
+      for (let index = 0; index < rowLimit; index++) {
+        const headword = headwords.shift();
+        if (headword === undefined) return rows;
+
+        if (rows[currentRowNumber] === undefined) rows[currentRowNumber] = [];
+        rows[currentRowNumber].push(headword);
       }
-      index += 1;
-    });
-    return sublists;
+      currentRowNumber += 10;
+    }
+
+    return rows;
   };
 
   this.highlightMatches = function(selectedHeadwords) {
@@ -105,19 +133,21 @@ function AutoList(listData, listManager) {
     const highlightedElement = document.querySelector('mark');
     if (highlightedElement) {
       highlightedElement.scrollIntoView({behavior: 'auto',
-                                        block: 'center'});
+                                         block: 'center'});
     }
-  }
+  };
 
-  this.getStartIndex = function(sublistInflection) {
+  this.getStartIndex = function (sublistInflection) {
     const fullText = this.trixEditor.getDocument().toString().toLowerCase();
     const re = new RegExp(`\\b${sublistInflection}\\b`, 'i');
     const result = re.exec(fullText);
     // Result should always be found, but include this
     // verification to prevent error
     if (result) {
-      return result.index
+      return result.index;
     }
+
+    return undefined;
   };
 
   this.highlightMatch = function(startIndex, length) {
@@ -145,12 +175,12 @@ function AutoList(listData, listManager) {
   this.activateListeners = function() {
     $('.special-lists').off();
     $('.special-lists').on('click', '.auto-sublist-number', event => {
-      const sublistNumber = parseInt($(event.target).text());
+      const sublistNumber = parseInt($(event.target).text(), 10);
       const selectedHeadwords = this.sublists[sublistNumber];
       this.executeHighlight(selectedHeadwords);
     });
 
-    $('.special-lists').on('click', '.auto-sublist-individual-word', event => {
+    $('.special-lists').on('click', '.clickable-individual-word', event => {
       const downcasedHeadword = $(event.target).text().toLowerCase();
       this.executeHighlight([downcasedHeadword]);
     });

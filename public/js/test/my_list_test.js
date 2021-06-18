@@ -1,4 +1,5 @@
 import { MyList } from '../modules/my_list/my_list.js';
+import { AutoList } from '../modules/auto_list.js';
 import pkg from 'chai';
 const { assert } = pkg;
 // import pkg2 from 'jsdom';
@@ -11,13 +12,14 @@ const { assert } = pkg;
 // import sinonTest from 'sinon-test';
 // const test = sinonTest(sinon);
 
-describe('MyList.prototype.buildRows', function () {
-  it('should produce a string consisting of multiple rows', function () {
+/* eslint-disable max-len */
+
+describe('MyList.prototype.buildRowStrings', function () {
+  it('should produce an array of string rows', function () {
     const myList = new MyList({}, {});
-    myList.autoListHeadwords = ['hi', 'bye', 'go'];
-    myList.taggedList = ['hi there you'.split(' '), 'are you happy'.split(' ')];
-    const expected = ['<tr><td>10</td><td>hi, there, you</td></tr>', '<tr><td>20</td><td>are, you, happy</td></tr>'];
-    const actual = myList.buildRows();
+    myList.taggedLists = {10: '<span id="my-list-hi">hi</span>,<span id="my-list-there">there</span>,<span id="my-list-you">you</span>'.split(',')}
+    const expected = ['<tr><td>10</td><td><span id="my-list-hi">hi</span>, <span id="my-list-there">there</span>, <span id="my-list-you">you</span></td></tr>'];
+    const actual = myList.buildRowStrings();
     assert.equal(JSON.stringify(expected), JSON.stringify(actual));
   });
 });
@@ -25,8 +27,9 @@ describe('MyList.prototype.buildRows', function () {
 describe('MyList.prototype.addInitialTags', function () {
   it('should add opening and closing span tags with ids to list words', function () {
     const myList = new MyList({}, {});
-    const parsedList = ['hi there you'.split(' '), 'are you happy'.split(' ')];
-    const expected = ['<span id="hi">hi</span>,<span id="there">there</span>,<span id="you">you</span>'.split(','), '<span id="are">are</span>,<span id="you">you</span>,<span id="happy">happy</span>'.split(',')];
+    const parsedList = {10: 'hi there you'.split(' '), 20: 'are you happy'.split(' ')};
+    const expected = {10: '<span id="my-list-hi">hi</span>,<span id="my-list-there">there</span>,<span id="my-list-you">you</span>'.split(','),
+                      20: '<span id="my-list-are">are</span>,<span id="my-list-you">you</span>,<span id="my-list-happy">happy</span>'.split(',')};
     const actual = myList.addInitialTags(parsedList);
     assert.equal(JSON.stringify(expected), JSON.stringify(actual));
   });
@@ -38,7 +41,7 @@ describe('MyList.prototype.findRowIndex', function () {
     myList.rows = ['<tr><td>10</td><td>hi, there, you</td></tr>', '<tr><td>20</td><td>are, you, happy</td></tr>'];
     const headword = 'are';
     const expected = 1;
-    const actual = myList.findRowIndex(headword);
+    const actual = myList.findRowIndex(myList.rows, headword);
     assert.equal(expected, actual);
   });
 
@@ -47,39 +50,44 @@ describe('MyList.prototype.findRowIndex', function () {
     myList.rows = ['<tr><td>10</td><td>hi, there, you</td></tr>', '<tr><td>20</td><td>are, you, happy</td></tr>'];
     const headword = 'president';
     const expected = -1;
-    const actual = myList.findRowIndex(headword);
+    const actual = myList.findRowIndex(myList.rows, headword);
     assert.equal(expected, actual);
   });
 });
 
 describe('MyList.prototype.isHeadwordInCorrectRow', function () {
-  it('should return true for headword index 3 and row 0', function () {
-    const myList = new MyList({}, {});
-    const headwordIndex = 3;
-    const rowIndex = 0;
+  it('should return true when indices of myList and autoList rows match', function () {
+    // const myList = new MyList({}, {});
+    // myList.parsedLists = {10: 'go be do eat'.split(' '), 20: 'see try run'.split(' ')};
+    const autoList = {};
+    autoList.rowEntries = [[10, 'go be do eat'.split(' ')], [20, 'see try run'.split(' ')]];
+    const listManager = {};
+    listManager.autoList = autoList;
+    const myList = new MyList({}, listManager);
+
+    const myListRowIndex = 1;
+    const headword = 'see';
 
     const expected = true;
-    const actual = myList.isHeadwordInCorrectRow(headwordIndex, rowIndex);
+    const actual = myList.isHeadwordInCorrectRow(myListRowIndex, headword);
     assert.equal(expected, actual);
   });
 
-  it('should return false for headword index 3 and row 1', function () {
-    const myList = new MyList({}, {});
-    const headwordIndex = 3;
-    const rowIndex = 1;
+  it('should return true when indices of myList and autoList rows match 2', function () {
+    // const myList = new MyList({}, {});
+    // myList.parsedLists = {10: 'go be do eat'.split(' '), 20: 'see try run'.split(' ')};
+    const autoList = {};
+    autoList.rowEntries = [[10, 'go be do eat'.split(' ')], [20, 'see try run'.split(' ')]];
+    const listManager = {};
+    listManager.autoList = autoList;
+    const myList = new MyList({}, listManager);
 
-    const expected = false;
-    const actual = myList.isHeadwordInCorrectRow(headwordIndex, rowIndex);
-    assert.equal(expected, actual);
-  });
-
-  it('should return true for headword index 11 and row 1', function () {
-    const myList = new MyList({}, {});
-    const headwordIndex = 11;
-    const rowIndex = 1;
+    const myListRowIndex = 0;
+    const headword = 'eat';
 
     const expected = true;
-    const actual = myList.isHeadwordInCorrectRow(headwordIndex, rowIndex);
+    const actual = myList.isHeadwordInCorrectRow(myListRowIndex, headword);
     assert.equal(expected, actual);
   });
+
 });

@@ -15,17 +15,38 @@ class ListString {
    * Convert clean contents into array of subarrays, in which each
    * subarray is a list of 10 words.
    * @params {}
-   * @returns {Object[]} array of subarrays of 10-word lists;
+   * @returns {Object[]} Objects keyed by identifier
+   * (text before colon, e.g. line number) and with values being
+   * the list of words on the line with the identifier in question
    */
   parse() {
     const lines = this.extractLines();
-    return lines.map((line, index) => {
-      const lineNumber = index + 1;
-      const words = line.split(/\s/);
-      const numberOfWords = words.length;
+    const lineObject = {};
+    const allWords = [];
+    let lineNumber = 10;
+    lines.forEach((line) => {
+      // I currently ignore the line identifier to avoid problems when
+      // ordering list lines, and instead I key the rows with an auto-generated
+      // line number
+      const [_lineIdentifier, wordString] = this.partitionOnIdentifier(line);
+      const words = wordString.split(/\s+/);
+      allWords.push(...words);
+      // const numberOfWords = words.length;
       this.validateCharacters(words);
-      this.validateNumberOfWords(numberOfWords, lineNumber);
-      return words;
+      lineObject[lineNumber] = words;
+      lineNumber += 10;
+    });
+    this.checkForDuplicates(allWords);
+    return lineObject;
+  }
+
+  checkForDuplicates = function (allWords) {
+    const lowercaseWords = allWords.map(word => word.toLowerCase());
+    lowercaseWords.forEach(word => {
+      if (lowercaseWords.filter(otherWord => otherWord === word).length > 1) {
+        const message = `"${word}" is repeated in list`;
+        throw new BadInputError(message);
+      }
     });
   }
 
@@ -49,32 +70,28 @@ class ListString {
     });
   }
 
-  validateNumberOfWords(numberOfWords, lineNumber) {
-    if (numberOfWords < 10) {
-      throw new BadInputError(`Too few words on line ${lineNumber}` +
-                              '(each line must contain at least 10 words).');
-    } else if (numberOfWords > 10) {
-      throw new BadInputError(`Too many words on line ${lineNumber} ` +
-                              '(lines may contain no more than 10 words).');
-    }
-  }
-
   clean() {
     const normalized = this.normalizeLineEndings(this.contents);
-    const unprefixed = this.removeNumberPrefixes(normalized);
-    return this.removeAnyCommas(unprefixed);
+    const withCommasRemoved = this.removeAnyCommas(normalized);
+    const withSlashesRemoved = this.removeAnySlashes(withCommasRemoved);
+    return withSlashesRemoved;
   }
 
   normalizeLineEndings(string) {
     return string.replace(/\r\n/g, '\n');
   }
 
-  removeNumberPrefixes(string) {
-    return string.replace(/^\s*\d+\s?:\s*/gm, '');
+  partitionOnIdentifier(line) {
+    const [identifier, wordString] = line.split(':');
+    return [identifier.trim(), wordString.trim()];
   }
 
   removeAnyCommas(string) {
     return string.replace(/,/g, '');
+  }
+
+  removeAnySlashes(string) {
+    return string.replace(/\//g, ' ');
   }
 }
 
