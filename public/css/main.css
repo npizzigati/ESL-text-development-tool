@@ -167,7 +167,6 @@ trix-editor {
 }
 
 #my-list-chooser {
-    display:none;
 }
 
 #auto-list-title {
@@ -255,7 +254,7 @@ td.assumed-word-row button {
     padding-left: 5px;
 }
 
-.auto-sublist-current-match {
+.sublist-current-match {
     border: 1px solid black;
 }
 
@@ -322,10 +321,20 @@ td.assumed-word-row button {
     display: none;
 }
 
+#my-file-upload {
+    display: none;
+}
+
 .custom-file-upload {
     border: 1px solid black;
     display: inline-block;
     padding: 1px 5px;
+    cursor: pointer;
+}
+
+.custom-my-file-upload {
+    margin-top: 10px;
+    display: inline-block;
     cursor: pointer;
 }
 

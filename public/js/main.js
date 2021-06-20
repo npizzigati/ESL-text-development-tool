@@ -73,7 +73,6 @@ function showPageTitle() {
 
 function activateFileChooserListener() {
   $('#file-upload')[0].addEventListener('change', function() {
-    // document.getElementById('file-form').submit();
     $('#file-form').submit();
   });
 }

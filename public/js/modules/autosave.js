@@ -26,9 +26,10 @@ const Autosave = {
           editorContent: trixEditor,
           headwordsAndInflections: {
             headwords: listData.headwords,
-            inflections_map: listData.inflectionsMap
+            inflections_map: listData.inflectionsMap,
           },
-          assumedWords: listData.assumedWords
+          assumedWords: listData.assumedWords,
+          myListParsedLists: listData.myListParsedLists,
         };
         const filename = `autosave-${tabID}`;
         localStorage.setItem(filename, JSON.stringify(autosaveItem));

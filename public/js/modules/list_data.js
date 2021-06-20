@@ -2,13 +2,14 @@ const trixElement = document.querySelector('trix-editor');
 const trixEditor = trixElement.editor;
 
 /* eslint-disable max-lines-per-function */
-function ListData(parsedData, assumedWords = []) {
+function ListData(parsedData, assumedWords = [], myListParsedLists = {}) {
   this.sublistInflectionsMapping = {};
   this.sublistHeadwords = [];
   this.timesMarked = new Map();
   this.headwords = parsedData.headwords;
   this.assumedWords = assumedWords;
   this.inflectionsMap = parsedData.inflections_map;
+  this.myListParsedLists = myListParsedLists;
 
   this.buildOriginalHeadwordSpellings = function() {
     const originalHeadwordSpellings = {};

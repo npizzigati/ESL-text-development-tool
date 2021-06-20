@@ -20,16 +20,16 @@ function Highlighter(listData, officialList) {
   };
 
   this.emphasizeCurrentHeadwordMatch = function(headword) {
-    const markedHeadword = document.querySelector(`#auto-sublist-${headword}`);
+    const autoListMarkedHeadword = document.querySelector(`#auto-sublist-${headword}`);
     this.deemphasizeCurrentHeadwordMatch();
-    this.currentlyMatchedWord = $(markedHeadword);
-    this.currentlyMatchedWord.addClass('auto-sublist-current-match');
-    markedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
+    this.currentlyMatchedWord = $(autoListMarkedHeadword);
+    this.currentlyMatchedWord.addClass('sublist-current-match');
+    autoListMarkedHeadword.scrollIntoView({behavior: 'auto', block: 'center'});
   };
 
   this.deemphasizeCurrentHeadwordMatch = function() {
     if (this.currentlyMatchedWord) {
-      this.currentlyMatchedWord.removeClass('auto-sublist-current-match');
+      this.currentlyMatchedWord.removeClass('sublist-current-match');
       this.currentlyMatchedWord = null;
     }
   };

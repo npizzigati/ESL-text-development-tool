@@ -27,7 +27,7 @@ function Editor(listData, listManager, operationManager) {
     listManager.officialList.setUp();
     listManager.autoList.setUp();
     listManager.assumedList.setUp(this.recoveredFilename);
-    listManager.myList.setUp();
+    listManager.myList.setUp(this.recoveredFilename);
     this.activateEditorListeners();
     displaySearchIcon();
     const search = new Search();
@@ -81,7 +81,7 @@ function Editor(listData, listManager, operationManager) {
   };
 
   const markOnAutoList = function(headword) {
-    listManager.autoList.emphasizeCurrentHeadwordMatch(headword);
+    listManager.highlighter.emphasizeCurrentHeadwordMatch(headword);
   };
 
   const getClickedWord = function() {

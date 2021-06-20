@@ -8,7 +8,7 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     const entries = retrieveAutosaveEntriesFromLocalStorage();
     const recoveryList = new RecoveryList(entries);
     recoveryList.deleteOldListItems();
-  }
+  };
 
   function listAutosaves() {
     const entries = retrieveAutosaveEntriesFromLocalStorage();
@@ -35,14 +35,14 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     $('#recovery-list').empty();
     let filename, fileContent, base_url, hyperlink, listPart, date, time, timestamp;
     for (let i = 0; i < localStorage.length; i++) {
-      filename = localStorage.key(i)
+      filename = localStorage.key(i);
       fileContent = JSON.parse(localStorage.getItem(filename));
       timestamp = fileContent.timestamp;
       entries[timestamp] = {
         date: fileContent.date,
         time: fileContent.time,
-        filename: filename 
-      }
+        filename: filename,
+      };
     }
     return entries;
   }
@@ -58,7 +58,8 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
       const editorContent = fileContent.editorContent;
       const headwordsAndInflections = fileContent.headwordsAndInflections;
       const assumedWords = fileContent.assumedWords;
-      restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, filename);
+      const myListParsedLists = fileContent.myListParsedLists;
+      restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, myListParsedLists, filename);
     });
   };
 
@@ -93,8 +94,8 @@ const RecoveryManager = function(ListData, ListManager, OperationManager, Editor
     $('#recovery-list').css('display', 'none');
   }
 
-  function restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, filename) {
-    const listData = new ListData(headwordsAndInflections, assumedWords);
+  function restoreEditingEnvironment(editorContent, headwordsAndInflections, assumedWords, myListParsedLists, filename) {
+    const listData = new ListData(headwordsAndInflections, assumedWords, myListParsedLists);
     const listManager = new ListManager(listData);
     const operationManager = new OperationManager(listData, listManager);
     const editor = new Editor(listData, listManager, operationManager);

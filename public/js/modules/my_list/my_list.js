@@ -4,14 +4,32 @@ import { Autosave } from '../autosave.js';
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-len */
 function MyList(listData, listManager) {
-  this.parsedLists = {};
   this.taggedLists = {};
   this.rows = [];
   this.rowStrings = [];
+  this.fileChooser =
+    '<label class="custom-my-file-upload">' +
+    '<input id="my-file-upload" name="file" type="file">' +
+    '<span>-> Click here to load new "my words" file</span>' +
+    '</label>';
+
+  this.setUp = function(recoveredFilename) {
+    this.recoveredFilename = recoveredFilename;
+    this.autosave = Autosave.setUpAutosave(listData, this.recoveredFilename);
+    $('.my-list').append(this.fileChooser);
+    this.updateLists();
+    this.activateListeners();
+    this.hide();
+  };
 
   this.buildList = function () {
+    $('#my-list-table').remove();
+    $('.custom-my-file-upload').remove();
+
     const parts = this.buildParts();
     $('.my-list').append(parts.join(''));
+
+    $('.my-list').append(this.fileChooser);
   };
 
   this.findRowIndex = function (rows, headword) {
@@ -27,10 +45,17 @@ function MyList(listData, listManager) {
   this.isHeadwordInCorrectRow = function (myListRowIndex, headword) {
     const autoListRows = listManager.autoList.rowEntries.map(element => element[1]);
     const autoListRowIndex = this.findRowIndex(autoListRows, headword);
-    // console.log(`autoListRowIndex === ${autoListRowIndex}`);
-    // console.log(`myListRowIndex === ${myListRowIndex}`);
 
     return autoListRowIndex === myListRowIndex;
+  };
+
+  this.updateLists = function () {
+    if (Object.entries(listData.myListParsedLists).length === 0) return;
+    this.taggedLists = this.addInitialTags(listData.myListParsedLists);
+    this.rows = this.buildRows();
+    this.buildList();
+    this.refresh();
+    listManager.autoList.updateRowLengths();
   };
 
   this.refresh = function () {
@@ -85,9 +110,9 @@ function MyList(listData, listManager) {
     return words.join(', ');
   };
 
-  this.addInitialTags = function (parsedLists) {
+  this.addInitialTags = function (myListParsedLists) {
     const taggedLists = {};
-    Object.entries(parsedLists).forEach(([rowId, list]) => {
+    Object.entries(myListParsedLists).forEach(([rowId, list]) => {
       taggedLists[rowId] = this.addTagsToList(list);
     });
     return taggedLists;
@@ -108,18 +133,14 @@ function MyList(listData, listManager) {
     reader.onload = () => {
       const wordList = reader.result;
       try {
-        this.parsedLists = new ListString(wordList).parse();
-        this.taggedLists = this.addInitialTags(this.parsedLists);
-        this.rows = this.buildRows();
-        this.buildList();
-        this.refresh();
-        listManager.autoList.updateRowLengths();
+        listData.myListParsedLists = new ListString(wordList).parse();
+        this.updateLists();
+        this.autosave();
       } catch (error) {
         if (error instanceof BadInputError) {
           const alertMessage = 'There appears to be a problem with ' +
                 'your "My List" file: ';
           alert(alertMessage + error.message);
-          this.displayFileChooser();
         } else {
           throw error;
         }
@@ -129,12 +150,10 @@ function MyList(listData, listManager) {
     reader.onerror = function() {
       console.log(reader.error);
     };
-
-    this.hideFileChooser();
   };
 
   this.buildRows = function () {
-    const mixedCaseRows = Object.entries(this.parsedLists).sort((a, b) => a[0] - b[0]).map(e => e[1]);
+    const mixedCaseRows = Object.entries(listData.myListParsedLists).sort((a, b) => a[0] - b[0]).map(e => e[1]);
     const lowerCaseRows = mixedCaseRows.map(row => downCaseWordsInRow(row));
 
     function downCaseWordsInRow(row) {
@@ -144,19 +163,9 @@ function MyList(listData, listManager) {
     return lowerCaseRows;
   };
 
-  this.setUp = function() {
-    this.displayFileChooser();
-    this.activateListeners();
-    this.hide();
-  };
-
-  this.displayFileChooser = function () {
-    $('#my-list-chooser').css('display', 'inline');
-  };
-
-  this.hideFileChooser = function () {
-    $('#my-list-chooser').css('display', 'none');
-  };
+  // this.hideFileChooser = function () {
+  //   $('#my-list-chooser').css('display', 'none');
+  // };
 
   this.isHidden = function() {
     return $('.my-list').css('display') === 'none';
@@ -173,7 +182,7 @@ function MyList(listData, listManager) {
   };
 
   this.activateListeners = function () {
-    $('.special-lists').on('change', '#my-list-chooser', event => {
+    $('.special-lists').on('change', '#my-file-upload', event => {
       this.readFile(event.target);
     });
   };
