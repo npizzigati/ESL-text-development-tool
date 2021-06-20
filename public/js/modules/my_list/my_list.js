@@ -10,7 +10,7 @@ function MyList(listData, listManager) {
   this.fileChooser =
     '<label class="custom-my-file-upload">' +
     '<input id="my-file-upload" name="file" type="file">' +
-    '<span>-> Click here to load new "my words" file</span>' +
+    '<span>-> Click here to load new "my list" file</span>' +
     '</label>';
 
   this.setUp = function(recoveredFilename) {
