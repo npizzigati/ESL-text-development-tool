@@ -44,8 +44,6 @@ post '/' do
   retrieve_upload(params, target_path)
   headwords_array = retrieve_headwords(target_path)
   unique_headwords = remove_duplicates(headwords_array)
-  # headwords_json = unique_headwords.to_json
-  # inflections_map_json = extract_inflections(unique_headwords).to_json
   inflections_map = extract_inflections(unique_headwords)
   add_temporary_modifications!(inflections_map) # This is temporary... until I implement user modifications to inflections
   { 'headwords' => unique_headwords, 'inflections_map' => inflections_map }.to_json
@@ -67,7 +65,7 @@ def retrieve_upload(params, target_path)
 end
 
 def add_temporary_modifications!(inflections_map)
-  temporary_inflections = { 'interesting' => 'interest' }
+  temporary_inflections = { 'interesting' => 'interest', 'worker' => 'work', 'workers' => 'work' }
   temporary_inflections.each do |k, v|
     inflections_map[k] = v
   end
