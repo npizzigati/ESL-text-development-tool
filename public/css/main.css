@@ -30,6 +30,10 @@ neils-non-match {
     color: gray;
 }
 
+neils-out-of-order {
+    color: red;
+}
+
 trix-editor {
     color: black;
     caret-color: black;
@@ -325,17 +329,35 @@ td.assumed-word-row button {
     display: none;
 }
 
+#assumed-file-upload {
+    display: none;
+}
+
 .custom-file-upload {
     border: 1px solid black;
     display: inline-block;
     padding: 1px 5px;
+    user-select: none;
     cursor: pointer;
 }
 
 .custom-my-file-upload {
     margin-top: 10px;
     display: inline-block;
+    user-select: none;
     cursor: pointer;
+}
+
+.custom-assumed-file-upload {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: inline-block;
+    user-select: none;
+    cursor: pointer;
+}
+
+[class*="upload"]:hover {
+    text-decoration: underline;
 }
 
 .no-hover:hover {

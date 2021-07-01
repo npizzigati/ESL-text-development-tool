@@ -1,6 +1,5 @@
 import { isWordCharacter, retrieveWord,
-         retrieveWordCoordinates, determineWordStart,
-         determineWordEnd } from './utils/word_utilities.js';
+         retrieveWordCoordinates } from './utils/word_utilities.js';
 import { Search } from './utils/search.js';
 import { Autosave } from './autosave.js';
 
@@ -68,7 +67,7 @@ function Editor(listData, listManager, operationManager) {
     });
   };
 
-  const clearHighlighting = function() {
+  function clearHighlighting() {
     const initialPosition = trixEditor.getSelectedRange();
     const length = trixEditor.getDocument().toString().length;
     trixEditor.setSelectedRange([0, length - 1]);
@@ -76,15 +75,15 @@ function Editor(listData, listManager, operationManager) {
     trixEditor.setSelectedRange(initialPosition);
   };
 
-  const markOnOfficialList = function(headword) {
+  function markOnOfficialList(headword) {
     listManager.officialList.emphasizeCurrentHeadwordMatch(headword);
-  };
+  }
 
-  const markOnAutoList = function(headword) {
+  function markOnAutoList(headword) {
     listManager.highlighter.emphasizeCurrentHeadwordMatch(headword);
-  };
+  }
 
-  const getClickedWord = function() {
+  function getClickedWord() {
     const caretPosition = trixEditor.getSelectedRange();
     const index = caretPosition[0];
     const fullText = trixEditor.getDocument().toString();
@@ -94,7 +93,7 @@ function Editor(listData, listManager, operationManager) {
     }
     const [wordStart, wordEnd] = retrieveWordCoordinates(fullText, index);
     return retrieveWord(fullText, [wordStart, wordEnd]);
-  };
+  }
 }
 
 export { Editor };

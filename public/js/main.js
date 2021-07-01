@@ -5,17 +5,26 @@ import { Editor } from './modules/editor.js';
 import { RecoveryManager } from './modules/recovery_manager.js';
 
 // TODO: Add "am" to inflections list ("be"); also check
-// contractions; also "I'm"; "ai" is listed as an inflection of "be" and that
-// makes no sense.
+// contractions; also "I'm";
 
 // Add new HTML tag for words in list
 class NeilsNonMatch extends HTMLElement {}
+// Add new HTML tag for words that are used out of order according
+// to the order of the mylist
+class NeilsOutOfOrder extends HTMLElement {}
 
 customElements.define('neils-non-match', NeilsNonMatch);
+customElements.define('neils-out-of-order', NeilsOutOfOrder);
 
 // Add Trix format for marking list words
 Trix.config.textAttributes.neilsNonMatch = {
   tagName: 'neils-non-match',
+  inheritable: true
+};
+
+// Add Trix format for marking out of order words
+Trix.config.textAttributes.neilsOutOfOrder = {
+  tagName: 'neils-out-of-order',
   inheritable: true
 };
 
@@ -62,14 +71,6 @@ function hideWaitMessage() {
 function showPageTitle() {
   $('#page-title').css('display', 'block');
 }
-
-// function showNewTabButton() {
-//   $('#new-tab-button').css('display', 'inline');
-// }
-
-// function hideNewTabButton() {
-//   $('#new-tab-button').css('display', 'none');
-// }
 
 function activateFileChooserListener() {
   $('#file-upload')[0].addEventListener('change', function() {

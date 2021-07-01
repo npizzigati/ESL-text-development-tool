@@ -28,8 +28,8 @@ describe('MyList.prototype.addInitialTags', function () {
   it('should add opening and closing span tags with ids to list words', function () {
     const myList = new MyList({}, {});
     const parsedList = {10: 'hi there you'.split(' '), 20: 'are you happy'.split(' ')};
-    const expected = {10: '<span id="my-list-hi">hi</span>,<span id="my-list-there">there</span>,<span id="my-list-you">you</span>'.split(','),
-                      20: '<span id="my-list-are">are</span>,<span id="my-list-you">you</span>,<span id="my-list-happy">happy</span>'.split(',')};
+    const expected = {10: '<span id="my-list-hi" class="clickable-individual-word">hi</span>,<span id="my-list-there" class="clickable-individual-word">there</span>,<span id="my-list-you" class="clickable-individual-word">you</span>'.split(','),
+                      20: '<span id="my-list-are" class="clickable-individual-word">are</span>,<span id="my-list-you" class="clickable-individual-word">you</span>,<span id="my-list-happy" class="clickable-individual-word">happy</span>'.split(',')};
     const actual = myList.addInitialTags(parsedList);
     assert.equal(JSON.stringify(expected), JSON.stringify(actual));
   });

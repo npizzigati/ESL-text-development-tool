@@ -221,7 +221,7 @@ function OperationManager(listData, listManager) {
     const fullText = insertion.postOperationFullText;
     let index = 0;
     const text = insertion.text;
-    const length = text.length
+    const length = text.length;
     let word, wordStart, wordEnd, headword, character;
     const newTextSegments = [];
     let segment = '';
