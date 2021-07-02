@@ -1,19 +1,19 @@
-function Highlighter(listData, officialList) {
+function Formatter(listData, officialList) {
   // Check for document so we can skip these lines in testing
   if (typeof document !== "undefined") {
     this.trixElement = document.querySelector("trix-editor");
     this.trixEditor = this.trixElement.editor;
   }
-  this.highlightMatches = function(selectedHeadwords) {
+  this.formatMatches = function(selectedHeadwords, formatting = 'searchHighlight') {
     let sublistInflection, startIndex, length;
-    let wordsHighlighted = 0;
+    let wordsFormated = 0;
     selectedHeadwords.forEach(headword => {
       sublistInflection = listData.sublistInflectionsMapping[headword];
       startIndex = this.getStartIndex(sublistInflection);
       length = sublistInflection.length;
-      this.highlightMatch(startIndex, length);
-      wordsHighlighted += 1;
-      if (wordsHighlighted === 1) {
+      this.formatMatch(startIndex, length, formatting);
+      wordsFormated += 1;
+      if (wordsFormated === 1) {
         this.scrollToFirstMatch();
       }
     });
@@ -35,9 +35,9 @@ function Highlighter(listData, officialList) {
   };
 
   this.scrollToFirstMatch = function() {
-    const highlightedElement = document.querySelector('mark');
-    if (highlightedElement) {
-      highlightedElement.scrollIntoView({behavior: 'auto',
+    const formatedElement = document.querySelector('mark');
+    if (formatedElement) {
+      formatedElement.scrollIntoView({behavior: 'auto',
                                          block: 'center'});
     }
   };
@@ -55,25 +55,25 @@ function Highlighter(listData, officialList) {
     return undefined;
   };
 
-  this.highlightMatch = function(startIndex, length) {
+  this.formatMatch = function(startIndex, length, formatting) {
     let endIndex = startIndex + length;
     this.trixEditor.setSelectedRange([startIndex, endIndex]);
-    this.trixEditor.activateAttribute('searchHighlight');
+    this.trixEditor.activateAttribute(formatting);
   };
 
   // TODO: This is the same or similar to functions in editor and
   // search and official_list_manager-- refactor out to another module?
-  this.clearHighlighting = function() {
+  this.clearFormatting = function(formatting = 'searchHighlight') {
     const initialPosition = this.trixEditor.getSelectedRange();
     // This seems to work faster than iterating through the
-    // ranges and turning off highlighting that way.
-    // TODO: Change clearHighlighting in the Search module to do
+    // ranges and turning off formatting that way.
+    // TODO: Change clearFormatting in the Search module to do
     // this too.
     // And, doing it this way, there's no need to keep track of
-    // highlighted ranges.
+    // formated ranges.
     const length = this.trixEditor.getDocument().toString().length;
     this.trixEditor.setSelectedRange([0, length - 1]);
-    this.trixEditor.deactivateAttribute('searchHighlight');
+    this.trixEditor.deactivateAttribute(formatting);
     this.trixEditor.setSelectedRange(initialPosition);
   };
 
@@ -88,16 +88,16 @@ function Highlighter(listData, officialList) {
     this.emphasizeCurrentHeadwordMatch(headword);
   };
 
-  this.executeHighlight = function(selectedHeadwords) {
+  this.executeFormatting = function(selectedHeadwords) {
     if (selectedHeadwords.length === 1) {
       this.markOnAutoList(selectedHeadwords[0]);
       this.markOnOfficialList(selectedHeadwords[0]);
     }
-    this.clearHighlighting();
+    this.clearFormatting();
     const initialPosition = this.trixEditor.getSelectedRange();
-    this.highlightMatches(selectedHeadwords);
+    this.formatMatches(selectedHeadwords);
     this.trixEditor.setSelectedRange(initialPosition);
   };
 }
 
-export { Highlighter };
+export { Formatter };

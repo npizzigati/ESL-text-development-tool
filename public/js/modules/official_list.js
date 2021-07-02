@@ -176,7 +176,7 @@ function OfficialList(listData, listManager) {
         return;
       }
       this.highlightAllEditorMatches(headword);
-      listManager.highlighter.markOnAutoList(headword);
+      listManager.formatter.markOnAutoList(headword);
       this.emphasizeCurrentHeadwordMatch(headword);
     });
   };

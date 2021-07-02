@@ -104,7 +104,6 @@ function Search() {
       mainSearch.clearHighlighting(this.fullText);
       searchBox.focus();
       this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
-      // if (last(mainSearch.highlightedRanges)[1]).includes
       this.scrollToMatch(this.matches[this.matchNumber]);
       searchBox.focus();
     };

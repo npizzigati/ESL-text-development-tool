@@ -73,14 +73,14 @@ function Editor(listData, listManager, operationManager) {
     trixEditor.setSelectedRange([0, length - 1]);
     trixEditor.deactivateAttribute('searchHighlight');
     trixEditor.setSelectedRange(initialPosition);
-  };
+  }
 
   function markOnOfficialList(headword) {
     listManager.officialList.emphasizeCurrentHeadwordMatch(headword);
   }
 
   function markOnAutoList(headword) {
-    listManager.highlighter.emphasizeCurrentHeadwordMatch(headword);
+    listManager.formatter.emphasizeCurrentHeadwordMatch(headword);
   }
 
   function getClickedWord() {
