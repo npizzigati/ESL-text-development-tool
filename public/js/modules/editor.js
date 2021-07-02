@@ -2,9 +2,10 @@ import { isWordCharacter, retrieveWord,
          retrieveWordCoordinates } from './utils/word_utilities.js';
 import { Search } from './utils/search.js';
 import { Autosave } from './autosave.js';
+import { Formatter } from './formatter.js';
 
 function Editor(listData, listManager, operationManager) {
-
+  const formatter = new Formatter(listData, listManager.officialList);
   this.recoveredFilename = null;
 
   const trixElement = document.querySelector("trix-editor");
@@ -29,7 +30,7 @@ function Editor(listData, listManager, operationManager) {
     listManager.myList.setUp(this.recoveredFilename);
     this.activateEditorListeners();
     displaySearchIcon();
-    const search = new Search();
+    const search = new Search(formatter);
     search.activateSearchListeners();
     this.autosave = Autosave.setUpAutosave(listData, this.recoveredFilename);
   };
@@ -48,7 +49,7 @@ function Editor(listData, listManager, operationManager) {
       // Clear any highlighting
       // Delay to allow time for trix to register cursor position
       setTimeout(() => {
-        clearHighlighting();
+        formatter.clearFormatting('searchHighlight');
       }, 300);
 
       // It takes a fraction of a second for Trix to update caret
@@ -66,14 +67,6 @@ function Editor(listData, listManager, operationManager) {
       }, 200);
     });
   };
-
-  function clearHighlighting() {
-    const initialPosition = trixEditor.getSelectedRange();
-    const length = trixEditor.getDocument().toString().length;
-    trixEditor.setSelectedRange([0, length - 1]);
-    trixEditor.deactivateAttribute('searchHighlight');
-    trixEditor.setSelectedRange(initialPosition);
-  }
 
   function markOnOfficialList(headword) {
     listManager.officialList.emphasizeCurrentHeadwordMatch(headword);

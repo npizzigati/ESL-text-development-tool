@@ -1,4 +1,4 @@
-function Search() {
+function Search(formatter) {
   const trixElement = document.querySelector("trix-editor")
   const trixEditor = trixElement.editor;
   const searchIconContainer = $('.search-icon-container');
@@ -14,7 +14,7 @@ function Search() {
   }
 
   function last(arr) {
-    return arr[arr.length - 1]
+    return arr[arr.length - 1];
   }
 
   const mainSearch = {
@@ -27,16 +27,16 @@ function Search() {
       }
       this.previousHighlightStart = last(this.highlightedRanges)[0];
     },
-    clearHighlighting: function() {
-      if (this.highlightedRanges.length === 0) {
-        return;
-      }
-      this.highlightedRanges.forEach(range => {
-        trixEditor.setSelectedRange(range);
-        trixEditor.deactivateAttribute('searchHighlight');
-      });
-      this.highlightedRanges = [];
-    }
+    // clearHighlighting: function() {
+    //   if (this.highlightedRanges.length === 0) {
+    //     return;
+    //   }
+    //   this.highlightedRanges.forEach(range => {
+    //     trixEditor.setSelectedRange(range);
+    //     trixEditor.deactivateAttribute('searchHighlight');
+    //   });
+    //   this.highlightedRanges = [];
+    // }
   };
 
   const exitSearch = function() {
@@ -48,7 +48,7 @@ function Search() {
     // registered by trix, so we have to wait a fraction of a second
     setTimeout(function() {
       const originalCaretPos = trixEditor.getSelectedRange();
-      mainSearch.clearHighlighting();
+      formatter.clearFormatting('searchHighlight');
       trixEditor.setSelectedRange(originalCaretPos);
     }, 100);
   };
@@ -70,9 +70,7 @@ function Search() {
       }
 
       mainSearch.setPreviousHighlightStart();
-      mainSearch.clearHighlighting();
-      // FIXME: Is this the right syntax for removing event listener?
-      // Remove any event listeners from arrow buttons
+      formatter.clearFormatting('searchHighlight');
       $('.search-arrow').off();
 
       mainSearch.searcher = new Searcher(searchBox.val());
@@ -101,7 +99,7 @@ function Search() {
     this.nextMatchUp = function() {
       this.matchNumber = (this.matchNumber + (this.matches.length - 1)) % this.matches.length;
       mainSearch.setPreviousHighlightStart();
-      mainSearch.clearHighlighting(this.fullText);
+      formatter.clearFormatting('searchHighlight');
       searchBox.focus();
       this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
       this.scrollToMatch(this.matches[this.matchNumber]);
@@ -111,22 +109,20 @@ function Search() {
     this.nextMatchDown = function() {
       this.matchNumber = (this.matchNumber + 1) % this.matches.length;
       mainSearch.setPreviousHighlightStart();
-      mainSearch.clearHighlighting(this.fullText);
+      formatter.clearFormatting('searchHighlight');
       this.highlightMatch(this.matches[this.matchNumber], this.searchString.length);
       this.scrollToMatch(this.matches[this.matchNumber]);
       searchBox.focus();
     };
 
     this.highlightMatch = function(startIndex, length) {
+      formatter.formatMatch(startIndex, length, 'searchHighlight');
       let endIndex = startIndex + length;
-      trixEditor.setSelectedRange([startIndex, endIndex]);
-      trixEditor.activateAttribute('searchHighlight');
-      trixEditor.setSelectedRange([startIndex, startIndex]);
       mainSearch.highlightedRanges.push([startIndex, endIndex]);
     };
 
     this.execute = function() {
-      mainSearch.clearHighlighting;
+      formatter.clearFormatting('searchHighlight');
       searchBox.focus();
       if ($('.search-arrow').hasClass('activated-search-arrow')) {
         $('.search-arrow').removeClass('activated-search-arrow');

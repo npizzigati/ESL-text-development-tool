@@ -101,7 +101,7 @@ function OfficialList(listData, listManager) {
     }
   };
 
-  this.getMatchStartIndex = function(inflection, searchStart) {
+  this.getMatchStartIndex = function (inflection, searchStart) {
     const fullText = this.trixEditor.getDocument().toString().toLowerCase();
     const re = new RegExp(`\\b${inflection}\\b`, 'i');
     const result = re.exec(fullText.slice(searchStart));
@@ -112,35 +112,29 @@ function OfficialList(listData, listManager) {
     }
   };
 
-  // TODO: This is very similar to the function in auto_list -- extract to another module?
-  this.highlightMatch = function(startIndex, endIndex) {
-    this.trixEditor.setSelectedRange([startIndex, endIndex]);
-    this.trixEditor.activateAttribute('searchHighlight');
-  };
-
   // TODO: This is the same as the function in auto_list -- extract to another module?
-  this.scrollToFirstMatch = function() {
+  this.scrollToFirstMatch = function () {
     const highlightedElement = document.querySelector('mark');
     if (highlightedElement) {
       highlightedElement.scrollIntoView({behavior: 'auto',
-                                        block: 'center'});
+                                         block: 'center'});
     }
-  }
+  };
 
-  this.highlightAllEditorMatches = function(headword) {
-    let inflection, matchStart, matchEnd, length;
+  this.highlightAllEditorMatches = function (headword) {
+    let matchStart, matchEnd;
     let searchStart = 0;
     let wordsHighlighted = 0;
     const initialPosition = this.trixEditor.getSelectedRange();
-    this.clearHighlighting();
+    listManager.formatter.clearFormatting('searchHighlight');
     const editorInflections = listData.editorInflections[headword];
     if (!editorInflections) {
       return;
     }
     listData.editorInflections[headword].forEach(inflection => {
       matchStart = this.getMatchStartIndex(inflection, searchStart);
+      listManager.formatter.formatMatch(matchStart, inflection.length, 'searchHighlight');
       matchEnd = matchStart + inflection.length;
-      this.highlightMatch(matchStart, matchEnd);
       searchStart = matchEnd + 1;
       wordsHighlighted += 1;
       if (wordsHighlighted === 1) {
@@ -150,23 +144,15 @@ function OfficialList(listData, listManager) {
     this.trixEditor.setSelectedRange(initialPosition);
   };
 
-  this.clearHighlighting = function() {
-    const initialPosition = this.trixEditor.getSelectedRange();
-    const length = this.trixEditor.getDocument().toString().length;
-    this.trixEditor.setSelectedRange([0, length - 1]);
-    this.trixEditor.deactivateAttribute('searchHighlight');
-    this.trixEditor.setSelectedRange(initialPosition);
-  };
-
   this.activateListeners = function() {
     $('#official-list-header-headword').off();
-    $('#official-list-header-headword').on('click', event => {
+    $('#official-list-header-headword').on('click', _ => {
       this.showOfficialList([...listData.headwords].sort((a, b) => {
         return a.localeCompare(b, undefined, {sensitivity: 'base'});
       }));
     });
     $('#official-list-header-rank').off();
-    $('#official-list-header-rank').on('click', event => {
+    $('#official-list-header-rank').on('click', _ => {
       this.showOfficialList(listData.headwords);
     });
     $('.official-list-headwords').off();

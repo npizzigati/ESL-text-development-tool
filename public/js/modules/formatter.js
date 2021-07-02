@@ -1,8 +1,9 @@
 function Formatter(listData, officialList) {
   // Check for document so we can skip these lines in testing
+  let trixEditor, trixElement;
   if (typeof document !== "undefined") {
-    this.trixElement = document.querySelector("trix-editor");
-    this.trixEditor = this.trixElement.editor;
+    trixElement = document.querySelector("trix-editor");
+    trixEditor = trixElement.editor;
   }
   this.formatMatches = function(selectedHeadwords, formatting = 'searchHighlight') {
     let sublistInflection, startIndex, length;
@@ -38,12 +39,12 @@ function Formatter(listData, officialList) {
     const formatedElement = document.querySelector('mark');
     if (formatedElement) {
       formatedElement.scrollIntoView({behavior: 'auto',
-                                         block: 'center'});
+                                      block: 'center'});
     }
   };
 
   this.getStartIndex = function (sublistInflection) {
-    const fullText = this.trixEditor.getDocument().toString().toLowerCase();
+    const fullText = trixEditor.getDocument().toString().toLowerCase();
     const re = new RegExp(`\\b${sublistInflection}\\b`, 'i');
     const result = re.exec(fullText);
     // Result should always be found, but include this
@@ -57,24 +58,16 @@ function Formatter(listData, officialList) {
 
   this.formatMatch = function(startIndex, length, formatting) {
     let endIndex = startIndex + length;
-    this.trixEditor.setSelectedRange([startIndex, endIndex]);
-    this.trixEditor.activateAttribute(formatting);
+    trixEditor.setSelectedRange([startIndex, endIndex]);
+    trixEditor.activateAttribute(formatting);
   };
 
-  // TODO: This is the same or similar to functions in editor and
-  // search and official_list_manager-- refactor out to another module?
   this.clearFormatting = function(formatting = 'searchHighlight') {
-    const initialPosition = this.trixEditor.getSelectedRange();
-    // This seems to work faster than iterating through the
-    // ranges and turning off formatting that way.
-    // TODO: Change clearFormatting in the Search module to do
-    // this too.
-    // And, doing it this way, there's no need to keep track of
-    // formated ranges.
-    const length = this.trixEditor.getDocument().toString().length;
-    this.trixEditor.setSelectedRange([0, length - 1]);
-    this.trixEditor.deactivateAttribute(formatting);
-    this.trixEditor.setSelectedRange(initialPosition);
+    const initialPosition = trixEditor.getSelectedRange();
+    const length = trixEditor.getDocument().toString().length;
+    trixEditor.setSelectedRange([0, length - 1]);
+    trixEditor.deactivateAttribute(formatting);
+    trixEditor.setSelectedRange(initialPosition);
   };
 
   //TODO: extract these two mark methods to a module to be shared
@@ -94,9 +87,9 @@ function Formatter(listData, officialList) {
       this.markOnOfficialList(selectedHeadwords[0]);
     }
     this.clearFormatting();
-    const initialPosition = this.trixEditor.getSelectedRange();
+    const initialPosition = trixEditor.getSelectedRange();
     this.formatMatches(selectedHeadwords);
-    this.trixEditor.setSelectedRange(initialPosition);
+    trixEditor.setSelectedRange(initialPosition);
   };
 }
 
