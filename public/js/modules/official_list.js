@@ -1,6 +1,8 @@
+import { getStartIndex } from './utils/word_utilities.js';
+
 function OfficialList(listData, listManager) {
-  this.trixElement = document.querySelector("trix-editor");
-  this.trixEditor = this.trixElement.editor;
+  const trixElement = document.querySelector("trix-editor");
+  const trixEditor = trixElement.editor;
   this.currentlyMatchedRow = null;
   this.currentlyMatchedHeadword = null;
 
@@ -101,17 +103,6 @@ function OfficialList(listData, listManager) {
     }
   };
 
-  this.getMatchStartIndex = function (inflection, searchStart) {
-    const fullText = this.trixEditor.getDocument().toString().toLowerCase();
-    const re = new RegExp(`\\b${inflection}\\b`, 'i');
-    const result = re.exec(fullText.slice(searchStart));
-    // Result should always be found, but include this
-    // verification to prevent error
-    if (result) {
-      return result.index + searchStart;
-    }
-  };
-
   // TODO: This is the same as the function in auto_list -- extract to another module?
   this.scrollToFirstMatch = function () {
     const highlightedElement = document.querySelector('mark');
@@ -125,14 +116,14 @@ function OfficialList(listData, listManager) {
     let matchStart, matchEnd;
     let searchStart = 0;
     let wordsHighlighted = 0;
-    const initialPosition = this.trixEditor.getSelectedRange();
+    const initialPosition = trixEditor.getSelectedRange();
     listManager.formatter.clearFormatting('searchHighlight');
     const editorInflections = listData.editorInflections[headword];
     if (!editorInflections) {
       return;
     }
     listData.editorInflections[headword].forEach(inflection => {
-      matchStart = this.getMatchStartIndex(inflection, searchStart);
+      matchStart = getStartIndex(inflection, searchStart);
       listManager.formatter.formatMatch(matchStart, inflection.length, 'searchHighlight');
       matchEnd = matchStart + inflection.length;
       searchStart = matchEnd + 1;
@@ -141,7 +132,7 @@ function OfficialList(listData, listManager) {
         this.scrollToFirstMatch();
       }
     });
-    this.trixEditor.setSelectedRange(initialPosition);
+    trixEditor.setSelectedRange(initialPosition);
   };
 
   this.activateListeners = function() {

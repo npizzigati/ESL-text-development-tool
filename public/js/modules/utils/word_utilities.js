@@ -7,16 +7,16 @@ function isPunctuation(character) {
 
 function isWordCharacter(character) {
   if (!character) {
-    return false
+    return false;
   }
-  return character.search(/[a-zA-Z']/) != -1;
+  return character.search(/[a-zA-Z']/) !== -1;
 }
 
 function isRangeCollapsed() {
 // Determine if selection is single caret position instead of
 // range
   const [start, end] = trixEditor.getSelectedRange();
-  return start === end; 
+  return start === end;
 }
 
 function retrieveWord(fullText, wordEndPoints) {
@@ -59,6 +59,19 @@ function determineWordEnd(fullText, caretPosition) {
   return wordEnd;
 }
 
+function getStartIndex(inflection, searchStart) {
+  const fullText = trixEditor.getDocument().toString().toLowerCase();
+  const re = new RegExp(`\\b${inflection}\\b`, 'i');
+  const result = re.exec(fullText.slice(searchStart));
+  // Result should always be found, but include this
+  // verification to prevent error
+  if (result) {
+    return result.index + searchStart;
+  } else {
+    return undefined;
+  }
+}
+
 export { isPunctuation, isWordCharacter, isRangeCollapsed,
          retrieveWord, retrieveWordCoordinates, determineWordStart,
-         determineWordEnd };
+         determineWordEnd, getStartIndex };

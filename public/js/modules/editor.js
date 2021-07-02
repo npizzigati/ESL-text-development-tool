@@ -53,7 +53,7 @@ function Editor(listData, listManager, operationManager) {
       }, 300);
 
       // It takes a fraction of a second for Trix to update caret
-      // position;
+      // position, so use timeout;
       wordClickTimeoutID = setTimeout(() => {
         const clickedWord = getClickedWord();
         if (!clickedWord) {

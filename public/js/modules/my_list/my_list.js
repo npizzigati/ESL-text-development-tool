@@ -1,9 +1,13 @@
+import { getStartIndex } from '../utils/word_utilities.js';
 import { ListString, BadInputError} from './list_parser.js';
 import { Autosave } from '../autosave.js';
 
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-len */
 function MyList(listData, listManager) {
+  const trixElement = document.querySelector("trix-editor");
+  const trixEditor = trixElement.editor;
+
   this.taggedLists = {};
   this.rows = [];
   this.rowStrings = [];
@@ -59,6 +63,8 @@ function MyList(listData, listManager) {
   };
 
   this.refresh = function () {
+    // Clear out-of-order match formatting from editor window
+    clearOutOfOrderFormatting();
     // Remove match formatting from headwords, before adding it back in
     $('.my-list-table-body span').removeClass('my-list-correct-row-match');
     $('.my-list-table-body span').removeClass('my-list-incorrect-row-match');
@@ -68,17 +74,32 @@ function MyList(listData, listManager) {
     for (let headwordIndex = 0; headwordIndex < autolistHeadwords.length; headwordIndex++) {
       const headword = autolistHeadwords[headwordIndex];
       const rowIndex = this.findRowIndex(this.rows, headword);
-      if (rowIndex === -1) continue;
+      const headwordNotFound = () => rowIndex === -1;
+      if (headwordNotFound()) continue;
 
       if (this.isHeadwordInCorrectRow(rowIndex, headword)) {
         $(`.my-list-table-body #my-list-${headword}`).addClass('my-list-correct-row-match');
         $(`.my-list-table-body #my-list-${headword}`).addClass('clickable-individual-word');
       } else {
+        formatOutOfOrderMatchInEditor(headword);
         $(`.my-list-table-body #my-list-${headword}`).addClass('my-list-incorrect-row-match');
         $(`.my-list-table-body #my-list-${headword}`).addClass('clickable-individual-word');
       }
     }
   };
+
+  function clearOutOfOrderFormatting() {
+    listManager.formatter.clearFormatting('neilsOutOfOrder');
+  }
+
+  function formatOutOfOrderMatchInEditor(headword) {
+    // Find first instance of headword inflection and color it red
+    const firstInflection = listData.editorInflections[headword][0];
+    const matchStart = getStartIndex(firstInflection, 0);
+    const initialPosition = trixEditor.getSelectedRange();
+    listManager.formatter.formatMatch(matchStart, firstInflection.length, 'neilsOutOfOrder');
+    trixEditor.setSelectedRange(initialPosition);
+  }
 
   this.buildParts = function () {
     if (Object.entries(this.taggedLists).length === 0) return [];
@@ -162,10 +183,6 @@ function MyList(listData, listManager) {
 
     return lowerCaseRows;
   };
-
-  // this.hideFileChooser = function () {
-  //   $('#my-list-chooser').css('display', 'none');
-  // };
 
   this.isHidden = function() {
     return $('.my-list').css('display') === 'none';

@@ -241,7 +241,7 @@ td.assumed-word-row button {
 }
 
 .my-list-incorrect-row-match {
-    color: blue;
+    color: red;
 }
 
 .my-list-no-row-match {
