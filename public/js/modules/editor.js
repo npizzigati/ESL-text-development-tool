@@ -40,6 +40,17 @@ function Editor(listData, listManager, operationManager) {
       operationManager.processOperation();
       this.autosave();
     });
+
+    // There delete key does not produce a selection change
+    // in the trix editor, so we have to fire an event just for it
+    $(trixElement).on('keyup', event => {
+      if (event.code === 'Delete') {
+        console.log('processing operation');
+        operationManager.processOperation();
+        this.autosave();
+      }
+    });
+
     // Listener for clicks on matches in editor
     $(trixElement).on('click', _event => {
       // Stop first click event from firing in case of double click

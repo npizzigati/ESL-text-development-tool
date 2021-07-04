@@ -7,10 +7,6 @@ function OperationManager(listData, listManager) {
   const trixElement = document.querySelector("trix-editor");
   const trixEditor = trixElement.editor;
 
-  const isSelection = function(caretPositionArray) {
-    caretPositionArray[0] !== caretPositionArray[1];
-  }
-
   const fullTextHistory = {
     latest: '',
     previous: '',
@@ -24,7 +20,7 @@ function OperationManager(listData, listManager) {
   };
 
   const textMarker = {
-    markWord: function(word, startIndex, endIndex) {
+    markWord: function(_word, startIndex, endIndex) {
       trixEditor.setSelectedRange([startIndex, endIndex + 1]);
       trixEditor.activateAttribute('neilsNonMatch');
     },
@@ -43,35 +39,27 @@ function OperationManager(listData, listManager) {
 
   const isContentChanged = function() {
     return fullTextHistory.latest !== fullTextHistory.previous;
-  }
+  };
 
-  const removeCaretFormatting = function() {
-    if (trixEditor.attributeIsActive('neilsNonMatch')) {
-      trixEditor.deactivateAttribute('neilsNonMatch');
-    // } else if (trixEditor.attributeIsActive('neilsPunctuation')) {
-    //   trixEditor.deactivateAttribute('neilsPunctuation');
-    }
-  }
-
-  // enums used in operationManager
+  // "enums" used in operationManager
   const points = {
     START_OF_WORD: 'start of word',
     END_OF_WORD: 'end of word',
     INSIDE_WORD: 'inside word',
     OUTSIDE_WORD: 'outside word',
     ON_SINGLE_CHARACTER_WORD: 'on single character word'
-  }
+  };
 
   const characterTypes = {
     LETTER: 'letter',
     NONLETTER: 'nonletter',
     MULTIPLE: 'multiple'
-  }
+  };
 
   const modes = {
     INSERTION: 'insertion',
     DELETION: 'deletion'
-  }
+  };
 
 
   this.multipleCharInsertionUnderway = false;
@@ -85,8 +73,10 @@ function OperationManager(listData, listManager) {
     this.endIndex = indices.endIndex;
     this.preOperationFullText = fullTextHistory.previous;
     this.postOperationFullText = fullTextHistory.latest;
-    this.characterAfter = (mode === modes.INSERTION) ? this.postOperationFullText[this.endIndex] : this.preOperationFullText[this.endIndex];
+    this.characterAfter = (mode === modes.INSERTION) ? this.postOperationFullText[this.endIndex] : this.preOperationFullText[this.endIndex - 1];
     this.characterBefore = (this.startIndex === 0) ? null : this.preOperationFullText[this.startIndex - 1];
+    console.log(`this.characterBefore === ${this.characterBefore}`);
+    console.log(`this.characterAfter === ${this.characterAfter}`);
 
     this.letterOrNonLetter = function(character) {
       if (isWordCharacter(character)) {
@@ -94,28 +84,28 @@ function OperationManager(listData, listManager) {
       } else {
         return characterTypes.NONLETTER;
       }
-    }
+    };
 
     this.determineCharacterType = function() {
       if (this.text.length > 1) {
         return characterTypes.MULTIPLE;
       }
       return this.letterOrNonLetter(this.text);
-    }
+    };
 
     this.determineCharacterAfterType = function() {
       return this.letterOrNonLetter(this.characterAfter);
-    }
+    };
 
     this.determineCharacterBeforeType = function() {
       return this.letterOrNonLetter(this.characterBefore);
-    }
+    };
 
     this.characterType = this.determineCharacterType();
     this.characterAfterType = this.determineCharacterAfterType();
     this.characterBeforeType = this.determineCharacterBeforeType();
 
-    this.determinePoint = function() {
+    this.determinePoint = function () {
 
       /* eslint-disable indent */
       switch (mode) {
@@ -164,13 +154,8 @@ function OperationManager(listData, listManager) {
 
   this.processOperation = function() {
     fullTextHistory.update();
-    // Not sure if this is still necessary
-    // if (isRangeCollapsed()) {
-    //   removeCaretFormatting();
-    // }
 
     if (!isContentChanged() || this.multipleCharInsertionUnderway) {
-      // console.log('Returning early');
       return;
     }
     window.clearTimeout(this.operationTimeoutID);
@@ -274,6 +259,7 @@ function OperationManager(listData, listManager) {
   this.processWordAtIndex = function(operation, index) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
     const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]);
+    console.log(word);
     const headword = this.listData.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
@@ -370,18 +356,11 @@ function OperationManager(listData, listManager) {
   this.processDeletionOutsideWord = function(deletion) {
     if (deletion.characterBeforeType === characterTypes.LETTER &&
        deletion.characterAfterType === characterTypes.LETTER) {
-      // Subtract pre-join words if space deleted between words
-      // this.subtractPreJoinWords(deletion);
       // Process newly created word
       this.processWordAtIndex(deletion, deletion.startIndex - 1);
     }
   };
 
-  this.processDeletionOfSingleCharacterWord = function(deletion) {
-    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
-    // TODO: Is this deactivateAttribute necessary?
-    // trixEditor.deactivateAttribute('neilsNonMatch');
-  };
 
   this.processDeletionAtEndOfWord = function(deletion) {
     // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
@@ -427,6 +406,7 @@ function OperationManager(listData, listManager) {
   this.processDeletion = function(deletion) {
     switch (deletion.point) {
     case points.OUTSIDE_WORD:
+      console.log('deletion outside word');
       this.processDeletionOutsideWord(deletion);
       break;
     case points.ON_SINGLE_CHARACTER_WORD:
