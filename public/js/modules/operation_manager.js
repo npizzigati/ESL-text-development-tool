@@ -87,8 +87,6 @@ function OperationManager(listData, listManager) {
 
     this.characterAfter = this.determineCharacterAfter(mode);
     this.characterBefore = (this.startIndex === 0) ? null : this.preOperationFullText[this.startIndex - 1];
-    console.log(`this.characterBefore === ${this.characterBefore}`);
-    console.log(`this.characterAfter === ${this.characterAfter}`);
 
 
     this.letterOrNonLetter = function(character) {
@@ -171,12 +169,10 @@ function OperationManager(listData, listManager) {
       return;
     }
 
-    console.log('processing operation');
     const previousFullText = fullTextHistory.previous;
     const latestFullText = fullTextHistory.latest;
     window.clearTimeout(this.operationTimeoutID);
     const [text, operation, indices] = this.getDelta();
-    console.log(`operation text === ${text}`);
     const length = text.length;
 
     switch (operation) {
@@ -275,8 +271,6 @@ function OperationManager(listData, listManager) {
   this.processWordAtIndex = function(operation, index) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
     const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]);
-    console.log(`operation.postOperationFullText === ${operation.postOperationFullText}`);
-    console.log(word);
     const headword = this.listData.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
 
@@ -421,7 +415,6 @@ function OperationManager(listData, listManager) {
   this.processDeletion = function(deletion) {
     switch (deletion.point) {
     case points.OUTSIDE_WORD:
-      console.log('deletion outside word');
       this.processDeletionOutsideWord(deletion);
       break;
     case points.ON_SINGLE_CHARACTER_WORD:
