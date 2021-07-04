@@ -67,16 +67,29 @@ function OperationManager(listData, listManager) {
   this.officialList = listManager.officialList;
   this.autoList = listManager.autoList;
   this.myList = listManager.myList;
-  this.Operation = function(text, indices, mode) {
+  this.Operation = function(text, indices, mode, previousFullText, latestFullText) {
     this.text = text;
     this.startIndex = indices.startIndex;
     this.endIndex = indices.endIndex;
-    this.preOperationFullText = fullTextHistory.previous;
-    this.postOperationFullText = fullTextHistory.latest;
-    this.characterAfter = (mode === modes.INSERTION) ? this.postOperationFullText[this.endIndex] : this.preOperationFullText[this.endIndex - 1];
+    // These are set to these parameters and not to fullText.previous and fullText.latest
+    // because the latter are updated with selection changes caused in
+    // the process of processing the operation (making them the same)
+    this.preOperationFullText = previousFullText;
+    this.postOperationFullText = latestFullText;
+
+    this.determineCharacterAfter = function (mode) {
+      if (mode === modes.INSERTION) {
+        return this.postOperationFullText[this.endIndex];
+      } else {
+        return this.preOperationFullText[this.endIndex];
+      }
+    };
+
+    this.characterAfter = this.determineCharacterAfter(mode);
     this.characterBefore = (this.startIndex === 0) ? null : this.preOperationFullText[this.startIndex - 1];
     console.log(`this.characterBefore === ${this.characterBefore}`);
     console.log(`this.characterAfter === ${this.characterAfter}`);
+
 
     this.letterOrNonLetter = function(character) {
       if (isWordCharacter(character)) {
@@ -154,12 +167,16 @@ function OperationManager(listData, listManager) {
 
   this.processOperation = function() {
     fullTextHistory.update();
-
     if (!isContentChanged() || this.multipleCharInsertionUnderway) {
       return;
     }
+
+    console.log('processing operation');
+    const previousFullText = fullTextHistory.previous;
+    const latestFullText = fullTextHistory.latest;
     window.clearTimeout(this.operationTimeoutID);
     const [text, operation, indices] = this.getDelta();
+    console.log(`operation text === ${text}`);
     const length = text.length;
 
     switch (operation) {
@@ -174,7 +191,7 @@ function OperationManager(listData, listManager) {
         trixEditor.deactivateAttribute('neilsNonMatch');
         trixEditor.setSelectedRange(initialRange);
       }
-      const insertion = new this.Operation(text, indices, modes.INSERTION);
+      const insertion = new this.Operation(text, indices, modes.INSERTION, previousFullText, latestFullText);
       if (length === 1) {
         this.processOneCharacterInsertion(insertion);
       } else {
@@ -194,7 +211,7 @@ function OperationManager(listData, listManager) {
       this.officialList.refresh();
       this.autoList.refresh();
       this.myList.refresh();
-      const deletion = new this.Operation(text, indices, modes.DELETION);
+      const deletion = new this.Operation(text, indices, modes.DELETION, previousFullText, latestFullText);
       this.processDeletion(deletion);
       break;
     }
@@ -203,7 +220,6 @@ function OperationManager(listData, listManager) {
 
   this.processMultipleCharacterInsertion = function(insertion) {
     this.multipleCharInsertionUnderway = true;
-    const fullText = insertion.postOperationFullText;
     let index = 0;
     const text = insertion.text;
     const length = text.length;
@@ -233,7 +249,7 @@ function OperationManager(listData, listManager) {
       }
     }
     newTextSegments.push(segment);
-    trixEditor.setSelectedRange([insertion.startIndex, insertion.endIndex])
+    trixEditor.setSelectedRange([insertion.startIndex, insertion.endIndex]);
     this.multipleCharInsertionUnderway = true;
     trixEditor.deleteInDirection('forward');
     this.insertHTMLSegments(newTextSegments);
@@ -259,6 +275,7 @@ function OperationManager(listData, listManager) {
   this.processWordAtIndex = function(operation, index) {
     const [wordStart, wordEnd] = retrieveWordCoordinates(operation.postOperationFullText, index);
     const word = retrieveWord(operation.postOperationFullText, [wordStart, wordEnd]);
+    console.log(`operation.postOperationFullText === ${operation.postOperationFullText}`);
     console.log(word);
     const headword = this.listData.getHeadword(word);
     const caretPositionBeforeMarking = trixEditor.getSelectedRange();
@@ -363,12 +380,10 @@ function OperationManager(listData, listManager) {
 
 
   this.processDeletionAtEndOfWord = function(deletion) {
-    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex - 1);
     this.processWordAtIndex(deletion, deletion.startIndex - 1);
   };
 
   this.processDeletionAtStartOfWord = function(deletion) {
-    // this.subtractWordAtIndex(deletion.preOperationFullText, deletion.startIndex);
     this.processWordAtIndex(deletion, deletion.startIndex);
   };
 
@@ -425,31 +440,28 @@ function OperationManager(listData, listManager) {
   this.getDelta = function() {
     const latest = fullTextHistory.latest;
     const previous = fullTextHistory.previous;
-    if (latest === previous) {
-      return;
-    }
     const latestLength = latest.length;
     const previousLength = previous.length;
     const deltaLength = Math.abs(latestLength - previousLength);
     let startIndex, endIndex, text, indices;
 
     if (latestLength > previousLength) {
-      endIndex = trixEditor.getSelectedRange()[0]
+      endIndex = trixEditor.getSelectedRange()[0];
       startIndex = endIndex - deltaLength;
       text = fullTextHistory.latest.slice(startIndex, endIndex);
       indices = {
         startIndex: startIndex,
         endIndex: endIndex
-      }
+      };
       return [text, modes.INSERTION, indices];
     } else {
-      startIndex = trixEditor.getSelectedRange()[0]
+      startIndex = trixEditor.getSelectedRange()[0];
       endIndex = startIndex + deltaLength;
       text = fullTextHistory.previous.slice(startIndex, endIndex);
       indices = {
         startIndex: startIndex,
         endIndex: endIndex
-      }
+      };
       return [text, modes.DELETION, indices];
     }
   };
