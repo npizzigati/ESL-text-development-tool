@@ -63,14 +63,54 @@ function MyList(listData, listManager) {
   };
 
   this.refresh = function () {
-    // Clear out-of-order match formatting from editor window
-    clearOutOfOrderFormatting();
+    // Do nothing if there are no words in "my list"
+    if (this.rows.length === 0) return;
+
     // Remove match formatting from headwords, before adding it back in
     $('.my-list-table-body span').removeClass('my-list-correct-row-match');
     $('.my-list-table-body span').removeClass('my-list-incorrect-row-match');
     $('.my-list-table-body span').removeClass('clickable-individual-word');
-    const autolistHeadwords = listData.sublistHeadwords;
 
+    this.refreshOutOfOrderMatches();
+    this.refreshOnlyOnOfficialListMatches();
+  };
+
+  this.refreshOnlyOnOfficialListMatches = function () {
+    // Clear only-on-official-list (and not on "my list")
+    // formatting from editor window
+    clearOnlyOnOfficialListFormatting();
+
+    const autolistHeadwords = listData.sublistHeadwords;
+    const allMyListWords = listManager.myList.rows.flat();
+    // If headword is in autolistHeadwords but not on allMyListWords,
+    // mark in editor window
+    autolistHeadwords.forEach(headword => {
+      if (!allMyListWords.includes(headword)) {
+        formatOnlyOnOfficialListMatchInEditor(headword);
+      }
+    });
+  };
+
+  function formatOnlyOnOfficialListMatchInEditor(headword) {
+    // Find all instances of headword inflections and format them
+    const allInflections = listData.editorInflections[headword];
+    allInflections.forEach(inflection => {
+      const matchStart = getStartIndex(inflection, 0);
+      const initialPosition = trixEditor.getSelectedRange();
+      listManager.formatter.formatMatch(matchStart, inflection.length, 'neilsOnlyOnOfficialList');
+      trixEditor.setSelectedRange(initialPosition);
+    });
+  }
+
+  function clearOnlyOnOfficialListFormatting() {
+    listManager.formatter.clearFormatting('neilsOnlyOnOfficialList');
+  }
+
+  this.refreshOutOfOrderMatches = function () {
+    // Clear out-of-order match formatting from editor window
+    clearOutOfOrderFormatting();
+
+    const autolistHeadwords = listData.sublistHeadwords;
     for (let headwordIndex = 0; headwordIndex < autolistHeadwords.length; headwordIndex++) {
       const headword = autolistHeadwords[headwordIndex];
       const rowIndex = this.findRowIndex(this.rows, headword);
@@ -93,7 +133,7 @@ function MyList(listData, listManager) {
   }
 
   function formatOutOfOrderMatchInEditor(headword) {
-    // Find first instance of headword inflection and color it red
+    // Find first instance of headword inflection and format it
     const firstInflection = listData.editorInflections[headword][0];
     const matchStart = getStartIndex(firstInflection, 0);
     const initialPosition = trixEditor.getSelectedRange();

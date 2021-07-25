@@ -34,6 +34,10 @@ neils-out-of-order {
     color: red;
 }
 
+neils-only-on-official-list {
+    color: blue;
+}
+
 trix-editor {
     color: black;
     caret-color: black;
@@ -363,3 +367,4 @@ td.assumed-word-row button {
 .no-hover:hover {
     text-decoration: none !important;
 }
+

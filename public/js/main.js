@@ -9,12 +9,18 @@ import { RecoveryManager } from './modules/recovery_manager.js';
 
 // Add new HTML tag for words in list
 class NeilsNonMatch extends HTMLElement {}
+
 // Add new HTML tag for words that are used out of order according
 // to the order of the mylist
 class NeilsOutOfOrder extends HTMLElement {}
 
+// Add new HTML tag for words on "official list"
+// but not on "my list"
+class NeilsOnlyOnOfficialList extends HTMLElement {}
+
 customElements.define('neils-non-match', NeilsNonMatch);
 customElements.define('neils-out-of-order', NeilsOutOfOrder);
+customElements.define('neils-only-on-official-list', NeilsOnlyOnOfficialList);
 
 // Add Trix format for marking list words
 Trix.config.textAttributes.neilsNonMatch = {
@@ -25,6 +31,13 @@ Trix.config.textAttributes.neilsNonMatch = {
 // Add Trix format for marking out of order words
 Trix.config.textAttributes.neilsOutOfOrder = {
   tagName: 'neils-out-of-order',
+  inheritable: true
+};
+
+// Add Trix format for marking words on official list
+// but not on my list
+Trix.config.textAttributes.neilsOnlyOnOfficialList = {
+  tagName: 'neils-only-on-official-list',
   inheritable: true
 };
 
