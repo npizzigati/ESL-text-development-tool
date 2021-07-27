@@ -17,14 +17,12 @@
   <body>
     <div id="layout-row0">
       <p id="page-title"><strong>Neil's Text Tool</strong></p>
-      <div id="new-headwords-form-container">
-        <form id="file-form" action='/' enctype="multipart/form-data" method='POST'>
-          <span>Welcome to <strong>Neil's Text Tool</strong>.  Choose headwords for new session: </span> 
-          <label for="file-upload" class="custom-file-upload">
-              Choose File
-          </label>
-          <input id="file-upload" name="file" type="file"  data-cy="file-input"/>
-        </form>
+      <div id="new-headwords-uploader">
+        <span>Welcome to <strong>Neil's Text Tool</strong>.  Choose headwords for new session: </span> 
+        <label class="custom-file-load-button">
+          <input id="headwords-file-upload" name="file" type="file">
+          <span>Choose file</span>
+        </label>
       </div>
       <span id="recovery-message">
         Or click here to recover an autosaved session

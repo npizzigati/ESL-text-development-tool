@@ -1,5 +1,5 @@
 import { getStartIndex } from '../utils/word_utilities.js';
-import { ListString, BadInputError} from './list_parser.js';
+import { MyListString, BadInputError} from './my_list_parser.js';
 import { Autosave } from '../autosave.js';
 
 /* eslint-disable max-lines-per-function */
@@ -194,7 +194,7 @@ function MyList(listData, listManager) {
     reader.onload = () => {
       const wordList = reader.result;
       try {
-        listData.myListParsedLists = new ListString(wordList).parse();
+        listData.myListParsedLists = new MyListString(wordList).parse();
         this.updateLists();
         this.autosave();
       } catch (error) {

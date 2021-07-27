@@ -5,7 +5,7 @@ class BadInputError extends Error {
   }
 }
 
-class ListString {
+class MyListString {
   constructor(string) {
     this.contents = string;
     this.cleanContents = this.clean();
@@ -95,4 +95,4 @@ class ListString {
   }
 }
 
-export { ListString, BadInputError };
+export { MyListString, BadInputError };

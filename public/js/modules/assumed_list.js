@@ -141,8 +141,6 @@ function AssumedList(listData, listManager) {
     reader.onload = () => {
       const fileString = reader.result;
       try {
-        // listData.myListParsedLists = new ListString(wordList).parse();
-
         this.updateListFromFile(fileString);
         this.refresh();
         listData.calculate();

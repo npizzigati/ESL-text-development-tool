@@ -1,4 +1,4 @@
-import { ListString, BadInputError } from '../modules/my_list/list_parser.js';
+import { MyListString, BadInputError } from '../modules/my_list/my_list_parser.js';
 import pkg from 'chai';
 const { assert } = pkg;
 // import sinon from 'sinon';
@@ -13,7 +13,7 @@ describe('ListParser.parse', function() {
                            'Where', 'You'],
                       20: ['A', 'Do', 'Can', 'Go', 'Have', 'Help', 'Hear', 'Here',
                            'Need', 'Problem']};
-    const actual = new ListString(wordList).parse();
+    const actual = new MyListString(wordList).parse();
     assert.equal(JSON.stringify(expected), JSON.stringify(actual));
   });
 
@@ -22,7 +22,7 @@ describe('ListParser.parse', function() {
                      ' 20: A Do Can Go Have Help Hear On Here Need Problem';
     const errorMatcher = /is repeated/;
     assert.throws(() => {
-      return new ListString(wordList).parse();
+      return new MyListString(wordList).parse();
     }, BadInputError, errorMatcher);
   });
 
@@ -30,7 +30,7 @@ describe('ListParser.parse', function() {
     const wordList = '10: And Be Day? Night Good How I That Where';
     const errorMatcher = /Invalid character/;
     assert.throws(() => {
-      return new ListString(wordList).parse();
+      return new MyListString(wordList).parse();
     }, BadInputError, errorMatcher);
   });
 
@@ -41,7 +41,7 @@ describe('ListParser.parse', function() {
                            'Where', 'You'],
                       20: ['A', 'Do', 'Can', 'Go', 'Have', 'Help', 'Hear', 'Here',
                            'Need', 'Problem']};
-    const actual = new ListString(wordList).parse();
+    const actual = new MyListString(wordList).parse();
     assert.equal(JSON.stringify(expected), JSON.stringify(actual));
   });
 
@@ -52,7 +52,7 @@ describe('ListParser.parse', function() {
                            'Where', 'You'],
                       20: ['A', 'Do', 'Can', 'Go', 'Have', 'Help', 'Hear', 'Here',
                            'Need', 'Problem']};
-    const actual = new ListString(wordList).parse();
+    const actual = new MyListString(wordList).parse();
     assert.equal(JSON.stringify(expected), JSON.stringify(actual));
   });
 

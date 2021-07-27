@@ -59,6 +59,9 @@ trix-editor {
     display: inline;
 }
 
+#new-headwords-uploader {
+}
+
 #new-headwords-wait-message {
     display: none;
     margin: 3px 3px;
@@ -329,6 +332,10 @@ td.assumed-word-row button {
     display: none;
 }
 
+#headwords-file-upload {
+    display: none;
+}
+
 #my-file-upload {
     display: none;
 }
@@ -337,8 +344,9 @@ td.assumed-word-row button {
     display: none;
 }
 
-.custom-file-upload {
+.custom-file-load-button {
     border: 1px solid black;
+    background: lightgray;
     display: inline-block;
     padding: 1px 5px;
     user-select: none;

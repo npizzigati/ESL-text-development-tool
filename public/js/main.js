@@ -3,6 +3,7 @@ import { ListData } from './modules/list_data.js';
 import { OperationManager } from './modules/operation_manager.js';
 import { Editor } from './modules/editor.js';
 import { RecoveryManager } from './modules/recovery_manager.js';
+import { HeadwordsListString, BadInputError } from './modules/headwords_list_string.js';
 
 // TODO: Add "am" to inflections list ("be"); also check
 // contractions; also "I'm";
@@ -48,8 +49,9 @@ Trix.config.textAttributes.searchHighlight = {
 };
 
 function executeStartupActions() {
-  activateFileChooserListener();
-  activateSubmitListener();
+  // activateFileChooserListener();
+  // activateSubmitListener();
+  activateLoadFileListener();
   activatePageUnloadListener();
   const recoveryManager =
         new RecoveryManager(ListData, ListManager, OperationManager, Editor);
@@ -65,15 +67,16 @@ function activatePageUnloadListener() {
 }
 
 function hideNewHeadwordsForm() {
-  $('#new-headwords-form-container').css('display', 'none');
+  $('#new-headwords-uploader').css('display', 'none');
 }
 
 function showWaitMessage() {
   $('#new-headwords-wait-message').css('display', 'block');
-  window.intervalId = setInterval(() => {
-    const message = $('#new-headwords-wait-message').html();
-    $('#new-headwords-wait-message').html(message + ' .');
-  }, 500);
+}
+
+function incrementProgressBar() {
+  const message = $('#new-headwords-wait-message').html();
+  $('#new-headwords-wait-message').html(message + ' .');
 }
 
 function hideWaitMessage() {
@@ -85,37 +88,132 @@ function showPageTitle() {
   $('#page-title').css('display', 'block');
 }
 
-function activateFileChooserListener() {
-  $('#file-upload')[0].addEventListener('change', function() {
-    $('#file-form').submit();
+// function activateFileChooserListener() {
+//   $('#file-upload')[0].addEventListener('change', function() {
+//     $('#file-form').submit();
+//   });
+// }
+
+function activateLoadFileListener () {
+  $('#new-headwords-uploader').on('change', '#headwords-file-upload', event => {
+    readFile(event.target);
   });
 }
 
-function activateSubmitListener() {
-  $('#file-form').submit(function(e) {
-    e.preventDefault();
-    hideNewHeadwordsForm();
-    hideRecoveryMessage();
-    showPageTitle();
-    showWaitMessage();
-    const form = $(this);
-    const url = form.attr('action');
-    const formData = new FormData();
-    const file = $('#file-upload')[0].files[0];
-    formData.append('file', file);
-    $.ajax({
-      type: 'POST',
-      url: url,
-      data: formData,
-      contentType: false,
-      processData: false
-    })
-      .done(function(data, _textStatus, _jqXHR) {
-        hideWaitMessage();
-        startNewEditingSession(JSON.parse(data));
+function separateHeadwordListIntoChunks(headwords, chunkSize) {
+  // Take the first 20 words (or however many words are left) off
+  // of headwords until no headwords are left and put those words
+  // into a subarray contained in a chunks array }
+  const chunks = [];
+  let headwordsLeft = headwords.slice();
+  while (true) {
+    if (headwordsLeft.length < 1) break;
+
+    const length = headwordsLeft.length;
+
+    const chunkEndIndex = (length < chunkSize) ? length : chunkSize;
+    const chunk = headwordsLeft.slice(0, chunkEndIndex);
+    headwordsLeft = headwordsLeft.slice(chunkEndIndex);
+    chunks.push(chunk);
+  }
+
+  return chunks;
+}
+
+function retrieveInflectionsMap(chunk) {
+  return new Promise(resolve => {
+    $.post( "/", JSON.stringify(chunk))
+      .done(function(data) {
+        const inflections_map = JSON.parse(data);
+        resolve(inflections_map);
+      })
+      .fail(function() {
+        alert( "Your headwords file couldn't be processed. Sorry about that." );
       });
   });
 }
+
+async function processChunks(headwords) {
+  // Post headwords in chunks of 200 headwords and add
+  // returned data to local headwords and inflections variables
+  const CHUNK_SIZE = 200;
+  hideNewHeadwordsForm();
+  hideRecoveryMessage();
+  showPageTitle();
+  showWaitMessage();
+
+  const headwordChunks = separateHeadwordListIntoChunks(headwords, CHUNK_SIZE);
+
+  let inflections_map;
+  for (const chunk of headwordChunks) {
+    // const chunkInflectionsMap = retrieveInflectionsMap(chunk);
+    const chunkOfInflections = await retrieveInflectionsMap(chunk);
+    inflections_map = Object.assign({}, inflections_map, chunkOfInflections);
+    incrementProgressBar();
+  }
+
+  hideWaitMessage();
+  const editingSessionData = { headwords: headwords,
+                               inflections_map: inflections_map };
+  startNewEditingSession(editingSessionData);
+}
+
+function readFile(input) {
+  let file = input.files[0];
+  let reader = new FileReader();
+
+  reader.readAsText(file);
+
+  reader.onload = () => {
+    const headwordsString = reader.result;
+    try {
+      const allUploadedHeadwords = new HeadwordsListString(headwordsString).parse();
+      processChunks(allUploadedHeadwords);
+    } catch (error) {
+      if (error instanceof BadInputError) {
+        const alertMessage = 'There appears to be a problem with ' +
+              'your headwords file: ';
+        alert(alertMessage + error.message);
+      } else {
+        console.log("Another error occurred in headwords upload");
+        throw error;
+      }
+      // Reset input so that event listener (which fires on change) will
+      // fire again when file is chosen again
+      $('#headwords-file-upload').replaceWith($('#headwords-file-upload').val('').clone(true));
+    }
+  };
+
+  reader.onerror = function() {
+    console.log(reader.error);
+  };
+}
+
+// function activateSubmitListener() {
+//   $('#file-form').submit(function(e) {
+//     e.preventDefault();
+//     hideNewHeadwordsForm();
+//     hideRecoveryMessage();
+//     showPageTitle();
+//     showWaitMessage();
+//     const form = $(this);
+//     const url = form.attr('action');
+//     const formData = new FormData();
+//     const file = $('#file-upload')[0].files[0];
+//     formData.append('file', file);
+//     $.ajax({
+//       type: 'POST',
+//       url: url,
+//       data: formData,
+//       contentType: false,
+//       processData: false
+//     })
+//       .done(function(data, _textStatus, _jqXHR) {
+//         hideWaitMessage();
+//         startNewEditingSession(JSON.parse(data));
+//       });
+//   });
+// }
 
 function hideRecoveryMessage() {
   $('#recovery-message').css('display', 'none');
