@@ -71,12 +71,12 @@ function hideNewHeadwordsForm() {
 }
 
 function showWaitMessage() {
+  $('#new-headwords-wait-message').html('Processing headwords: 0%');
   $('#new-headwords-wait-message').css('display', 'block');
 }
 
-function incrementProgressBar() {
-  const message = $('#new-headwords-wait-message').html();
-  $('#new-headwords-wait-message').html(message + ' .');
+function incrementProgressMessage(percent) {
+  const message = $('#new-headwords-wait-message').html(`Processing headwords: ${percent}%`);
 }
 
 function hideWaitMessage() {
@@ -143,13 +143,17 @@ async function processChunks(headwords) {
   showWaitMessage();
 
   const headwordChunks = separateHeadwordListIntoChunks(headwords, CHUNK_SIZE);
+  const totalChunks = headwordChunks.length;
+  let chunksProcessed = 0;
 
   let inflections_map;
   for (const chunk of headwordChunks) {
     // const chunkInflectionsMap = retrieveInflectionsMap(chunk);
     const chunkOfInflections = await retrieveInflectionsMap(chunk);
     inflections_map = Object.assign({}, inflections_map, chunkOfInflections);
-    incrementProgressBar();
+    chunksProcessed += 1;
+    const percentageCompletion = Math.round((chunksProcessed / totalChunks) * 100);
+    incrementProgressMessage(percentageCompletion);
   }
 
   hideWaitMessage();
