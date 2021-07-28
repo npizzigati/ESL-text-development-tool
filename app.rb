@@ -58,7 +58,17 @@ def retrieve_upload(params, target_path)
 end
 
 def add_temporary_modifications!(inflections_map)
-  temporary_inflections = { 'interesting' => 'interest', 'worker' => 'work', 'workers' => 'work' }
+  temporary_inflections = { 'interesting' => 'interest',
+                            'worker' => 'work',
+                            'workers' => 'work',
+                            'reading' => 'read',
+                            'older' => 'old',
+                            'later' => 'late',
+                            'means' => 'mean',
+                            'bigger' => 'big',
+                            'helper' => 'help',
+                            'thanks' => 'thank',
+                            'likes' => 'like' }
   temporary_inflections.each do |k, v|
     inflections_map[k] = v
   end
