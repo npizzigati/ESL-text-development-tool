@@ -34,21 +34,11 @@ get '/' do
 end
 
 post '/' do
-  # # Check if user uploaded a file
-  # return unless params[:file] && params[:file][:filename]
-
   # record_in_stats('Posted headwords file')
-  # filename = params[:file][:filename]
-  # puts "upload file: #{filename}"
-  # target_path = File.join uploads_path, filename
-  # retrieve_upload(params, target_path)
   json_data = request.body.read
   headwords_array = JSON.parse(json_data)
-  # headwords_array = retrieve_headwords(target_path)
-  # unique_headwords = remove_duplicates(headwords_array)
   inflections_map = extract_inflections(headwords_array)
   add_temporary_modifications!(inflections_map) # This is temporary... until I implement user modifications to inflections
-  # { 'headwords' => headwords_array, 'inflections_map' => inflections_map }.to_json
   inflections_map.to_json
 end
 
@@ -96,14 +86,6 @@ end
 def retrieve_raw_headword_text(target_path)
   File.read(target_path)
 end
-
-# def remove_duplicates(headwords_array)
-#   unique_headwords = []
-#   headwords_array.each do |headword|
-#     unique_headwords << headword unless unique_headwords.include?(headword)
-#   end
-#   unique_headwords
-# end
 
 def create_headwords_array(raw_headword_text)
   # Split words regardless of whether newline is CRLF or just LF
