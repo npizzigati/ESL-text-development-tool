@@ -88,12 +88,6 @@ function showPageTitle() {
   $('#page-title').css('display', 'block');
 }
 
-// function activateFileChooserListener() {
-//   $('#file-upload')[0].addEventListener('change', function() {
-//     $('#file-form').submit();
-//   });
-// }
-
 function activateLoadFileListener () {
   $('#new-headwords-uploader').on('change', '#headwords-file-upload', event => {
     readFile(event.target);
@@ -192,32 +186,6 @@ function readFile(input) {
     console.log(reader.error);
   };
 }
-
-// function activateSubmitListener() {
-//   $('#file-form').submit(function(e) {
-//     e.preventDefault();
-//     hideNewHeadwordsForm();
-//     hideRecoveryMessage();
-//     showPageTitle();
-//     showWaitMessage();
-//     const form = $(this);
-//     const url = form.attr('action');
-//     const formData = new FormData();
-//     const file = $('#file-upload')[0].files[0];
-//     formData.append('file', file);
-//     $.ajax({
-//       type: 'POST',
-//       url: url,
-//       data: formData,
-//       contentType: false,
-//       processData: false
-//     })
-//       .done(function(data, _textStatus, _jqXHR) {
-//         hideWaitMessage();
-//         startNewEditingSession(JSON.parse(data));
-//       });
-//   });
-// }
 
 function hideRecoveryMessage() {
   $('#recovery-message').css('display', 'none');
