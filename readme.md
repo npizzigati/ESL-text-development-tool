@@ -2,6 +2,8 @@
 
 ## Quick-Start Guide:
 
+### Watch this [video](https://www.youtube.com/watch?v=9S1exy-FWxk). If you have any questions, read on.
+
 ### Point your browser to https://neils-text-tool.herokuapp.com/
 (Chrome or a Chrome-based browser recommended)
 
