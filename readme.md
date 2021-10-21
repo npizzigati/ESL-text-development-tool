@@ -3,11 +3,9 @@
 ## Quickish-Start Guide:
 
 ### Watch these videos:
-[Introduction](https://www.youtube.com/watch?v=HbRdLL4ib9o).
-
-[Using Neil's Text Tool, Part I](https://www.youtube.com/watch?v=9S1exy-FWxk).
-
-[Using Neil's Text Tool, Part II](https://www.youtube.com/watch?v=9S1exy-FWxk).
+- [Introduction](https://www.youtube.com/watch?v=HbRdLL4ib9o)
+- [Using Neil's Text Tool, Part I](https://www.youtube.com/watch?v=9S1exy-FWxk)
+- [Using Neil's Text Tool, Part II](https://www.youtube.com/watch?v=9S1exy-FWxk)
 
 If you have any questions, read on.
 
