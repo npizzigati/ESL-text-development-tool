@@ -68,7 +68,8 @@ def add_temporary_modifications!(inflections_map)
                             'bigger' => 'big',
                             'helper' => 'help',
                             'thanks' => 'thank',
-                            'likes' => 'like' }
+                            'likes' => 'like',
+                            'leaves' => 'leave'}
   temporary_inflections.each do |k, v|
     inflections_map[k] = v
   end
