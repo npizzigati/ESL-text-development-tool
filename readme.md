@@ -1,4 +1,4 @@
-### A text creation tool for teachers of English as a Second Language, to create vocabulary-limited texts for students at any level based on word frequency lists.
+> A text creation tool for teachers of English as a Second Language, to create vocabulary-limited texts for students at any level based on word frequency lists.
 ## Quickish-Start Guide:
 ### Video introduction and instructions:
 - [Introduction](https://www.youtube.com/watch?v=HbRdLL4ib9o)
