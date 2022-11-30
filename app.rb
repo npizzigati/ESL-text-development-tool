@@ -6,7 +6,6 @@ require 'json'
 require 'sinatra/custom_logger'
 require 'logger'
 require 'puma'
-require 'pg'
 
 # Escape all html output
 set :erb, escape_html: true
@@ -15,18 +14,6 @@ enable :logging
 set :logger, Logger.new(STDOUT)
 
 UPLOADS_DIRECTORY_NAME = 'data'.freeze
-
-before do
-  @db = if Sinatra::Base.production?
-          PG.connect(ENV['DATABASE_URL'])
-        else
-          PG.connect(dbname: 'neilsidea')
-        end
-end
-
-after do
-  @db.close
-end
 
 get '/' do
   # :prepare_editor redirects to this page
@@ -103,13 +90,4 @@ end
 def create_headwords_array(raw_headword_text)
   # Split words regardless of whether newline is CRLF or just LF
   raw_headword_text.gsub("\r\n", "\n").split("\n")
-end
-
-def record_in_stats(source_description)
-  sql = <<~SQL
-    INSERT INTO stats(source)
-    VALUES
-      ($1)
-  SQL
-  @db.exec_params(sql, [source_description])
 end
