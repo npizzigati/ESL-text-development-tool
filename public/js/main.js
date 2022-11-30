@@ -122,7 +122,7 @@ function retrieveInflectionsMap(chunk) {
         resolve(inflections_map);
       })
       .fail(function() {
-        alert( "Your headwords file couldn't be processed. Sorry about that." );
+        alert( "Your headwords file couldn't be processed. Please verify that it is in the correct format." );
       });
   });
 }
