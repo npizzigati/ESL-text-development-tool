@@ -128,9 +128,9 @@ function retrieveInflectionsMap(chunk) {
 }
 
 async function processChunks(headwords) {
-  // Post headwords in chunks of 200 headwords and add
+  // Post headwords in chunks of 50 headwords and add
   // returned data to local headwords and inflections variables
-  const CHUNK_SIZE = 200;
+  const CHUNK_SIZE = 50;
   hideNewHeadwordsForm();
   hideRecoveryMessage();
   showPageTitle();
