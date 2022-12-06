@@ -6,7 +6,7 @@
 - [Using the ESL Text Development Tool, Part II](https://www.youtube.com/watch?v=9S1exy-FWxk)
 
 ### Text instructions:
-### Point your browser to https://esl-text-development-tool.onrender.com/
+### Point your browser to https://esl-creator.la-app.dev/
 (Chrome or a Chrome-based browser recommended)
 
 ### Upload Your [headwords](https://en.wikipedia.org/wiki/Headword) file.
